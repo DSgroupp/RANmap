@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#0a0f1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Žalbe bez BS – Mapa</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#0a0f1e; --panel:rgba(16,23,44,.78); --panel2:rgba(255,255,255,.04);
+  --border:rgba(255,255,255,.08); --text:#e7ecff; --muted:#8a94b8;
+  --accent:#7c5cff; --accent2:#22d3ee;
+  --red:#ff4d6d; --orange:#ff9f43; --yellow:#ffd43b; --green:#2ee59d; --violet:#b18cff; --blue:#3b82f6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;color:var(--text);font-family:"Segoe UI",Inter,system-ui,-apple-system,sans-serif;font-size:14px}
+body{display:flex;flex-direction:column;background:
+  radial-gradient(1100px 600px at 5% -10%,rgba(124,92,255,.20),transparent 60%),
+  radial-gradient(900px 500px at 105% 0%,rgba(34,211,238,.13),transparent 60%),var(--bg)}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:9px}
+button,input,select,textarea{font-family:inherit;font-size:13.5px}
+body:not(.is-admin) .admin-only{display:none!important}
+
+header{height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 18px;border-bottom:1px solid var(--border);background:rgba(10,15,30,.75);backdrop-filter:blur(16px);z-index:1001}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:0 8px 24px rgba(124,92,255,.45);flex:none}
+.brand b{font-size:16px;letter-spacing:.2px;white-space:nowrap}.brand small{display:block;color:var(--muted);font-size:11.5px;margin-top:1px;white-space:nowrap}
+#menuBtn{display:none;width:40px;height:40px;border-radius:11px;border:1px solid var(--border);background:var(--panel2);color:#fff;font-size:18px;cursor:pointer;flex:none}
+.tabs{display:flex;gap:4px;background:var(--panel2);padding:4px;border-radius:13px;border:1px solid var(--border);margin-left:8px}
+.tab{border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;display:flex;gap:8px;align-items:center;transition:.2s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{background:linear-gradient(135deg,rgba(124,92,255,.95),rgba(34,211,238,.75));color:#fff;box-shadow:0 4px 16px rgba(124,92,255,.35)}
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center;min-width:0}
+.chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:12.5px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.me{color:var(--text)}
+.chip.me .role{font-size:10.5px;padding:1px 7px;border-radius:6px;background:rgba(124,92,255,.25);color:#cfc2ff}
+.chip.sync.ok{color:var(--green)}.chip.sync.wait{color:var(--yellow)}.chip.sync.err{color:var(--red)}
+.hbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;flex:none;font-size:15px}
+.hbtn:hover{background:rgba(255,255,255,.09)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.on{background:var(--green);box-shadow:0 0 10px var(--green)}
+.dot.bs{background:var(--accent2);box-shadow:0 0 10px var(--accent2)}
+
+main{flex:1;position:relative;min-height:0}
+.view{position:absolute;inset:0;display:none}
+.view.active{display:flex}
+
+/* LOGIN */
+.login{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:20px;background:
+  radial-gradient(900px 500px at 10% 0%,rgba(124,92,255,.30),transparent 60%),
+  radial-gradient(800px 500px at 100% 100%,rgba(34,211,238,.18),transparent 60%),#0a0f1e}
+.login.hide{display:none}
+.login-card{width:100%;max-width:380px;border-radius:22px;padding:28px 26px;display:flex;flex-direction:column;gap:12px}
+.login-card h2{margin:6px 0 0;font-size:21px;text-align:center}
+.login-card p{margin:0 0 6px;color:var(--muted);text-align:center;font-size:13px}
+.login-card .btn{padding:12px}
+.lmsg{min-height:18px;font-size:12.5px;color:var(--red);text-align:center}
+.cfgbox{display:none;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:rgba(255,212,59,.07);border:1px solid rgba(255,212,59,.3);font-size:12px;color:var(--yellow)}
+.cfgbox.on{display:flex}
+
+aside{width:390px;flex:none;display:flex;flex-direction:column;gap:10px;padding:14px;border-right:1px solid var(--border);background:var(--panel);backdrop-filter:blur(16px);overflow-x:hidden;overflow-y:auto;z-index:600;position:relative}
+aside>*{flex:none}
+aside .list{flex:1 0 auto;min-height:160px}
+.adm-block{display:flex;flex-direction:column;gap:10px}
+.drop{border:1.5px dashed rgba(124,92,255,.5);border-radius:14px;padding:11px;text-align:center;cursor:pointer;transition:.2s;background:rgba(124,92,255,.06)}
+.drop:hover,.drop.over{background:rgba(124,92,255,.14);border-color:var(--accent2)}
+.drop b{display:block;margin-bottom:2px}.drop span{color:var(--muted);font-size:11.5px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.stat{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:7px 5px;text-align:center}
+.stat b{display:block;font-size:17px;font-weight:700}
+.stat span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.stat.s2 b{color:var(--violet)}.stat.s3 b{color:var(--green)}.stat.s4 b{color:var(--red)}
+.btn{border:1px solid var(--border);background:var(--panel2);color:var(--text);padding:9px 14px;border-radius:11px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.18s}
+.btn:hover{background:rgba(255,255,255,.09)}
+.btn.primary{border:0;background:linear-gradient(135deg,var(--accent),#5b8cff 55%,var(--accent2));color:#fff;box-shadow:0 6px 20px rgba(124,92,255,.35)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.stop{border:0;background:linear-gradient(135deg,#ff4d6d,#ff9f43);color:#fff}
+.btn.danger{color:#ff8fa3;border-color:rgba(255,77,109,.35)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:9px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px}.row>.btn{flex:1}
+.progress{height:7px;border-radius:9px;background:var(--panel2);overflow:hidden;display:none}
+.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
+.ptext{font-size:12px;color:var(--muted);display:none;margin-top:-6px}
+.search{display:flex;gap:8px}
+.inp{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:11px;outline:none;transition:.15s}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.2)}
+select.inp{cursor:pointer}
+select.inp option{background:#141b33}
+input[type=color].inp{padding:3px;height:38px;cursor:pointer}
+.list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-right:-6px;padding-right:4px}
+.list>*{flex:none}
+.item{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:12px;background:var(--panel2);border:1px solid transparent;cursor:pointer;transition:.15s}
+.item:hover{border-color:var(--border);background:rgba(255,255,255,.07)}
+.item.sel{border-color:var(--accent);background:rgba(124,92,255,.12)}
+.item .d{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:none}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t span{font-size:11.5px;color:var(--muted)}
+.badge{font-size:10.5px;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,.07);color:var(--muted);white-space:nowrap}
+.empty-list{color:var(--muted);text-align:center;padding:20px 10px;font-size:12.5px}
+.muted{color:var(--muted)}
+
+.lay-card{position:relative;border-radius:14px;padding:10px;background:linear-gradient(135deg,rgba(34,211,238,.06),rgba(124,92,255,.05));border:1px solid rgba(34,211,238,.2);display:flex;flex-direction:column;gap:7px;overflow:hidden}
+.lay-card.pins{background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(239,68,68,.04));border-color:rgba(245,158,11,.28)}
+.lay-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none}
+.lay-head b{font-size:13.5px;white-space:nowrap}
+.lay-head .row{gap:6px}
+.lay-scroll{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto;overflow-x:hidden;margin-right:-4px;padding-right:4px}
+.lay-scroll>*{flex:none}
+.lr{position:relative;display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 7px;border-radius:11px;background:var(--panel2);border:1px solid var(--border);overflow:hidden;transition:.15s;transform:none}
+.lr:hover{background:rgba(255,255,255,.06)}
+.lr.off .ln,.lr.off .sw,.lr.off .swc{opacity:.38}
+.lr.grp{background:rgba(255,255,255,.06)}
+.lr.grp.act{border-color:rgba(245,158,11,.55)}
+.lr.prow{margin-left:16px;min-height:40px;padding:4px 6px;gap:6px;border-left:3px solid var(--gc,#f59e0b);border-radius:4px 10px 10px 4px}
+.lr.prow.view{background:rgba(46,229,157,.08);border-color:rgba(46,229,157,.4);border-left-color:var(--gc,#f59e0b)}
+.tw{width:16px;border:0;background:transparent;color:var(--muted);cursor:pointer;flex:none;font-size:11px;padding:0}
+.eye{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none;transition:.15s;padding:0}
+.eye.sm{width:26px;height:26px;border-radius:8px}
+.eye.on{color:var(--accent2);border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.1)}
+.sw{width:18px;height:18px;border-radius:6px;flex:none;border:2px solid rgba(255,255,255,.5)}
+input.swc{width:20px;height:20px;padding:0;border:0;background:none;cursor:pointer;flex:none;-webkit-appearance:none;appearance:none}
+input.swc::-webkit-color-swatch-wrapper{padding:0}
+input.swc::-webkit-color-swatch{border:2px solid rgba(255,255,255,.55);border-radius:6px}
+input.swc::-moz-color-swatch{border:2px solid rgba(255,255,255,.55);border-radius:6px}
+.ln{flex:1 1 auto;min-width:0;overflow:hidden}
+.ln b{display:block;font-size:12.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ln .sub{display:block;font-size:11px;line-height:1.35;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ln .sub i{font-style:normal}
+.mt{border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10.5px;padding:0 6px;line-height:17px;border-radius:6px;cursor:pointer;margin-right:3px;vertical-align:middle}
+.mt.on{color:var(--accent2);border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08)}
+.mt.sh.on{color:var(--green);border-color:rgba(46,229,157,.45);background:rgba(46,229,157,.08)}
+.ib{width:27px;height:27px;border-radius:8px;border:0;background:transparent;color:var(--muted);cursor:pointer;flex:none;font-size:14px;padding:0;line-height:27px;text-align:center}
+.ib:hover{background:rgba(255,255,255,.08);color:#fff}.ib.del:hover{color:var(--red)}
+.ib.on{color:var(--green);background:rgba(46,229,157,.1)}
+.ib.busy{color:var(--yellow);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.35}}
+.lempty{font-size:11.5px;color:var(--muted);text-align:center;padding:8px 6px;line-height:1.45}
+.perf{font-size:11px;color:var(--muted);line-height:1.55;display:none;flex:none}
+.perf .g{color:var(--green);font-weight:700}.perf .y{color:var(--yellow);font-weight:700}.perf .r{color:var(--red);font-weight:700}
+.zhint{font-size:11px;color:var(--yellow);display:none;flex:none}
+
+.mapwrap{flex:1;position:relative}
+#map{position:absolute;inset:0;background:#0d1326}
+#map.picking,#map.picking .leaflet-interactive{cursor:crosshair}
+#map.rotating,#map.rotating *{cursor:grabbing!important}
+.glass{background:rgba(12,18,36,.84);border:1px solid var(--border);backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.tr{position:absolute;top:14px;right:14px;z-index:650;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.tr>.layer-switch{position:relative;z-index:1}
+.tr>.srch{position:relative;z-index:3}
+.tr>.tools{position:relative;z-index:2}
+.srch{display:flex;align-items:center;border-radius:14px;padding:4px 4px 4px 12px;width:430px;max-width:calc(100vw - 460px)}
+.srch input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:var(--text);padding:8px 6px}
+.srch input::placeholder{color:var(--muted)}
+.srch .go{border:0;border-radius:10px;padding:8px 13px;cursor:pointer;color:#fff;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.srch .clr{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;display:none}
+.srch-res{position:absolute;top:calc(100% + 6px);left:0;right:0;border-radius:14px;max-height:360px;overflow:auto;display:none;padding:5px;background:#121a35;border:1px solid var(--border);box-shadow:0 16px 40px rgba(0,0,0,.6);z-index:10}
+.sr{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer}
+.sr:hover{background:rgba(255,255,255,.07)}
+.sr .ic{font-size:16px;flex:none}
+.sr .tx{min-width:0}.sr .tx b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr .tx span{font-size:11px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-msg{padding:9px 10px;font-size:12px;color:var(--muted)}
+.layer-switch,.tools{display:flex;gap:3px;padding:4px;border-radius:14px}
+.layer-switch button,.tools button{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600;font-size:12.5px;display:flex;gap:6px;align-items:center;white-space:nowrap}
+.layer-switch button:hover,.tools button:hover{color:#fff}
+.layer-switch button.active,.tools button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.legend{position:absolute;left:14px;bottom:34px;z-index:500;padding:10px 13px;border-radius:13px;font-size:12px;display:flex;flex-direction:column;gap:6px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend i{width:11px;height:11px;border-radius:50%;border:2px solid #fff}
+.legend i.sq{border-radius:3px;border:0;opacity:.8}
+.empty-state{position:absolute;inset:0;z-index:450;display:grid;place-items:center;pointer-events:none}
+.empty-card{pointer-events:auto;text-align:center;padding:30px 36px;border-radius:22px;max-width:440px}
+.empty-card h2{margin:12px 0 6px;font-size:19px}.empty-card p{color:var(--muted);margin:0 0 16px;line-height:1.5}
+.pick-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:660;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;display:none;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.4);white-space:nowrap}
+.test-overlay{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:600;padding:10px 18px;border-radius:12px;font-weight:600;display:none}
+.vsbar{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:655;display:none;align-items:center;gap:14px;padding:8px 8px 8px 16px;border-radius:14px;font-size:13px;border-color:rgba(46,229,157,.45);box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 0 3px rgba(46,229,157,.12);max-width:calc(100% - 520px);white-space:nowrap}
+.vsbar.on{display:flex}
+.vsbar .t{overflow:hidden;text-overflow:ellipsis}
+.vsbar .lg{display:flex;gap:10px;font-size:12px;color:var(--muted);flex:none}
+.vsbar .lg i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+.vsbar .x{flex:none;border:0;border-radius:10px;padding:8px 13px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#ff4d6d,#ff9f43)}
+
+.compass{position:absolute;right:14px;bottom:112px;z-index:640;width:62px;height:62px;border-radius:50%;cursor:pointer;display:grid;place-items:center;transition:bottom .2s,box-shadow .2s;user-select:none}
+.compass:hover{box-shadow:0 0 0 3px rgba(34,211,238,.35),0 10px 30px rgba(0,0,0,.4)}
+.compass .rose{position:absolute;inset:4px;transition:transform .08s linear}
+.compass .deg{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#fff;background:rgba(12,18,36,.85);padding:1px 7px;border-radius:7px;border:1px solid var(--border);white-space:nowrap}
+.compass.off{display:none}
+.mapwrap.prof-open .compass{bottom:434px}
+
+.zpin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2.5px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.45);position:relative}
+.zpin::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;top:6.5px;left:6.5px}
+.zpin.sel{animation:bounce .8s ease infinite alternate}
+@keyframes bounce{to{transform:rotate(-45deg) translate(3px,-3px)}}
+.cl{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;background:radial-gradient(circle,rgba(255,77,109,.95) 45%,rgba(255,77,109,.35) 46%);box-shadow:0 0 0 4px rgba(255,77,109,.18)}
+.cl.m{width:48px;height:48px;background:radial-gradient(circle,rgba(255,138,67,.95) 45%,rgba(255,138,67,.35) 46%);box-shadow:0 0 0 5px rgba(255,138,67,.18)}
+.cl.l{width:58px;height:58px;background:radial-gradient(circle,rgba(124,92,255,.95) 45%,rgba(124,92,255,.35) 46%);box-shadow:0 0 0 6px rgba(124,92,255,.2)}
+.rp{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;border:2.5px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.5);background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:grab}
+.rp.b{background:linear-gradient(135deg,#0ea5e9,#2563eb)}
+.spin{width:18px;height:18px;border-radius:50%;background:var(--accent2);border:3px solid #fff;box-shadow:0 0 0 0 rgba(34,211,238,.7);animation:pulse 1.6s infinite}
+.medot{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 0 rgba(59,130,246,.7);animation:pulse2 1.6s infinite}
+@keyframes pulse2{70%{box-shadow:0 0 0 16px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
+.cdot{width:14px;height:14px;border-radius:50%;background:#ffd43b;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+@keyframes pulse{70%{box-shadow:0 0 0 18px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
+.upw{position:relative;width:30px;height:30px}
+.upin{width:30px;height:30px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:var(--c);border:2.5px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.55);display:grid;place-items:center;cursor:pointer}
+.upin svg{transform:rotate(45deg)}
+.ulbl{position:absolute;top:38px;left:15px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:700;color:#fff;background:rgba(12,18,36,.88);border:1px solid rgba(255,255,255,.18);padding:1px 7px;border-radius:7px;pointer-events:none}
+
+.leaflet-popup-content-wrapper{background:#121a35;color:var(--text);border-radius:16px;border:1px solid var(--border);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.leaflet-popup-tip{background:#121a35}
+.leaflet-popup-content{margin:14px 16px;min-width:240px}
+.leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+.leaflet-bar a{background:#121a35;color:#fff;border-color:var(--border)!important}
+.leaflet-bar a:hover{background:#1c2650}
+.leaflet-bar{border:1px solid var(--border)!important;border-radius:12px!important;overflow:hidden}
+.leaflet-control-scale-line{background:rgba(12,18,36,.75);color:#fff;border-color:#fff}
+.leaflet-control-attribution{background:rgba(12,18,36,.7)!important;color:#99a!important}
+.leaflet-control-attribution a{color:#bcd!important}
+.leaflet-tooltip{background:#121a35;color:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.4);font-weight:600}
+.leaflet-tooltip-top:before{border-top-color:#121a35}
+.leaflet-tooltip.rtip{background:rgba(12,18,36,.92);border:1px solid var(--accent2);font-size:12.5px;padding:5px 10px}
+.leaflet-tooltip.rtip:before{display:none}
+.pp-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.pp-h b{font-size:15px}
+.pp-o{color:var(--muted);margin-bottom:10px}
+.pp table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.pp td{padding:4px 0;border-bottom:1px solid var(--border);vertical-align:top}
+.pp td:first-child{color:var(--muted);padding-right:10px;white-space:nowrap}
+.pp .co{font-family:Consolas,monospace;font-size:11.5px;color:var(--accent2);margin-bottom:10px}
+.pp .pd{font-size:12px;color:var(--muted);max-height:180px;overflow:auto;line-height:1.5;margin-bottom:6px}
+.pp .acts{display:flex;gap:6px;flex-wrap:wrap}
+.pp .acts a,.pp .acts button{font-size:11.5px;padding:5px 9px;border-radius:8px;background:rgba(255,255,255,.07);color:var(--text)!important;text-decoration:none;border:1px solid var(--border);cursor:pointer}
+.pp .acts button:hover,.pp .acts a:hover{background:rgba(255,255,255,.13)}
+.pp .acts .pri{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff!important;font-weight:700}
+.pp .acts .dng{color:#ff8fa3!important;border-color:rgba(255,77,109,.35)}
+.ctx{min-width:300px}
+.ctx .addr b{display:block;font-size:15px;line-height:1.3}
+.ctx .addr span{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
+.ctx .addr .note{color:var(--yellow);font-size:11px}
+.ctx .crow{display:flex;gap:8px;align-items:center;margin:12px 0 10px;padding:8px 8px 8px 10px;border-radius:11px;background:rgba(0,0,0,.25);border:1px solid var(--border)}
+.ctx .cval{flex:1;min-width:0;font-family:Consolas,monospace;font-size:12.5px;color:var(--accent2);word-break:break-word;cursor:pointer}
+.ctx select{flex:none;width:auto;padding:5px 8px;border-radius:8px;font-size:12px}
+.ctx .addpin{display:flex;gap:6px;align-items:center;margin-bottom:8px;padding:8px;border-radius:11px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3)}
+.ctx .addpin select{flex:1;min-width:0}
+.ctx .addpin button{flex:none;border:0;border-radius:9px;padding:7px 11px;font-weight:700;font-size:12px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.ped{width:330px}
+.ped .f{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.ped .f label{font-size:11.5px;color:var(--muted);font-weight:600}
+.ped .inp{padding:7px 10px;font-size:12.5px;border-radius:9px}
+.ped textarea.inp{resize:vertical;min-height:40px}
+.ped .r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ped .vsst{padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.25);border:1px solid var(--border);font-size:12px;line-height:1.55;margin:4px 0 10px}
+.ped .co{margin-bottom:6px}
+
+.prof{position:absolute;left:12px;right:12px;bottom:12px;height:310px;z-index:700;border-radius:18px;display:none;flex-direction:column;padding:10px 14px 12px}
+.prof.open{display:flex}
+.prof-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.prof-head b{font-size:14px}
+.prof-head .sum{color:var(--accent2);font-weight:700;font-size:13px}
+.pc{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.pc .inp{width:72px;padding:5px 8px;border-radius:8px;font-size:12.5px}
+.pc select.inp{width:105px}
+.prof-body{flex:1;display:flex;gap:12px;min-height:0}
+.prof-cvw{flex:1;position:relative;min-width:0;min-height:120px;border-radius:12px;background:rgba(0,0,0,.2);border:1px solid var(--border)}
+#profCv{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.prof-msg{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:13px;pointer-events:none;text-align:center;padding:10px}
+.prof-stats{width:300px;overflow:auto;font-size:12px;flex:none}
+.prof-stats table{width:100%;border-collapse:collapse}
+.prof-stats td{padding:3.5px 0;border-bottom:1px solid var(--border)}
+.prof-stats td:first-child{color:var(--muted)}
+.prof-stats td:last-child{text-align:right;font-weight:600}
+.los{padding:7px 9px;border-radius:9px;font-weight:700;margin-bottom:6px;font-size:12px;line-height:1.4}
+.los.ok{background:rgba(46,229,157,.12);color:var(--green)}
+.los.warn{background:rgba(255,212,59,.12);color:var(--yellow)}
+.los.bad{background:rgba(255,77,109,.14);color:var(--red)}
+.mapwrap.prof-open .leaflet-bottom{bottom:322px}
+.mapwrap.prof-open .legend{display:none}
+
+#view-settings,#view-users{overflow-y:auto;display:none}
+#view-settings.active,#view-users.active{display:block}
+.set-wrap{max-width:1250px;margin:0 auto;padding:24px 22px 60px}
+.set-head{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.set-head h1{margin:0;font-size:22px}.set-head p{margin:3px 0 0;color:var(--muted)}
+.set-head .actions{margin-left:auto;display:flex;gap:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(14px)}
+.card.full{grid-column:1/-1}
+.card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:9px}
+.card h3 .n{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.card .desc{color:var(--muted);font-size:12.5px;margin:0 0 14px;line-height:1.5}
+.f{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.f label{font-size:12px;color:var(--muted);font-weight:600}
+.f .hint{font-size:11.5px;color:var(--accent2);min-height:14px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cols2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.col-inp{text-transform:uppercase;font-weight:700;letter-spacing:1px;text-align:center}
+.rule{display:grid;grid-template-columns:80px 170px 1fr 38px;gap:8px;margin-bottom:8px;align-items:center}
+.rule .x{height:38px;border-radius:10px;border:1px solid rgba(255,77,109,.35);background:transparent;color:#ff8fa3;cursor:pointer;font-size:16px}
+.seg{display:inline-flex;gap:3px;padding:3px;border-radius:11px;background:rgba(0,0,0,.25);border:1px solid var(--border)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12.5px}
+.seg button.active{background:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;margin:6px 0}
+.chk input{width:17px;height:17px;accent-color:var(--accent)}
+input[type=range]{accent-color:var(--accent2);width:100%}
+.match-info{margin-top:10px;padding:10px 12px;border-radius:11px;background:rgba(46,229,157,.08);border:1px solid rgba(46,229,157,.25);color:var(--green);font-size:12.5px}
+.prev-wrap{overflow:auto;max-height:340px;border-radius:12px;border:1px solid var(--border)}
+table.prev{border-collapse:collapse;font-size:12px;width:max-content;min-width:100%}
+table.prev th,table.prev td{padding:7px 10px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+table.prev th{position:sticky;top:0;background:#151d3a;color:var(--muted);font-weight:700;z-index:1}
+table.prev td.rn{color:var(--muted);background:#121a33;text-align:right}
+table.prev tr.hdr td{font-weight:700;color:#fff;background:rgba(124,92,255,.12)}
+table.prev .ca{background:rgba(34,211,238,.10)}
+table.prev .cf{background:rgba(255,212,59,.10)}
+table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
+/* korisnici */
+.utbl{width:100%;border-collapse:collapse;font-size:13px}
+.utbl th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.utbl td{padding:9px 10px;border-bottom:1px solid var(--border)}
+.utbl select{width:auto;padding:5px 8px;border-radius:8px}
+.pill{font-size:11px;padding:2px 8px;border-radius:7px;font-weight:700}
+.pill.on{background:rgba(46,229,157,.12);color:var(--green)}.pill.off{background:rgba(255,77,109,.12);color:var(--red)}
+
+#toasts{position:fixed;bottom:22px;right:22px;z-index:6000;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 30px)}
+.toast{padding:12px 16px;border-radius:12px;background:#151d3a;border:1px solid var(--border);box-shadow:0 12px 30px rgba(0,0,0,.45);font-size:13px;animation:tin .25s ease;border-left:4px solid var(--accent)}
+.toast.ok{border-left-color:var(--green)}.toast.err{border-left-color:var(--red)}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+.scrim{display:none}
+@media(max-width:1100px){.prof-stats{width:240px}}
+@media(max-width:1000px){.chip.fi{display:none}}
+
+/* ======== TELEFON ======== */
+@media(max-width:760px){
+  header{height:56px;padding:0 10px;gap:8px}
+  #menuBtn{display:grid;place-items:center}
+  .brand small,.brand b{display:none}
+  .logo{width:34px;height:34px}
+  .tabs{margin-left:0}
+  .tab{padding:7px 10px}.tab .tl{display:none}
+  .chip{padding:6px 9px;max-width:120px}
+  .chip.me .nm{display:none}
+  aside{position:fixed;left:0;top:56px;bottom:0;width:88vw;max-width:370px;transform:translateX(-105%);transition:transform .25s ease;z-index:1500;background:rgba(14,20,40,.97)}
+  body.menu-open aside{transform:none;box-shadow:20px 0 50px rgba(0,0,0,.5)}
+  body.menu-open .scrim{display:block;position:fixed;inset:56px 0 0 0;background:rgba(0,0,0,.45);z-index:1400}
+  .tr{top:8px;right:8px;left:8px;align-items:stretch;gap:6px}
+  .layer-switch{overflow-x:auto;justify-content:space-between}
+  .layer-switch button{padding:7px 9px;font-size:12px}
+  .srch{width:auto;max-width:none}
+  .tools{justify-content:stretch}.tools button{flex:1;justify-content:center;font-size:12px;padding:8px 6px}
+  .tools .tl{display:none}
+  .legend{display:none}
+  .compass{bottom:100px;right:10px;width:52px;height:52px}
+  .prof{left:6px;right:6px;bottom:6px;height:62vh;padding:8px 10px}
+  .prof-body{flex-direction:column}
+  .prof-stats{width:auto;max-height:38%}
+  .pc label{display:none}
+  .mapwrap.prof-open .leaflet-bottom{bottom:calc(62vh + 10px)}
+  .mapwrap.prof-open .compass{display:none}
+  .vsbar{top:auto;bottom:22px;left:8px;right:8px;transform:none;max-width:none;white-space:normal;flex-wrap:wrap;gap:8px}
+  .vsbar .x{margin-left:auto}
+  .pick-banner{top:auto;bottom:20px;white-space:normal;max-width:94%}
+  .leaflet-popup-content{margin:12px 12px;min-width:0!important}
+  .ped,.ctx{width:auto;min-width:0;max-width:78vw}
+  .ctx .crow{flex-wrap:wrap}
+  .grid{grid-template-columns:1fr}.cols4,.cols3{grid-template-columns:1fr 1fr}
+  .set-wrap{padding:16px 12px 50px}
+  .utbl .hm{display:none}
+  #toasts{left:12px;right:12px;bottom:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <form class="login-card glass" id="loginForm" autocomplete="on">
+    <div class="logo" style="margin:0 auto;width:56px;height:56px;border-radius:17px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 10v12"/><path d="M8 22h8"/><circle cx="12" cy="8" r="2"/><path d="M7.8 3.8a6 6 0 0 0 0 8.4"/><path d="M16.2 3.8a6 6 0 0 1 0 8.4"/><path d="M4.9 1a10 10 0 0 0 0 14"/><path d="M19.1 1a10 10 0 0 1 0 14"/></svg></div>
+    <h2>Žalbe bez BS</h2>
+    <p>Prijavi se korisničkim imenom i lozinkom</p>
+    <div class="cfgbox" id="cfgBox">
+      <b>Server nije podešen</b>
+      <span>Unesi Supabase URL i anon ključ (Project Settings → API). Pamti se na ovom uređaju.</span>
+      <input class="inp" id="cfgUrl" placeholder="https://xxxx.supabase.co">
+      <input class="inp" id="cfgKey" placeholder="anon public key">
+    </div>
+    <input class="inp" id="lgUser" placeholder="Korisničko ime" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <input class="inp" id="lgPass" type="password" placeholder="Lozinka" autocomplete="current-password">
+    <button class="btn primary" type="submit" id="lgBtn">Prijava</button>
+    <div class="lmsg" id="lgMsg"></div>
+  </form>
+</div>
+
+<header>
+  <button id="menuBtn" title="Meni">☰</button>
+  <div class="brand">
+    <div class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10v12"/><path d="M8 22h8"/><circle cx="12" cy="8" r="2"/><path d="M7.8 3.8a6 6 0 0 0 0 8.4"/><path d="M16.2 3.8a6 6 0 0 1 0 8.4"/><path d="M4.9 1a10 10 0 0 0 0 14"/><path d="M19.1 1a10 10 0 0 1 0 14"/></svg>
+    </div>
+    <div><b>Žalbe bez BS</b><small>Radio planiranje · mapa žalbi korisnika</small></div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-view="map">🗺️<span class="tl">Mapa</span></button>
+    <button class="tab admin-only" data-view="users">👥<span class="tl">Korisnici</span></button>
+    <button class="tab admin-only" data-view="settings">⚙️<span class="tl">Podešavanja</span></button>
+  </nav>
+  <div class="hdr-right">
+    <div class="chip sync" id="syncChip" title="Status čuvanja na serveru">☁</div>
+    <div class="chip fi admin-only"><span class="dot" id="fileDot"></span><span id="fileName">Excel nije učitan</span></div>
+    <div class="chip me"><span>👤</span><span class="nm" id="meName"></span><span class="role" id="meRole"></span></div>
+    <button class="hbtn" id="pwBtn" title="Promeni lozinku">🔑</button>
+    <button class="hbtn" id="logoutBtn" title="Odjava">⎋</button>
+  </div>
+</header>
+
+<main>
+  <section class="view active" id="view-map">
+    <div class="scrim" id="scrim"></div>
+    <aside>
+      <div class="drop admin-only" id="drop">
+        <b>📄 Učitaj izveštaj žalbi</b>
+        <span>Prevuci Excel/CSV ili klikni · KML/KMZ fajlove možeš prevući bilo gde</span>
+        <input type="file" id="file" accept=".xlsx,.xls,.xlsm,.csv" hidden>
+      </div>
+
+      <div class="lay-card">
+        <div class="lay-head"><b>🗂️ Slojevi</b>
+          <div class="row">
+            <button class="btn sm admin-only" id="addKml" title="Dodaj KML/KMZ na server">+ KML</button>
+            <button class="btn sm" id="layReload" title="Osveži slojeve sa servera">↻</button>
+            <button class="btn sm" id="bsTest" disabled title="Test brzine mape">⚡</button>
+          </div>
+        </div>
+        <div class="lay-scroll" id="layers"></div>
+        <div class="zhint" id="secHint"></div>
+        <div class="perf" id="bsPerf"></div>
+        <input type="file" id="kmlFile" accept=".kml,.kmz" multiple hidden>
+      </div>
+
+      <div class="lay-card pins">
+        <div class="lay-head"><b>📍 Moji pinovi</b>
+          <div class="row"><button class="btn sm" id="grpNew" title="Napravi novu grupu pinova">+ Grupa</button></div>
+        </div>
+        <div class="lay-scroll" id="pinsList"></div>
+      </div>
+
+      <div class="adm-block admin-only">
+        <div class="stats">
+          <div class="stat"><b id="stTotal">0</b><span>Redova</span></div>
+          <div class="stat s2"><b id="stFilt">0</b><span>Bez BS</span></div>
+          <div class="stat s3"><b id="stMap">0</b><span>Na mapi</span></div>
+          <div class="stat s4"><b id="stNf">0</b><span>Nije nađ.</span></div>
+        </div>
+        <button class="btn primary" id="runBtn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Postavi pinove</span></button>
+        <div class="progress" id="prog"><i></i></div>
+        <div class="ptext" id="ptext"></div>
+        <div class="row">
+          <button class="btn sm" id="fitBtn">⤢ Prikaži sve</button>
+          <button class="btn sm" id="xlsBtn">⬇ Excel</button>
+          <button class="btn sm" id="kmlBtn">⬇ KML</button>
+        </div>
+        <button class="btn sm" id="pubBtn" title="Objavi trenutno postavljene žalbe kao sloj na serveru, da ih vide korisnici">☁ Objavi žalbe korisnicima</button>
+        <div class="search">
+          <input class="inp" id="q" placeholder="Pretraga žalbi: ulica, opština, red…">
+          <select class="inp" id="qf" style="width:130px">
+            <option value="all">Sve</option>
+            <option value="map">Na mapi</option>
+            <option value="nf">Nije nađeno</option>
+            <option value="pending">Na čekanju</option>
+          </select>
+        </div>
+        <div class="list" id="list"><div class="empty-list">Učitaj fajl da vidiš listu žalbi.</div></div>
+      </div>
+    </aside>
+
+    <div class="mapwrap" id="mapwrap">
+      <div id="map"></div>
+
+      <div class="tr">
+        <div class="layer-switch glass" id="layerSwitch">
+          <button data-l="osm" title="OpenStreetMap">🗺️ Ulice</button>
+          <button data-l="sat">🛰️ Satelit</button>
+          <button data-l="hyb">🛰️ Hibrid</button>
+          <button data-l="topo">⛰️ Teren</button>
+        </div>
+        <div class="srch glass">
+          <span>🔍</span>
+          <input id="mapQ" placeholder="Adresa, grad, BS, pin ili 44.81, 20.46" autocomplete="off">
+          <button class="clr" id="mapQClr" title="Obriši">✕</button>
+          <button class="go" id="mapQBtn">Traži</button>
+          <div class="srch-res" id="srchRes"></div>
+        </div>
+        <div class="tools glass">
+          <button id="gpsBtn" title="Moja trenutna lokacija (GPS)">🎯<span class="tl"> Moja lokacija</span></button>
+          <button id="rulerBtn" title="Izmeri rastojanje, azimut i profil terena (Esc za prekid)">📏<span class="tl"> Lenjir i profil terena</span></button>
+        </div>
+      </div>
+
+      <div class="vsbar glass" id="vsBar">
+        <span class="t" id="vsBarTxt"></span>
+        <span class="lg"><span><i id="vbV"></i>vidljivo</span><span><i id="vbS"></i>senka</span></span>
+        <button class="x" id="vsExit" title="Ukloni senčenje sa mape (Esc)">✕ Izađi iz prikaza</button>
+      </div>
+
+      <div class="compass glass" id="compass" title="Klik vraća mapu na sever · rotacija: drži točak miša i vuci (na telefonu sa dva prsta)">
+        <svg class="rose" id="rose" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+          <g stroke="rgba(255,255,255,.35)" stroke-width="2">
+            <line x1="50" y1="6" x2="50" y2="13"/><line x1="94" y1="50" x2="87" y2="50"/><line x1="50" y1="94" x2="50" y2="87"/><line x1="6" y1="50" x2="13" y2="50"/></g>
+          <polygon points="50,16 58,50 42,50" fill="#ff4d6d"/>
+          <polygon points="50,84 58,50 42,50" fill="#cfd6ee"/>
+          <circle cx="50" cy="50" r="4" fill="#0a0f1e" stroke="#fff" stroke-width="1.5"/>
+          <text x="50" y="35" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="800" fill="#fff" font-family="Segoe UI,system-ui">N</text>
+        </svg>
+        <span class="deg" id="compDeg">0°</span>
+      </div>
+
+      <div class="legend glass">
+        <div><i style="background:var(--red)"></i>Tačna adresa</div>
+        <div><i style="background:var(--orange)"></i>Samo ulica</div>
+        <div><i style="background:var(--yellow)"></i>Samo opština</div>
+        <div><i style="background:var(--violet)"></i>Ručno postavljeno</div>
+        <div><i class="sq" id="lgVis"></i>Vidljivo sa pina</div>
+        <div><i class="sq" id="lgSh"></i>U senci</div>
+      </div>
+      <div class="pick-banner" id="pickBanner"><span id="bannerTxt"></span><button class="btn sm" id="pickCancel">Otkaži</button></div>
+      <div class="test-overlay glass" id="testOv">⚡ Test brzine u toku…</div>
+
+      <div class="prof glass" id="prof">
+        <div class="prof-head">
+          <b>📏 Profil terena</b><span class="sum" id="profSum"></span>
+          <div class="pc">
+            <label>Visina A m</label><input class="inp" type="number" step="0.5" min="0" data-k="hA" title="Visina A (korisnik) m">
+            <label>Visina B m</label><input class="inp" type="number" step="1" min="0" data-k="hB" title="Visina B (antena BS) m">
+            <select class="inp" data-k="freq">
+              <option value="700">700 MHz</option><option value="800">800 MHz</option><option value="900">900 MHz</option>
+              <option value="1800">1800 MHz</option><option value="2100">2100 MHz</option><option value="2600">2600 MHz</option><option value="3500">3500 MHz</option>
+            </select>
+            <button class="btn sm" id="profSwap" title="Zameni A i B">⇄</button>
+            <button class="btn sm" id="profClose">✕ Zatvori</button>
+          </div>
+        </div>
+        <div class="prof-body">
+          <div class="prof-cvw"><canvas id="profCv"></canvas><div class="prof-msg" id="profMsg"></div></div>
+          <div class="prof-stats" id="profStats"></div>
+        </div>
+      </div>
+
+      <div class="empty-state admin-only" id="emptyState">
+        <div class="empty-card glass">
+          <div class="logo" style="margin:0 auto;width:52px;height:52px;border-radius:16px">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <h2>Mapa žalbi bez planirane BS</h2>
+          <p>Učitaj Excel izveštaj i KML slojeve sa baznim stanicama. KML slojevi idu na server i vide ih korisnici.<br>Desni klik na mapu = adresa, koordinate i dodavanje pina.</p>
+          <div class="row"><button class="btn primary" id="emptyLoad">Učitaj Excel</button><button class="btn" id="emptyKml">Dodaj KML</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KORISNICI ================= -->
+  <section class="view" id="view-users">
+    <div class="set-wrap">
+      <div class="set-head">
+        <div><h1>Korisnici</h1><p>Korisnici vide samo mapu, slojeve označene sa 👥 i svoje pinove.</p></div>
+        <div class="actions"><button class="btn" id="usrReload">↻ Osveži</button></div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3><span class="n">+</span>Novi korisnik</h3>
+          <p class="desc">Korisničko ime: mala slova, brojevi, tačka ili crtica (npr. <b>ivan</b>). Lozinka najmanje 6 znakova.</p>
+          <div class="f"><label>Korisničko ime</label><input class="inp" id="nuName" autocapitalize="none" spellcheck="false" placeholder="ivan"></div>
+          <div class="f"><label>Lozinka</label><input class="inp" id="nuPass" type="text" placeholder="min. 6 znakova"></div>
+          <div class="f"><label>Uloga</label><select class="inp" id="nuRole"><option value="user">Korisnik (teren)</option><option value="admin">Administrator</option></select></div>
+          <button class="btn primary" id="nuBtn">Kreiraj korisnika</button>
+        </div>
+        <div class="card">
+          <h3><span class="n">i</span>Kako radi</h3>
+          <p class="desc" style="margin:0">• Korisnik se prijavljuje istim imenom i lozinkom na telefonu i računaru – pinovi su mu isti svuda.<br>
+          • <b>Deaktiviraj</b> = korisnik više ne može da uđe (pinovi mu ostaju sačuvani).<br>
+          • Lozinku korisnik menja sam (🔑 gore desno). Ako je zaboravi, deaktiviraj stari nalog i napravi novi.<br>
+          • Slojeve sa 👥 (zeleno) vide svi korisnici; svaki korisnik ih može sakriti/prikazati samo kod sebe.</p>
+        </div>
+        <div class="card full">
+          <h3><span class="n">👥</span>Lista korisnika</h3>
+          <div style="overflow-x:auto"><table class="utbl"><thead><tr><th>Korisnik</th><th>Uloga</th><th>Status</th><th class="hm">Kreiran</th><th></th></tr></thead><tbody id="usrBody"><tr><td colspan="5" class="muted">Učitavam…</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PODEŠAVANJA ================= -->
+  <section class="view" id="view-settings">
+    <div class="set-wrap">
+      <div class="set-head">
+        <div><h1>Podešavanja</h1><p>Sve se automatski čuva u pregledaču na ovom računaru.</p></div>
+        <div class="actions">
+          <button class="btn danger" id="resetCfg">Vrati podrazumevano</button>
+          <button class="btn primary" id="applyCfg">✓ Primeni i idi na mapu</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3><span class="n">1</span>Fajl i list</h3>
+          <p class="desc">Izaberi list (sheet) iz Excel fajla i da li prvi red sadrži nazive kolona.</p>
+          <div class="f"><label>List (sheet)</label><select class="inp" id="sheetSel"><option value="">— učitaj fajl —</option></select></div>
+          <label class="chk"><input type="checkbox" data-k="hasHeader"> Prvi red je zaglavlje (nazivi kolona)</label>
+          <div class="f" style="margin-top:8px"><label>Preskoči prvih N redova (iznad zaglavlja)</label><input class="inp" type="number" min="0" data-k="skip" style="width:120px"></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="n">2</span>Kolone adrese</h3>
+          <p class="desc">Upiši slovo kolone (kao u Excelu: A, B, … AA) gde se nalazi opština, ulica i broj.</p>
+          <div class="cols3">
+            <div class="f"><label>Opština</label><input class="inp col-inp" data-k="colOps" maxlength="3"><div class="hint" data-h="colOps"></div></div>
+            <div class="f"><label>Ulica</label><input class="inp col-inp" data-k="colUl" maxlength="3"><div class="hint" data-h="colUl"></div></div>
+            <div class="f"><label>Broj</label><input class="inp col-inp" data-k="colBr" maxlength="3"><div class="hint" data-h="colBr"></div></div>
+          </div>
+          <div class="f"><label>Dodatne kolone za prikaz u pinu (npr. A,E,K)</label><input class="inp" data-k="extra" placeholder="A,E,K" style="text-transform:uppercase"><div class="hint" data-h="extra"></div></div>
+        </div>
+
+        <div class="card full">
+          <h3><span class="n">3</span>Filter – koje redove uzima</h3>
+          <p class="desc">Npr. kolona <b>J</b> → <b>Jednako</b> → <b>n</b> uzima samo redove gde u koloni J piše tačno „n“ (nema planirane bazne stanice). Možeš dodati više pravila.</p>
+          <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+            <span class="muted" style="font-size:12.5px">Uslov:</span>
+            <div class="seg" id="matchSeg"><button data-m="all">Sva pravila (I)</button><button data-m="any">Bilo koje (ILI)</button></div>
+            <label class="chk" style="margin:0"><input type="checkbox" data-k="caseIns"> Ne razlikuj velika/mala slova (n = N)</label>
+          </div>
+          <div id="rules"></div>
+          <button class="btn sm" id="addRule">+ Dodaj pravilo</button>
+          <div class="match-info" id="matchInfo">Učitaj fajl da vidiš koliko redova prolazi filter.</div>
+        </div>
+
+        <div class="card">
+          <h3><span class="n">4</span>Geokodiranje (adresa → koordinate)</h3>
+          <p class="desc">Besplatni servisi. Nominatim je precizniji za Srbiju, Photon je brži. Ako Nominatim odbije upit, program automatski prelazi na Photon. Rezultati se pamte.</p>
+          <div class="cols2">
+            <div class="f"><label>Servis</label>
+              <select class="inp" data-k="geocoder"><option value="nominatim">Nominatim (OSM)</option><option value="photon">Photon (Komoot)</option></select></div>
+            <div class="f"><label>Pauza između upita (ms)</label><input class="inp" type="number" min="200" step="100" data-k="delay"></div>
+            <div class="f"><label>Država (dodaje se na adresu)</label><input class="inp" data-k="country"></div>
+            <div class="f"><label>Kod države</label><input class="inp" data-k="cc" maxlength="2" style="text-transform:lowercase"></div>
+          </div>
+          <label class="chk"><input type="checkbox" data-k="fallback"> Ako ne nađe tačnu adresu, postavi pin na ulicu / opštinu</label>
+          <button class="btn sm danger" id="clearCache" style="margin-top:8px">Obriši zapamćene koordinate (<span id="cacheN">0</span>)</button>
+        </div>
+
+        <div class="card">
+          <h3><span class="n">5</span>Prikaz na mapi</h3>
+          <p class="desc">Grupisanje pinova, podloga i OpenStreetMap server.</p>
+          <label class="chk"><input type="checkbox" data-k="cluster"> Grupiši bliske pinove žalbi (klasteri)</label>
+          <label class="chk"><input type="checkbox" data-k="autoFit"> Automatski zumiraj na sve pinove posle obrade</label>
+          <div class="cols2" style="margin-top:10px">
+            <div class="f"><label>Podrazumevana podloga</label>
+              <select class="inp" data-k="base"><option value="osm">Ulice (OpenStreetMap)</option><option value="sat">Satelit</option><option value="hyb">Hibrid (satelit + ulice)</option><option value="topo">Teren (reljef)</option></select></div>
+            <div class="f"><label>OpenStreetMap server (dugme „Ulice“)</label>
+              <select class="inp" data-k="osmSrc">
+                <option value="auto">Automatski (preporučeno)</option>
+                <option value="std">OSM standard (openstreetmap.org)</option>
+                <option value="fr">OSM Francuska (isti izgled)</option>
+                <option value="de">OSM Nemačka</option>
+                <option value="hot">OSM Humanitarni</option>
+                <option value="carto">CARTO Voyager (OSM podaci)</option>
+              </select></div>
+          </div>
+          <div class="muted" style="font-size:11.5px;line-height:1.5" id="osmInfo"></div>
+        </div>
+
+        <div class="card full">
+          <h3><span class="n">6</span>Moji pinovi – optička vidljivost</h3>
+          <p class="desc">Podrazumevane vrednosti za nove pinove. Vidljivost se računa iz digitalnog modela terena (~30 m), sa zakrivljenjem Zemlje (k = 4/3). Zgrade i šuma nisu uračunate.</p>
+          <div class="cols4">
+            <div class="f"><label>Visina pina iznad zemlje (m)</label><input class="inp" type="number" min="0" max="500" step="1" data-k="pinH"></div>
+            <div class="f"><label>Radijus vidljivosti (km)</label><input class="inp" type="number" min="0.5" max="50" step="0.5" data-k="pinR"></div>
+            <div class="f"><label>Visina prijemnika (m)</label><input class="inp" type="number" min="0" max="100" step="0.5" data-k="pinHt"></div>
+            <div class="f"><label>Preciznost</label><select class="inp" data-k="pinQ"><option value="fast">Brzo (1°)</option><option value="normal">Normalno (0,5°)</option><option value="fine">Fino (0,25°)</option></select></div>
+            <div class="f"><label>Boja – vidljivo</label><input class="inp" type="color" data-k="vsCol"></div>
+            <div class="f"><label>Boja – senka</label><input class="inp" type="color" data-k="vsShCol"></div>
+            <div class="f"><label>Jačina senčenja: <span id="vsOpV"></span></label><input type="range" min="0.1" max="0.9" step="0.05" data-k="vsOp"></div>
+            <div class="f"><label>&nbsp;</label><label class="chk" style="margin:0"><input type="checkbox" data-k="vsShadow"> Prikaži i senku</label></div>
+          </div>
+        </div>
+
+        <div class="card full">
+          <h3><span class="n">7</span>KML slojevi (bazne stanice i sektori)</h3>
+          <p class="desc">Boja sloja (kvadratić u listi levo) se čuva na serveru i važi za sve korisnike. Ako je mapa spora, povećaj „Sektori vidljivi od zuma“.</p>
+          <div class="cols4">
+            <div class="f"><label>Veličina tačke BS (px)</label><input class="inp" type="number" min="2" max="14" data-k="siteR"></div>
+            <div class="f"><label>Providnost sektora: <span id="secOpV"></span></label><input type="range" min="0" max="0.9" step="0.05" data-k="secOp"></div>
+            <div class="f"><label>Sektori vidljivi od zuma (0 = uvek)</label><input class="inp" type="number" min="0" max="18" data-k="secMinZoom"></div>
+            <div class="f"><label>Nazivi BS vidljivi od zuma</label><input class="inp" type="number" min="0" max="19" data-k="lblZoom"></div>
+          </div>
+          <label class="chk"><input type="checkbox" data-k="kmlColors2"> Koristi originalne boje iz KML fajla umesto boje sloja</label>
+        </div>
+
+        <div class="card full">
+          <h3><span class="n">8</span>Pregled fajla</h3>
+          <p class="desc">Prvih 15 redova. <span style="color:var(--yellow)">■</span> kolone filtera, <span style="color:var(--accent2)">■</span> kolone adrese.</p>
+          <div class="prev-wrap" id="prev"><div class="empty-list">Nema učitanog fajla.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="toasts"></div>
+<script>
+/* ================================================================
+   PODEŠAVANJE SERVERA – upiši svoje podatke iz Supabase
+   (Supabase → Project Settings → API → Project URL i anon public key)
+   Ako ostaviš prazno, program će ih tražiti na ekranu za prijavu.
+   ================================================================ */
+const SUPABASE_URL = '';
+const SUPABASE_ANON_KEY = '';
+const EMAIL_DOMAIN = 'mapa.local';   // korisnik "ivan" = ivan@mapa.local
+
+(function(){
+"use strict";
+const LS_CFG='zalbeMapa_cfg_v1', LS_CACHE='zalbeMapa_geo_v1', LS_OLD_UL='zalbeMapa_user_v1';
+const DEF={sheet:'',hasHeader:true,skip:0,colOps:'B',colUl:'C',colBr:'D',extra:'',
+  rules:[{col:'J',op:'eq',val:'n'}],match:'all',caseIns:true,
+  geocoder:'nominatim',delay:1100,country:'Srbija',cc:'rs',fallback:true,
+  cluster:true,autoFit:true,base:'osm',osmSrc:'auto',coordFmt:'dd',
+  siteR:5,secOp:0.25,secMinZoom:10,lblZoom:15,kmlColors2:false,
+  zVis:true,hA:1.5,hB:30,freq:900,
+  pinH:30,pinR:10,pinHt:1.5,pinQ:'normal',vsCol:'#2ee59d',vsShCol:'#ff4d6d',vsOp:0.55,vsShadow:true,
+  activeUL:''};
+let cfg; try{cfg=Object.assign({},DEF,JSON.parse(localStorage.getItem(LS_CFG)||'{}'));}catch(e){cfg=Object.assign({},DEF);}
+if(!['osm','sat','hyb','topo'].includes(cfg.base))cfg.base='osm';
+let cache; try{cache=JSON.parse(localStorage.getItem(LS_CACHE)||'{}');}catch(e){cache={};}
+const missQ={};
+const S={wb:null,file:'',data:[],items:[],markers:{},running:false,stop:false,pick:null,sel:null,testing:false};
+let LAYERS=[],UL=[],PED=null,visSig='',VSV=null,ME=null,sb=null,LV={};
+const isAdmin=()=>!!(ME&&ME.role==='admin');
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+const saveCfg=()=>localStorage.setItem(LS_CFG,JSON.stringify(cfg));
+const saveCache=()=>{try{localStorage.setItem(LS_CACHE,JSON.stringify(cache));}catch(e){}; $('#cacheN').textContent=Object.keys(cache).length;};
+function colIdx(l){l=String(l||'').trim().toUpperCase();if(!/^[A-Z]{1,3}$/.test(l))return -1;let n=0;for(const ch of l)n=n*26+(ch.charCodeAt(0)-64);return n-1;}
+function colLet(i){let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+function cell(row,l){const i=colIdx(l);if(i<0||!row)return '';return String(row[i]??'').trim();}
+const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
+const extraCols=()=>String(cfg.extra||'').toUpperCase().split(/[,;\s]+/).filter(x=>colIdx(x)>=0);
+const fmtMs=ms=>ms<1000?Math.round(ms)+' ms':(ms/1000).toFixed(2)+' s';
+const fmtDist=m=>m<1000?Math.round(m)+' m':(m/1000).toFixed(m<10000?2:1)+' km';
+const n0=v=>Math.round(v).toLocaleString('sr');
+const hexRgb=h=>{h=String(h||'#000').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16)||0;return [(n>>16)&255,(n>>8)&255,n&255];};
+function toast(msg,type){const t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),4500);}
+function copyText(t,msg){
+  const done=()=>toast(msg||'Kopirano','ok');
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(done,()=>fallbackCopy(t)&&done());}
+  else if(fallbackCopy(t))done();}
+function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();
+  let ok=false;try{ok=document.execCommand('copy');}catch(e){}a.remove();return ok;}
+const EYE='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg>';
+const TOWER='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 10v11"/><circle cx="12" cy="8" r="1.6" fill="#fff"/><path d="M8.5 4.5a5 5 0 0 0 0 7"/><path d="M15.5 4.5a5 5 0 0 1 0 7"/></svg>';
+function newId(){if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
+  const b=new Uint8Array(16);crypto.getRandomValues(b);b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;
+  const h=[...b].map(x=>x.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
+const isMobile=()=>window.matchMedia('(max-width:760px)').matches;
+function closeMenu(){document.body.classList.remove('menu-open');}
+$('#menuBtn').addEventListener('click',()=>document.body.classList.toggle('menu-open'));
+$('#scrim').addEventListener('click',closeMenu);
+
+const idb={
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('zalbeMapa',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});},
+  async set(k,v){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});},
+  async get(k){const db=await this.open();return new Promise((res,rej)=>{const r=db.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});},
+  async del(k){const db=await this.open();return new Promise(res=>{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=()=>res();tx.onerror=()=>res();});}
+};
+
+$$('.tab').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+function showView(v){if((v==='settings'||v==='users')&&!isAdmin())v='map';
+  $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
+  $$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));closeMenu();
+  if(v==='map')setTimeout(()=>{map.invalidateSize();if(R.prof)drawProfile();updCompass();},50);
+  else if(v==='settings')renderPreview();
+  else if(v==='users')loadUsers();}
+
+/* ---------- MAPA ---------- */
+const CAN_ROTATE=typeof L.Map.prototype.setBearing==='function';
+const mapOpts={zoomControl:false};
+if(CAN_ROTATE)Object.assign(mapOpts,{rotate:true,bearing:0,rotateControl:false,touchRotate:true,shiftKeyRotate:false});
+const map=L.map('map',mapOpts).setView([44.05,20.9],7);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+const cvBS=L.canvas({padding:0.3,tolerance:3});
+const ESRI='https://server.arcgisonline.com/ArcGIS/rest/services/';
+const esriImg=()=>L.tileLayer(ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Snimci © Esri, Maxar, Earthstar Geographics'});
+const OSM_SRC={
+  std:{name:'OSM standard',url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',o:{maxZoom:19}},
+  fr:{name:'OSM Francuska',url:'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',o:{maxZoom:20,subdomains:'abc'}},
+  de:{name:'OSM Nemačka',url:'https://tile.openstreetmap.de/{z}/{x}/{y}.png',o:{maxZoom:18}},
+  hot:{name:'OSM Humanitarni',url:'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',o:{maxZoom:20,subdomains:'abc'}},
+  carto:{name:'CARTO Voyager',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',o:{maxZoom:20,subdomains:'abcd'}}
+};
+const IS_FILE=location.protocol==='file:';
+function osmKey(){return cfg.osmSrc==='auto'?(IS_FILE?'fr':'std'):(OSM_SRC[cfg.osmSrc]?cfg.osmSrc:'fr');}
+function makeOsm(){const s=OSM_SRC[osmKey()];
+  return L.tileLayer(s.url,Object.assign({attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> saradnici'+(osmKey()==='carto'?' © CARTO':''),referrerPolicy:'strict-origin-when-cross-origin',crossOrigin:true},s.o));}
+function updOsmInfo(){const k=osmKey();
+  $('#osmInfo').innerHTML='Trenutno: <b style="color:var(--accent2)">'+OSM_SRC[k].name+'</b>'+
+    (IS_FILE&&k==='std'?' – <span style="color:var(--yellow)">pažnja: standardni OSM server blokira fajl otvoren sa diska. Izaberi „Automatski“.</span>':'');}
+const BASE={
+  osm:makeOsm(),
+  sat:esriImg(),
+  hyb:L.layerGroup([esriImg(),
+    L.tileLayer(ESRI+'Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}),
+    L.tileLayer(ESRI+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19})]),
+  topo:L.tileLayer(ESRI+'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri, HERE, Garmin, USGS, NGA'})
+};
+let curBase=null,curBaseKey='';
+function setBase(k){if(!BASE[k])k='osm';if(curBase)map.removeLayer(curBase);curBase=BASE[k];curBaseKey=k;curBase.addTo(map);
+  if(curBase.bringToBack)curBase.bringToBack();
+  $$('#layerSwitch button[data-l]').forEach(b=>b.classList.toggle('active',b.dataset.l===k));
+  if(cfg.base!==k){cfg.base=k;saveCfg();}}
+function rebuildOsm(){const was=curBaseKey==='osm';if(was&&curBase)map.removeLayer(curBase);BASE.osm=makeOsm();if(was){curBase=null;setBase('osm');}updOsmInfo();}
+$$('#layerSwitch button[data-l]').forEach(b=>b.addEventListener('click',()=>setBase(b.dataset.l)));
+setBase(cfg.base);
+
+let group;
+function makeGroup(){if(group)map.removeLayer(group);
+  group=cfg.cluster?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,spiderfyOnMaxZoom:true,chunkedLoading:true,
+    iconCreateFunction:clusterIcon}):L.featureGroup();
+  S.markers={};S.items.forEach(it=>{if(it.lat!=null)addMarker(it);});applyVis();}
+function clusterIcon(c){const n=c.getChildCount();const k=n<10?'':n<50?'m':'l';const s=n<10?40:n<50?48:58;
+  return L.divIcon({html:'<div class="cl '+k+'">'+n+'</div>',className:'',iconSize:[s,s]});}
+
+const COLORS={ok:'var(--red)',street:'var(--orange)',city:'var(--yellow)',manual:'var(--violet)'};
+const LABEL={ok:'Tačna adresa',street:'Samo ulica',city:'Samo opština',manual:'Ručno',notfound:'Nije nađeno',pending:'Na čekanju',noaddr:'Nema adrese',error:'Greška'};
+const HEX={ok:'#ff4d6d',street:'#ff9f43',city:'#ffd43b',manual:'#b18cff',notfound:'#5d6688',pending:'#5d6688',noaddr:'#3c4466',error:'#ff4d6d'};
+function icon(it){return L.divIcon({className:'',html:'<div class="zpin'+(S.sel===it.id?' sel':'')+'" style="--c:'+(COLORS[it.status]||'var(--red)')+'"></div>',iconSize:[26,26],iconAnchor:[13,31],popupAnchor:[0,-28]});}
+function llActs(lat,lon){const c=lat.toFixed(6)+', '+lon.toFixed(6);
+  return '<div class="co">'+c+'</div><div class="acts"><a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener">Google Maps</a>'+
+  '<button data-copy="'+c+'">Kopiraj koordinate</button><button data-ruler="'+lat+','+lon+'">📏 Meri odavde</button></div>';}
+function popupHtml(it,ro){
+  const ex=(it.extra||[]).map(e=>'<tr><td>'+esc(e.h)+'</td><td>'+esc(e.v)+'</td></tr>').join('');
+  const vs=[];UL.forEach(l=>l.pins.forEach(p=>{const r=vsLookup(p,it.lat,it.lon);if(r>=0)vs.push((r?'✓ ':'✕ ')+p.name);}));
+  return '<div class="pp"><div class="pp-h"><b>'+esc(((it.ul||'')+' '+(it.br||'')).trim()||'—')+'</b><span class="badge" style="color:'+(HEX[it.status]||'#ff4d6d')+'">'+(LABEL[it.status]||'')+'</span></div>'+
+   '<div class="pp-o">'+esc(it.ops||'—')+(it.rowNum?' · Excel red '+it.rowNum:'')+'</div>'+(ex?'<table>'+ex+'</table>':'')+
+   (vs.length?'<div class="pp-o" style="font-size:12px">Vidljivost sa mojih pinova: '+vs.map(esc).join(' · ')+'</div>':'')+llActs(it.lat,it.lon)+
+   (ro?'':'<div class="muted" style="font-size:11px;margin-top:8px">Pin možeš prevući mišem na tačnu lokaciju.</div>')+'</div>';}
+function addMarker(it){
+  if(S.markers[it.id])group.removeLayer(S.markers[it.id]);
+  const m=L.marker([it.lat,it.lon],{icon:icon(it),draggable:true});
+  m.bindPopup(()=>popupHtml(it));
+  m.on('click',()=>{if(R.on){map.closePopup();rulerAdd(m.getLatLng());return;}select(it.id,false);});
+  m.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+  m.on('dragend',e=>{const p=e.target.getLatLng();it.lat=p.lat;it.lon=p.lng;it.status='manual';
+    cache[it.key]={lat:p.lat,lon:p.lng,level:'manual'};saveCache();m.setIcon(icon(it));refresh();toast('Pin pomeren i zapamćen','ok');});
+  S.markers[it.id]=m;group.addLayer(m);}
+map.on('popupopen',e=>{const el=e.popup.getElement();
+  el.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyText(b.dataset.copy,'Koordinate kopirane'));
+  el.querySelectorAll('[data-ruler]').forEach(b=>b.onclick=()=>{const p=b.dataset.ruler.split(',');map.closePopup();rulerStart(L.latLng(+p[0],+p[1]));});
+  el.querySelectorAll('[data-addpin]').forEach(b=>b.onclick=()=>{const p=b.dataset.addpin.split(',');map.closePopup();placePin(L.latLng(+p[0],+p[1]));});});
+
+function banner(t){$('#bannerTxt').textContent=t;$('#pickBanner').style.display='flex';}
+function hideBanner(){$('#pickBanner').style.display='none';}
+function setCross(on){$('#map').classList.toggle('picking',on);}
+$('#pickCancel').addEventListener('click',()=>{stopPick();rulerStop();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(S.pick!=null)stopPick();if(R.on)rulerStop();else if(VSV)exitVsView();hideRes();closeMenu();}});
+
+function startPick(id){rulerStop();S.pick=id;setCross(true);closeMenu();banner('📍 Klikni na mapu da postaviš pin žalbe');}
+function stopPick(){if(S.pick==null)return;S.pick=null;setCross(false);hideBanner();}
+function doPick(ll){const it=S.items.find(x=>x.id===S.pick);stopPick();if(!it)return;
+  it.lat=ll.lat;it.lon=ll.lng;it.status='manual';cache[it.key]={lat:it.lat,lon:it.lon,level:'manual'};saveCache();
+  addMarker(it);select(it.id,true);refresh();toast('Pin ručno postavljen','ok');}
+map.on('click',e=>{if(R.on){rulerAdd(e.latlng);return;}if(S.pick!=null)doPick(e.latlng);});
+
+/* ---------- GPS ---------- */
+let meMk=null,meAcc=null;
+$('#gpsBtn').addEventListener('click',()=>{if(!navigator.geolocation){toast('Uređaj ne podržava GPS lokaciju','err');return;}
+  $('#gpsBtn').classList.add('active');map.locate({setView:false,enableHighAccuracy:true,timeout:15000,maximumAge:5000});});
+map.on('locationfound',e=>{$('#gpsBtn').classList.remove('active');
+  if(!meMk){meMk=L.marker(e.latlng,{icon:L.divIcon({className:'',html:'<div class="medot"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:1900}).addTo(map);
+    meAcc=L.circle(e.latlng,{radius:e.accuracy,color:'#3b82f6',weight:1,fillOpacity:.1,interactive:false}).addTo(map);
+    meMk.on('contextmenu',ev=>{if(ev.originalEvent)L.DomEvent.preventDefault(ev.originalEvent);showCtx(ev.latlng);});}
+  else{meMk.setLatLng(e.latlng);meAcc.setLatLng(e.latlng).setRadius(e.accuracy);}
+  const ll=e.latlng;
+  meMk.bindPopup('<div class="pp"><div class="pp-h"><b>🎯 Moja lokacija</b><span class="badge">± '+Math.round(e.accuracy)+' m</span></div>'+
+    '<div class="acts" style="margin-bottom:8px"><button class="pri" data-addpin="'+ll.lat+','+ll.lng+'">📍 Dodaj pin ovde</button></div>'+llActs(ll.lat,ll.lng)+'</div>');
+  map.flyTo(ll,Math.max(map.getZoom(),16),{duration:.8});setTimeout(()=>meMk.openPopup(),850);});
+map.on('locationerror',e=>{$('#gpsBtn').classList.remove('active');toast('GPS: '+(e.message||'lokacija nije dostupna')+' – uključi lokaciju i dozvoli pristup','err');});
+
+/* ---------- ROTACIJA + KOMPAS ---------- */
+const comp=$('#compass');
+function northAngle(){
+  const c=map.getCenter();const p1=map.latLngToContainerPoint(c);
+  const p2=map.latLngToContainerPoint(L.latLng(Math.min(89,c.lat+0.01),c.lng));
+  return Math.atan2(p2.x-p1.x,-(p2.y-p1.y))*180/Math.PI;}
+function updCompass(){if(!CAN_ROTATE)return;const a=northAngle();
+  $('#rose').style.transform='rotate('+a+'deg)';
+  const b=((-a)%360+360)%360;$('#compDeg').textContent=(Math.round(b)%360)+'°';}
+let rotSign=0;
+function getRotSign(){if(rotSign)return rotSign;const b0=map.getBearing();const a1=northAngle();
+  map.setBearing(b0+5);const a2=northAngle();map.setBearing(b0);
+  let d=a2-a1;if(d>180)d-=360;if(d<-180)d+=360;rotSign=d>=0?1:-1;return rotSign;}
+let animRot=0;
+function resetNorth(){if(!CAN_ROTATE)return;cancelAnimationFrame(animRot);
+  let b0=((map.getBearing()%360)+360)%360;if(b0>180)b0-=360;if(Math.abs(b0)<0.05){map.setBearing(0);updCompass();return;}
+  const t0=performance.now(),D=350;
+  const step=t=>{const k=Math.min(1,(t-t0)/D);const e=1-Math.pow(1-k,3);map.setBearing(b0*(1-e));updCompass();
+    if(k<1)animRot=requestAnimationFrame(step);else{map.setBearing(0);updCompass();updLabels();}};
+  animRot=requestAnimationFrame(step);}
+if(CAN_ROTATE){
+  const mc=map.getContainer();let rot=null;
+  mc.addEventListener('mousedown',e=>{
+    if(e.button!==1)return;
+    e.preventDefault();e.stopPropagation();
+    const r=mc.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    rot={cx,cy,a0:Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI,b0:map.getBearing(),s:getRotSign()};
+    map.closePopup();$('#map').classList.add('rotating');},true);
+  window.addEventListener('mousemove',e=>{if(!rot)return;e.preventDefault();
+    let d=Math.atan2(e.clientY-rot.cy,e.clientX-rot.cx)*180/Math.PI-rot.a0;
+    map.setBearing(rot.b0+rot.s*d);updCompass();});
+  window.addEventListener('mouseup',()=>{if(!rot)return;rot=null;$('#map').classList.remove('rotating');updLabels();});
+  mc.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
+  map.on('rotate move zoomend viewreset',updCompass);
+  comp.addEventListener('click',resetNorth);
+  updCompass();
+}else{comp.classList.add('off');}
+
+/* ---------- DESNI KLIK / DUGI PRITISAK ---------- */
+const CFMT={dd:'Decimalni (lat, lon)',lonlat:'Decimalni (lon, lat)',dms:'Stepeni ° \' " (DMS)',ddm:'Stepeni ° decimalni \' (DDM)',utm:'UTM (WGS84)',gm:'Google Maps link'};
+function dms(v,pos,neg){const h=v>=0?pos:neg;v=Math.abs(v);let d=Math.floor(v),m=Math.floor((v-d)*60),s=((v-d)*60-m)*60;
+  if(s>=59.995){s=0;m++;}if(m>=60){m=0;d++;}return d+'°'+String(m).padStart(2,'0')+'\''+s.toFixed(2).padStart(5,'0')+'"'+h;}
+function ddm(v,pos,neg){const h=v>=0?pos:neg;v=Math.abs(v);const d=Math.floor(v);let m=(v-d)*60;return d+'° '+m.toFixed(4).padStart(7,'0')+'\' '+h;}
+function toUTM(lat,lon){
+  const a=6378137,f=1/298.257223563,k0=0.9996,e2=f*(2-f),ep2=e2/(1-e2);
+  let zone=Math.floor((lon+180)/6)+1;
+  if(lat>=56&&lat<64&&lon>=3&&lon<12)zone=32;
+  if(lat>=72&&lat<84){if(lon>=0&&lon<9)zone=31;else if(lon>=9&&lon<21)zone=33;else if(lon>=21&&lon<33)zone=35;else if(lon>=33&&lon<42)zone=37;}
+  const lon0=((zone-1)*6-180+3)*Math.PI/180,phi=lat*Math.PI/180,lam=lon*Math.PI/180;
+  const sn=Math.sin(phi),cs=Math.cos(phi),tn=Math.tan(phi);
+  const N=a/Math.sqrt(1-e2*sn*sn),T=tn*tn,C=ep2*cs*cs,A=cs*(lam-lon0);
+  const M=a*((1-e2/4-3*e2*e2/64-5*e2*e2*e2/256)*phi-(3*e2/8+3*e2*e2/32+45*e2*e2*e2/1024)*Math.sin(2*phi)
+    +(15*e2*e2/256+45*e2*e2*e2/1024)*Math.sin(4*phi)-(35*e2*e2*e2/3072)*Math.sin(6*phi));
+  const x=k0*N*(A+(1-T+C)*A*A*A/6+(5-18*T+T*T+72*C-58*ep2)*Math.pow(A,5)/120)+500000;
+  let y=k0*(M+N*tn*(A*A/2+(5-T+9*C+4*C*C)*Math.pow(A,4)/24+(61-58*T+T*T+600*C-330*ep2)*Math.pow(A,6)/720));
+  if(lat<0)y+=10000000;
+  const band='CDEFGHJKLMNPQRSTUVWXX'.charAt(Math.max(0,Math.min(20,Math.floor((lat+80)/8))));
+  return {zone,band,e:x,n:y};}
+function fmtCoord(lat,lon,f){
+  switch(f){
+    case 'lonlat':return lon.toFixed(6)+', '+lat.toFixed(6);
+    case 'dms':return dms(lat,'N','S')+' '+dms(lon,'E','W');
+    case 'ddm':return ddm(lat,'N','S')+'  '+ddm(lon,'E','W');
+    case 'utm':{const u=toUTM(lat,lon);return u.zone+u.band+'  '+Math.round(u.e)+' E  '+Math.round(u.n)+' N';}
+    case 'gm':return 'https://www.google.com/maps?q='+lat.toFixed(6)+','+lon.toFixed(6);
+    default:return lat.toFixed(6)+', '+lon.toFixed(6);}}
+const revCache={};
+async function reverseGeo(lat,lon){
+  const k=lat.toFixed(5)+','+lon.toFixed(5);if(revCache[k])return revCache[k];
+  let res=null;
+  try{
+    const p=new URLSearchParams({format:'jsonv2',lat:lat.toFixed(7),lon:lon.toFixed(7),zoom:'18',addressdetails:'1','accept-language':'sr-Latn,sr,en'});
+    const r=await fetch('https://nominatim.openstreetmap.org/reverse?'+p.toString());
+    if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();
+    if(j&&j.address){const a=j.address;
+      res={street:a.road||a.pedestrian||a.footway||a.path||a.square||a.hamlet||'',no:a.house_number||'',
+        place:a.city||a.town||a.village||a.municipality||'',sub:a.suburb||a.city_district||a.neighbourhood||a.quarter||'',
+        muni:a.municipality||a.county||'',post:a.postcode||'',name:j.name||''};}
+  }catch(e){
+    try{const r=await fetch('https://photon.komoot.io/reverse?lat='+lat+'&lon='+lon+'&limit=1');
+      if(r.ok){const j=await r.json();const f=j.features&&j.features[0];
+        if(f){const pr=f.properties||{};res={street:pr.street||(pr.type==='street'?pr.name:'')||'',no:pr.housenumber||'',
+          place:pr.city||pr.town||pr.village||'',sub:pr.district||pr.locality||'',muni:pr.county||'',post:pr.postcode||'',name:pr.name||''};}}
+    }catch(_){}}
+  if(res)revCache[k]=res;return res;}
+let ctxDot=null;
+function showCtx(ll){
+  if(R.on||!ME)return;
+  const lat=ll.lat,lon=ll.lng;
+  const al=activeUL(false);
+  const el=document.createElement('div');el.className='pp ctx';
+  el.innerHTML='<div class="addr"><b data-a>Tražim adresu…</b><span data-b></span></div>'+
+    '<div class="crow"><span class="cval" data-c title="Klikni da kopiraš"></span><select class="inp" data-f>'+
+    Object.entries(CFMT).map(([k,v])=>'<option value="'+k+'"'+(k===cfg.coordFmt?' selected':'')+'>'+v+'</option>').join('')+'</select></div>'+
+    '<div class="addpin"><button data-cp>📍 Dodaj pin ovde</button><select class="inp" data-cg title="U koju grupu">'+
+      (UL.length?UL.map(x=>'<option value="'+x.id+'"'+(al&&x.id===al.id?' selected':'')+'>'+esc(x.name)+'</option>').join(''):'<option value="">Moji pinovi (nova grupa)</option>')+
+      '<option value="__new">+ Nova grupa…</option></select></div>'+
+    '<div class="acts"><button data-cc>📋 Koordinate</button><button data-ca>📋 Adresa</button>'+
+    '<button data-cr>📏 Meri odavde</button><a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener">Google Maps</a></div>';
+  const cv=el.querySelector('[data-c]'),sel=el.querySelector('[data-f]');
+  const upd=()=>{cv.textContent=fmtCoord(lat,lon,sel.value);};upd();
+  sel.addEventListener('change',()=>{cfg.coordFmt=sel.value;saveCfg();upd();});
+  cv.addEventListener('click',()=>copyText(cv.textContent,'Koordinate kopirane'));
+  el.querySelector('[data-cc]').addEventListener('click',()=>copyText(cv.textContent,'Koordinate kopirane'));
+  let addrTxt='';
+  el.querySelector('[data-ca]').addEventListener('click',()=>{if(addrTxt)copyText(addrTxt,'Adresa kopirana');else toast('Adresa još nije učitana');});
+  el.querySelector('[data-cr]').addEventListener('click',()=>{map.closePopup();rulerStart(L.latLng(lat,lon));});
+  el.querySelector('[data-cp]').addEventListener('click',()=>{
+    let gid=el.querySelector('[data-cg]').value;
+    if(gid==='__new'){const g=newGroupPrompt();if(!g)return;gid=g.id;}
+    map.closePopup();placePin(L.latLng(lat,lon),gid||null);});
+  L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el);
+  if(ctxDot)map.removeLayer(ctxDot);
+  ctxDot=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="cdot"></div>',iconSize:[14,14],iconAnchor:[7,7]}),interactive:false,zIndexOffset:1800}).addTo(map);
+  const pop=L.popup({maxWidth:440,minWidth:isMobile()?220:300,offset:[0,-4],autoPanPadding:[30,30]}).setLatLng(ll).setContent(el).openOn(map);
+  pop.on('remove',()=>{if(ctxDot){map.removeLayer(ctxDot);ctxDot=null;}});
+  reverseGeo(lat,lon).then(a=>{
+    const A=el.querySelector('[data-a]'),B=el.querySelector('[data-b]');
+    if(!a){A.textContent='Adresa nije pronađena';B.textContent='Servis nije vratio adresu za ovu tačku.';return;}
+    const line1=a.street?(a.street+(a.no?' '+a.no:'')):(a.name||'Nepoznata ulica');
+    const parts=[a.sub,a.place,a.muni&&a.muni!==a.place?a.muni:'',a.post].filter(Boolean).filter((v,i,x)=>x.indexOf(v)===i);
+    A.textContent=line1;
+    B.innerHTML=esc(parts.join(', '))+(a.street&&!a.no?'<br><span class="note">Kućni broj nije upisan u OSM – prikazana je najbliža ulica.</span>':'');
+    addrTxt=[line1].concat(parts).join(', ');
+    pop.update();
+  });}
+map.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+
+/* ---------- KML parsiranje ---------- */
+const PAL=['#22d3ee','#f472b6','#a3e635','#fbbf24','#60a5fa','#c084fc','#fb7185','#34d399'];
+const labelsLayer=L.layerGroup().addTo(map);
+const T=(el,n)=>el.getElementsByTagNameNS('*',n);
+const first=(el,n)=>T(el,n)[0];
+const txt=(el,n)=>{const e=el&&first(el,n);return e?e.textContent.trim():'';};
+function kmlColor(s){s=String(s||'').trim().replace(/^#/,'');if(!/^[0-9a-f]{8}$/i.test(s))return null;
+  return {c:'#'+s.slice(6,8)+s.slice(4,6)+s.slice(2,4),a:parseInt(s.slice(0,2),16)/255};}
+function parseStyle(s){const ps=first(s,'PolyStyle'),ls=first(s,'LineStyle'),is=first(s,'IconStyle');
+  return {poly:ps?kmlColor(txt(ps,'color')):null,fill:ps?txt(ps,'fill')!=='0':true,
+    line:ls?kmlColor(txt(ls,'color')):null,lw:ls?(+txt(ls,'width')||null):null,icon:is?kmlColor(txt(is,'color')):null};}
+function parseCoords(t){const out=[];String(t||'').trim().split(/\s+/).forEach(p=>{const q=p.split(',');if(q.length<2)return;
+  const lon=+q[0],lat=+q[1];if(isFinite(lat)&&isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180)out.push([lat,lon]);});return out;}
+const htmlDoc=new DOMParser();
+function cleanDesc(d){if(!d)return '';d=d.replace(/<br\s*\/?>|<\/tr>|<\/p>|<\/div>|<\/li>/gi,'\n').replace(/<\/t[dh]>/gi,'  ');
+  const t=htmlDoc.parseFromString(d,'text/html').body.textContent||'';return t.replace(/[ \t]+\n/g,'\n').replace(/\n{2,}/g,'\n').trim().slice(0,2000);}
+function parseKML(text){
+  const doc=new DOMParser().parseFromString(text,'application/xml');
+  if(doc.getElementsByTagName('parsererror').length)throw new Error('Neispravan KML fajl');
+  const styles={};
+  [...T(doc,'Style')].forEach(s=>{const id=s.getAttribute('id');if(id)styles[id]=parseStyle(s);});
+  [...T(doc,'StyleMap')].forEach(m=>{const id=m.getAttribute('id');if(!id)return;
+    for(const p of T(m,'Pair')){if(txt(p,'key')==='normal'){const u=txt(p,'styleUrl').replace(/^.*#/,'');if(styles[u])styles[id]=styles[u];}}});
+  const res={sites:[],polys:[],lines:[],items:[]};
+  for(const pm of T(doc,'Placemark')){
+    const ch=[...pm.children];
+    const nameEl=ch.find(c=>c.localName==='name');
+    const name=nameEl?nameEl.textContent.trim():'';
+    const su=ch.find(c=>c.localName==='styleUrl');
+    let st=su?(styles[su.textContent.trim().replace(/^.*#/,'')]||{}):{};
+    const inl=ch.find(c=>c.localName==='Style');if(inl)st=Object.assign({},st,parseStyle(inl));
+    const descEl=ch.find(c=>c.localName==='description');
+    const ext=[];
+    for(const d of T(pm,'Data'))ext.push([d.getAttribute('name')||'',txt(d,'value')]);
+    for(const d of T(pm,'SimpleData'))ext.push([d.getAttribute('name')||'',d.textContent.trim()]);
+    const base={name,st,ext,desc:descEl?descEl.textContent:''};
+    for(const p of T(pm,'Point')){const c=parseCoords(txt(p,'coordinates'))[0];if(c)res.sites.push(Object.assign({ll:c,kind:'BS lokacija'},base));}
+    for(const p of T(pm,'Polygon')){const ob=first(p,'outerBoundaryIs');const c=parseCoords(txt(ob||p,'coordinates'));
+      if(c.length>2)res.polys.push(Object.assign({ll:c,kind:'Sektor'},base));}
+    for(const p of T(pm,'LineString')){const c=parseCoords(txt(p,'coordinates'));if(c.length>1)res.lines.push(Object.assign({ll:c,kind:'Linija'},base));}
+  }
+  return res;}
+function parseZalbe(text){const j=JSON.parse(text);const items=(j.items||[]).filter(i=>isFinite(i.lat)&&isFinite(i.lon));
+  items.forEach((it,i)=>{it.id='s'+i;});return {sites:[],polys:[],lines:[],items};}
+
+const hoverTip=L.tooltip({direction:'top',offset:[0,-6]});
+function bsPopup(f){
+  const rows=f.ext.filter(e=>e[1]!=='').map(e=>'<tr><td>'+esc(e[0])+'</td><td>'+esc(e[1])+'</td></tr>').join('');
+  const d=f._d!==undefined?f._d:(f._d=cleanDesc(f.desc));
+  return '<div class="pp"><div class="pp-h"><b>'+esc(f.name||'(bez naziva)')+'</b><span class="badge" style="color:var(--accent2)">'+f.kind+'</span></div>'+
+    '<div class="pp-o">Sloj: '+esc(f.lyName||'')+'</div>'+
+    (rows?'<table>'+rows+'</table>':'')+(d?'<div class="pd">'+esc(d).replace(/\n/g,'<br>')+'</div>':'')+
+    (f.kind==='BS lokacija'?llActs(f.ll[0],f.ll[1]):'')+'</div>';}
+function attachBSEvents(g){
+  g.on('click',e=>{const l=e.propagatedFrom||e.layer;if(!l||!l._f)return;
+    const f=l._f;const pt=f.kind==='BS lokacija'?L.latLng(f.ll):e.latlng;
+    if(R.on){rulerAdd(pt);return;}
+    if(S.pick!=null){doPick(e.latlng);return;}
+    L.popup({maxWidth:360}).setLatLng(e.latlng).setContent(bsPopup(f)).openOn(map);});
+  g.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+  g.on('mouseover',e=>{const l=e.propagatedFrom||e.layer;if(!l||!l._f||!l._f.name)return;hoverTip.setContent(esc(l._f.name));map.openTooltip(hoverTip,e.latlng);});
+  g.on('mouseout',()=>map.closeTooltip(hoverTip));}
+function drawLayer(ly){
+  if(ly.kind==='zalbe'){
+    if(ly.g.z)map.removeLayer(ly.g.z);
+    ly.g.z=cfg.cluster?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,chunkedLoading:true,iconCreateFunction:clusterIcon}):L.featureGroup();
+    ly.data.items.forEach(it=>{const m=L.marker([it.lat,it.lon],{icon:icon(it)});m.bindPopup(()=>popupHtml(it,true));
+      m.on('click',()=>{if(R.on){map.closePopup();rulerAdd(m.getLatLng());}});
+      m.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+      ly.g.z.addLayer(m);});
+    visSig='';return;}
+  ly.g.sites.clearLayers();ly.g.sec.clearLayers();
+  const kc=cfg.kmlColors2, op=+cfg.secOp, col=ly.color;
+  for(const f of ly.data.polys){f.lyName=ly.name;const s=f.st||{};
+    const fc=kc&&s.poly?s.poly.c:col, lc=kc&&s.line?s.line.c:fc;
+    const l=L.polygon(f.ll,{renderer:cvBS,color:lc,weight:1,opacity:.9,fillColor:fc,fillOpacity:(kc&&s.fill===false)?0:op,bubblingMouseEvents:false});
+    l._f=f;ly.g.sec.addLayer(l);}
+  for(const f of ly.data.lines){f.lyName=ly.name;const s=f.st||{};
+    const l=L.polyline(f.ll,{renderer:cvBS,color:kc&&s.line?s.line.c:col,weight:kc&&s.lw?Math.min(6,s.lw):1.5,opacity:.9,bubblingMouseEvents:false});
+    l._f=f;ly.g.sec.addLayer(l);}
+  for(const f of ly.data.sites){f.lyName=ly.name;const s=f.st||{};
+    const l=L.circleMarker(f.ll,{renderer:cvBS,radius:+cfg.siteR||5,color:'#fff',weight:1.5,fillColor:kc&&s.icon&&s.icon.c!=='#ffffff'?s.icon.c:col,fillOpacity:1,bubblingMouseEvents:false});
+    l._f=f;ly.g.sites.addLayer(l);}
+  visSig='';}
+function tog(l,on){if(!l)return;if(on&&!map.hasLayer(l))map.addLayer(l);else if(!on&&map.hasLayer(l))map.removeLayer(l);}
+function applyVis(){
+  if(group)tog(group,cfg.zVis&&isAdmin());
+  const z=map.getZoom(),mz=+cfg.secMinZoom||0;
+  const want=[];
+  LAYERS.forEach(ly=>{if(ly.kind==='zalbe'){if(ly.visible&&ly.g.z)want.push(ly.g.z);return;}
+    if(ly.visible&&ly.showSec&&z>=mz)want.push(ly.g.sec);});
+  LAYERS.forEach(ly=>{if(ly.kind!=='zalbe'&&ly.visible&&ly.showSites)want.push(ly.g.sites);});
+  const sig=want.map(g=>L.stamp(g)).join(',');
+  if(sig!==visSig){visSig=sig;LAYERS.forEach(ly=>{tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);});want.forEach(g=>map.addLayer(g));}
+  const h=$('#secHint');
+  const hasSec=LAYERS.some(ly=>ly.visible&&ly.showSec&&(ly.data.polys.length||ly.data.lines.length));
+  if(hasSec&&z<mz){h.style.display='block';h.textContent='ⓘ Sektori se vide od zuma '+mz+' (trenutno '+z+') – zumiraj bliže';}
+  else h.style.display='none';
+  updLabels();}
+map.on('zoomend',applyVis);
+function updLabels(){
+  labelsLayer.clearLayers();
+  if(map.getZoom()<(+cfg.lblZoom||15))return;
+  const b=map.getBounds().pad(0.25);let n=0;
+  for(const ly of LAYERS){if(!ly.visible||!ly.showSites)continue;
+    for(const f of ly.data.sites){if(!f.name||!b.contains(f.ll))continue;
+      labelsLayer.addLayer(L.tooltip({permanent:true,direction:'right',offset:[6,0],interactive:false}).setLatLng(f.ll).setContent(esc(f.name)));
+      if(++n>=400)return;}}}
+map.on('moveend',updLabels);
+function layerBounds(ly){const pts=[];ly.data.sites.forEach(f=>pts.push(f.ll));ly.data.polys.forEach(f=>pts.push(f.ll[0]));ly.data.lines.forEach(f=>pts.push(f.ll[0]));
+  ly.data.items.forEach(i=>pts.push([i.lat,i.lon]));return pts.length?L.latLngBounds(pts):null;}
+function allBsBounds(){let b=null;LAYERS.forEach(ly=>{if(!ly.visible)return;const x=layerBounds(ly);if(x)b=b?b.extend(x):x;});return b;}
+function fitTo(b){map.fitBounds(b,{padding:[40,40]});}
+
+/* lokalno stanje vidljivosti slojeva (svaki korisnik za sebe) */
+const lvKey=()=>'zm_lv_'+(ME?ME.id:'x');
+function loadLV(){try{LV=JSON.parse(localStorage.getItem(lvKey())||'{}');}catch(e){LV={};}}
+function saveLV(){LAYERS.forEach(l=>LV[l.id]={v:l.visible,s:l.showSites,c:l.showSec});localStorage.setItem(lvKey(),JSON.stringify(LV));}
+
+/* ---------- LISTE LEVO ---------- */
+function renderLayers(){
+  let h='';
+  if(isAdmin()){const zOn=S.items.filter(i=>i.lat!=null).length;
+    h+='<div class="lr'+(cfg.zVis?'':' off')+'"><button class="eye'+(cfg.zVis?' on':'')+'" data-eye="z" title="Prikaži/sakrij">'+(cfg.zVis?EYE:EYE_OFF)+'</button>'+
+    '<span class="sw" style="background:#ff4d6d"></span><div class="ln"><b>Žalbe (lokalni Excel)</b><span class="sub">'+zOn+' pinova · vidiš samo ti</span></div>'+
+    '<button class="ib" data-fit="z" title="Zumiraj na sloj">⤢</button></div>';}
+  LAYERS.forEach(ly=>{
+    const zl=ly.kind==='zalbe';
+    h+='<div class="lr'+(ly.visible?'':' off')+'"><button class="eye'+(ly.visible?' on':'')+'" data-eye="'+ly.id+'" title="Prikaži/sakrij na mojoj mapi">'+(ly.visible?EYE:EYE_OFF)+'</button>'+
+      (isAdmin()&&!zl?'<input type="color" class="swc" data-col="'+ly.id+'" value="'+ly.color+'" title="Boja sloja (za sve)">':'<span class="sw" style="background:'+(zl?'#ff4d6d':ly.color)+'"></span>')+
+      '<div class="ln"><b title="'+esc(ly.name)+'">'+esc(ly.name)+'</b><span class="sub">'+
+      (isAdmin()?'<button class="mt sh'+(ly.shared?' on':'')+'" data-share="'+ly.id+'" title="Da li korisnici vide ovaj sloj">👥 '+(ly.shared?'korisnici':'samo ja')+'</button>':'')+
+      (zl?n0(ly.data.items.length)+' žalbi':
+      '<button class="mt'+(ly.showSites?' on':'')+'" data-ts="'+ly.id+'">BS '+n0(ly.data.sites.length)+'</button>'+
+      '<button class="mt'+(ly.showSec?' on':'')+'" data-tc="'+ly.id+'">Sektori '+n0(ly.data.polys.length+ly.data.lines.length)+'</button>')+'</span></div>'+
+      '<button class="ib" data-fit="'+ly.id+'" title="Zumiraj na sloj">⤢</button>'+
+      (isAdmin()?'<button class="ib del" data-del="'+ly.id+'" title="Obriši sloj sa servera">✕</button>':'')+'</div>';});
+  if(!LAYERS.length)h+='<div class="lempty">'+(isAdmin()?'Nema slojeva na serveru. Klikni „+ KML“.':'Administrator još nije objavio slojeve.')+'</div>';
+  $('#layers').innerHTML=h;
+  h='';
+  UL.forEach(l=>{
+    const act=cfg.activeUL===l.id;
+    h+='<div class="lr grp'+(l.visible?'':' off')+(act?' act':'')+'"><button class="tw" data-utw="'+l.id+'" title="Prikaži/sakrij listu pinova">'+(l.open?'▾':'▸')+'</button>'+
+      '<button class="eye'+(l.visible?' on':'')+'" data-ueye="'+l.id+'" title="Prikaži/sakrij celu grupu">'+(l.visible?EYE:EYE_OFF)+'</button>'+
+      '<input type="color" class="swc" data-ucol="'+l.id+'" value="'+l.color+'" title="Boja grupe">'+
+      '<div class="ln" data-uact="'+l.id+'" style="cursor:pointer" title="Klik = aktivna grupa · dupli klik = preimenuj"><b>'+esc(l.name)+'</b>'+
+      '<span class="sub">'+l.pins.length+' pin'+(l.pins.length===1?'':'ova')+(act?' · <span style="color:#f59e0b">aktivna</span>':'')+'</span></div>'+
+      '<button class="ib" data-uren="'+l.id+'" title="Preimenuj grupu">✎</button>'+
+      '<button class="ib" data-uexp="'+l.id+'" title="Izvezi grupu u KML (Google Earth)">⬇</button>'+
+      '<button class="ib del" data-udel="'+l.id+'" title="Obriši grupu">✕</button></div>';
+    if(l.open){
+      l.pins.forEach(p=>{
+        const inView=VSV===p;
+        h+='<div class="lr prow'+(p.visible?'':' off')+(inView?' view':'')+'" style="--gc:'+l.color+'"><button class="eye sm'+(p.visible?' on':'')+'" data-peye="'+p.id+'" title="Prikaži/sakrij pin">'+(p.visible?EYE:EYE_OFF)+'</button>'+
+          '<div class="ln" data-pedit="'+p.id+'" style="cursor:pointer" title="Klikni za opcije pina"><b>📍 '+esc(p.name)+'</b><span class="sub">h '+p.h+' m · r '+p.r+' km · <i data-vsst="'+p.id+'">'+vsStatusTxt(p)+'</i></span></div>'+
+          '<button class="ib'+(inView?' on':'')+(p.busy!=null?' busy':'')+'" data-pvs="'+p.id+'" title="Optička vidljivost – izračunaj i prikaži preko mape">◉</button>'+
+          '<button class="ib del" data-pdel="'+p.id+'" title="Obriši pin">✕</button></div>';});
+      if(!l.pins.length)h+='<div class="lempty" style="margin-left:16px">Prazno – '+(isMobile()?'dugo pritisni mapu':'desni klik na mapu')+' → „Dodaj pin ovde“.</div>';}
+  });
+  if(!UL.length)h+='<div class="lempty">Nema pinova.<br>'+(isMobile()?'Dugo pritisni mapu':'Desni klik na mapu')+' → <b>📍 Dodaj pin ovde</b>, ili 🎯 Moja lokacija.</div>';
+  $('#pinsList').innerHTML=h;
+  $('#bsTest').disabled=!LAYERS.length&&!S.items.some(i=>i.lat!=null);}
+const findLy=id=>LAYERS.find(l=>l.id===id);
+const findUL=id=>UL.find(l=>l.id===id);
+function findPin(id){for(const l of UL){const p=l.pins.find(x=>x.id===id);if(p)return p;}return null;}
+const ulOf=p=>UL.find(l=>l.pins.includes(p));
+function onLay(ev,fn){['#layers','#pinsList'].forEach(q=>$(q).addEventListener(ev,fn));}
+function newGroupPrompt(){const n=prompt('Naziv nove grupe pinova:','Grupa '+(UL.length+1));if(n===null)return null;
+  const l=newUL(n.trim()||('Grupa '+(UL.length+1)));UL.push(l);cfg.activeUL=l.id;saveCfg();saveUL();drawUL();renderLayers();return l;}
+$('#grpNew').addEventListener('click',newGroupPrompt);
+function renameGroup(l){const n=prompt('Novi naziv grupe:',l.name);if(n===null||!n.trim())return;l.name=n.trim();saveUL();syncGroup(l);renderLayers();}
+let clickT=null;
+onLay('click',async e=>{
+  const b=e.target.closest('button,[data-pedit],[data-uact]');if(!b)return;const d=b.dataset;
+  if(d.eye){if(d.eye==='z'){cfg.zVis=!cfg.zVis;saveCfg();}else{const ly=findLy(d.eye);if(ly)ly.visible=!ly.visible;saveLV();}
+    applyVis();renderLayers();return;}
+  if(d.ts){const ly=findLy(d.ts);ly.showSites=!ly.showSites;if(ly.showSites)ly.visible=true;saveLV();applyVis();renderLayers();return;}
+  if(d.tc){const ly=findLy(d.tc);ly.showSec=!ly.showSec;if(ly.showSec)ly.visible=true;saveLV();applyVis();renderLayers();return;}
+  if(d.fit){closeMenu();if(d.fit==='z'){if(!cfg.zVis){cfg.zVis=true;saveCfg();applyVis();renderLayers();}fitAll();return;}
+    const ly=findLy(d.fit);if(!ly.visible){ly.visible=true;saveLV();applyVis();renderLayers();}const bb=layerBounds(ly);if(bb)fitTo(bb);return;}
+  if(d.share){shareLayer(findLy(d.share));return;}
+  if(d.del){deleteServerLayer(findLy(d.del));return;}
+  if(d.uact){clearTimeout(clickT);const id=d.uact;clickT=setTimeout(()=>{cfg.activeUL=id;saveCfg();renderLayers();},230);return;}
+  if(d.uren){renameGroup(findUL(d.uren));return;}
+  if(d.utw){const l=findUL(d.utw);l.open=!l.open;saveUL();syncGroup(l);renderLayers();return;}
+  if(d.ueye){const l=findUL(d.ueye);l.visible=!l.visible;if(!l.visible&&VSV&&l.pins.includes(VSV))exitVsView();saveUL();syncGroup(l);drawUL();renderLayers();return;}
+  if(d.uexp){exportUL(findUL(d.uexp));return;}
+  if(d.udel){const l=findUL(d.udel);if(!l||!confirm('Obrisati grupu „'+l.name+'“ i svih '+l.pins.length+' pinova u njoj?'))return;
+    if(VSV&&l.pins.includes(VSV))exitVsView();
+    l.pins.forEach(p=>idb.del('vs:'+p.id).catch(()=>{}));if(l.g)map.removeLayer(l.g);if(l.gv)map.removeLayer(l.gv);
+    if(PED&&l.pins.includes(PED.p))map.closePopup();
+    UL=UL.filter(x=>x!==l);if(cfg.activeUL===l.id){cfg.activeUL=UL[0]?UL[0].id:'';saveCfg();}
+    syncDel('pin_groups',l.id);saveUL();renderLayers();toast('Grupa obrisana');return;}
+  if(d.peye){const p=findPin(d.peye);p.visible=!p.visible;if(!p.visible&&VSV===p)exitVsView();saveUL();syncPin(p);drawUL();renderLayers();return;}
+  if(d.pvs){const p=findPin(d.pvs);if(p.busy!=null)return;closeMenu();
+    if(VSV===p){exitVsView();return;}
+    if(!p.vs){runVS(p);return;}
+    showVsView(p);return;}
+  if(d.pedit){const p=findPin(d.pedit);const l=ulOf(p);l.visible=true;p.visible=true;drawUL();renderLayers();closeMenu();
+    map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),14),{duration:.7});setTimeout(()=>openPinEditor(p),750);return;}
+  if(d.pdel){deletePin(findPin(d.pdel));return;}
+});
+onLay('dblclick',e=>{const b=e.target.closest('[data-uact]');if(!b)return;clearTimeout(clickT);renameGroup(findUL(b.dataset.uact));});
+let colT=null;
+onLay('input',e=>{const d=e.target.dataset;
+  if(d.col){const ly=findLy(d.col);if(!ly)return;ly.color=e.target.value;clearTimeout(colT);colT=setTimeout(()=>{drawLayer(ly);applyVis();colorLayer(ly);},300);return;}
+  if(d.ucol){const l=findUL(d.ucol);if(!l)return;l.color=e.target.value;clearTimeout(colT);colT=setTimeout(()=>{
+    l.pins.forEach(p=>{if(p.mk)p.mk.setIcon(pinIcon(l,p));if(p.circ)p.circ.setStyle({color:l.color});});
+    saveUL();syncGroup(l);renderLayers();},200);}});
+
+function buildLayer(row,data){
+  const st=LV[row.id]||{};
+  const ly={id:row.id,name:row.name,color:row.color||'#22d3ee',kind:row.kind||'kml',shared:!!row.visible_to_users,path:row.path,data,
+    visible:st.v!==undefined?st.v:true,showSites:st.s!==undefined?st.s:true,showSec:st.c!==undefined?st.c:true,
+    g:{sites:L.featureGroup(),sec:L.featureGroup(),z:null}};
+  if(ly.kind!=='zalbe'){attachBSEvents(ly.g.sites);attachBSEvents(ly.g.sec);}
+  drawLayer(ly);return ly;}
+function nextColor(){const used=LAYERS.map(l=>l.color);return PAL.find(c=>!used.includes(c))||PAL[LAYERS.length%PAL.length];}
+async function readKmlFile(file){
+  if(/\.kmz$/i.test(file.name)){
+    if(typeof JSZip==='undefined')throw new Error('KMZ biblioteka nije učitana – proveri internet');
+    const z=await JSZip.loadAsync(file);
+    const names=Object.keys(z.files).filter(n=>/\.kml$/i.test(n)&&!z.files[n].dir);
+    if(!names.length)throw new Error('U KMZ-u nema KML fajla');
+    const main=names.find(n=>/(^|\/)doc\.kml$/i.test(n))||names[0];
+    return await z.file(main).async('string');}
+  return await file.text();}
+function showPerf(ly,p){p.total=(p.read||0)+p.parse+p.render;
+  const n=ly.data.sites.length+ly.data.polys.length+ly.data.lines.length;
+  const pe=$('#bsPerf');pe.style.display='block';
+  pe.innerHTML='Poslednji: <b>'+esc(ly.name)+'</b> · '+n0(n)+' objekata<br>'+(p.read?'Čitanje <b>'+fmtMs(p.read)+'</b> · ':'')+'Obrada <b>'+fmtMs(p.parse)+'</b> · Crtanje <b>'+fmtMs(p.render)+'</b><span id="fpsRes"></span>';}
+async function speedTest(){
+  if(S.testing)return;
+  S.testing=true;$('#bsTest').disabled=true;$('#testOv').style.display='block';closeMenu();
+  const c=map.getCenter(),z=map.getZoom();
+  let frames=0,worst=0,last=0,run=true;const times=[];
+  const loop=t=>{if(last){const d=t-last;times.push(d);if(d>worst)worst=d;}last=t;frames++;if(run)requestAnimationFrame(loop);};
+  requestAnimationFrame(loop);
+  const t0=performance.now();
+  const steps=[[350,0],[0,250],[-350,0],[0,-250]];
+  for(let i=0;i<2;i++)for(const s of steps){map.panBy(s,{duration:.45});await sleep(500);}
+  map.zoomIn(1);await sleep(550);map.zoomIn(1);await sleep(550);map.zoomOut(1);await sleep(550);map.zoomOut(1);await sleep(550);
+  run=false;const dur=performance.now()-t0;
+  map.setView(c,z,{animate:false});
+  const fps=frames/(dur/1000);
+  times.sort((a,b)=>a-b);const p95=times.length?times[Math.floor(times.length*0.95)]:0;
+  const cls=fps>=50?'g':fps>=30?'y':'r';const ocena=fps>=50?'Odlično':fps>=30?'Dobro':'Sporo – povećaj „Sektori vidljivi od zuma“';
+  const pe=$('#bsPerf');pe.style.display='block';let el=$('#fpsRes');if(!el){pe.insertAdjacentHTML('beforeend','<span id="fpsRes"></span>');el=$('#fpsRes');}
+  el.innerHTML='<br>Test: <span class="'+cls+'">'+fps.toFixed(0)+' FPS</span> · 95% ≤ '+Math.round(p95)+' ms · ocena: <span class="'+cls+'">'+ocena+'</span>';
+  toast('Test brzine: '+fps.toFixed(0)+' FPS – '+ocena,cls==='r'?'err':'ok');
+  $('#testOv').style.display='none';$('#bsTest').disabled=false;S.testing=false;}
+const kmlInp=$('#kmlFile');
+$('#addKml').addEventListener('click',()=>kmlInp.click());
+$('#emptyKml').addEventListener('click',()=>kmlInp.click());
+kmlInp.addEventListener('change',()=>{const fs=[...kmlInp.files];kmlInp.value='';if(fs.length)importKmlFiles(fs);});
+$('#bsTest').addEventListener('click',speedTest);
+$('#layReload').addEventListener('click',()=>{loadServerLayers(true);loadPins();});
+
+/* ---------- MOJI PINOVI ---------- */
+const UPAL=['#f59e0b','#ef4444','#8b5cf6','#10b981','#ec4899','#0ea5e9','#84cc16','#f97316'];
+const ulKey=()=>'zm_pins_'+(ME?ME.id:'x');
+function saveUL(){if(!ME)return;try{localStorage.setItem(ulKey(),JSON.stringify(UL.map(l=>({id:l.id,name:l.name,color:l.color,visible:l.visible,open:l.open,
+  pins:l.pins.map(p=>({id:p.id,name:p.name,lat:p.lat,lon:p.lon,h:p.h,r:p.r,ht:p.ht,q:p.q,note:p.note,visible:p.visible,e0:p.e0}))}))));}catch(e){}}
+function newUL(name){const used=UL.map(l=>l.color);
+  const l={id:newId(),name,color:UPAL.find(c=>!used.includes(c))||UPAL[UL.length%UPAL.length],visible:true,open:true,pins:[]};
+  syncGroup(l);return l;}
+function activeUL(create){let l=findUL(cfg.activeUL)||UL[0];if(!l){if(create===false)return null;l=newUL('Moji pinovi');UL.push(l);saveUL();}
+  if(cfg.activeUL!==l.id){cfg.activeUL=l.id;saveCfg();}return l;}
+function pinIcon(l,p){return L.divIcon({className:'',html:'<div class="upw"><div class="upin" style="--c:'+l.color+'">'+TOWER+'</div><div class="ulbl">'+esc(p.name)+'</div></div>',iconSize:[30,30],iconAnchor:[15,35],popupAnchor:[0,-32]});}
+function placePin(ll,lid){
+  if(!ME)return;
+  const l=findUL(lid)||activeUL();cfg.activeUL=l.id;saveCfg();
+  let cnt=0;UL.forEach(x=>cnt+=x.pins.length);
+  const p={id:newId(),name:'Pin '+(cnt+1),lat:ll.lat,lon:ll.lng,h:+cfg.pinH||30,r:+cfg.pinR||10,ht:+cfg.pinHt||0,q:cfg.pinQ||'normal',note:'',visible:true};
+  if(!l.visible)l.visible=true;l.open=true;l.pins.push(p);
+  syncGroup(l);syncPin(p);saveUL();drawUL();refresh();openPinEditor(p);
+  toast('Pin sačuvan'+(navigator.onLine?'':' (biće poslat na server kad se vrati internet)'),'ok');}
+function ensurePin(l,p){
+  if(!p.mk){
+    p.mk=L.marker([p.lat,p.lon],{icon:pinIcon(l,p),draggable:!isMobile(),zIndexOffset:900});
+    p.mk.on('click',()=>{if(R.on){map.closePopup();rulerAdd(p.mk.getLatLng());return;}openPinEditor(p);});
+    p.mk.on('dragend',e=>{const ll=e.target.getLatLng();p.lat=ll.lat;p.lon=ll.lng;p.e0=null;invalidateVS(p);saveUL();syncPin(p);renderLayers();
+      if(PED&&PED.p===p)openPinEditor(p);toast('Pin pomeren – vidljivost treba ponovo izračunati');});
+    p.mk.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+  }else{p.mk.setLatLng([p.lat,p.lon]);if(p._icol!==l.color||p._inm!==p.name)p.mk.setIcon(pinIcon(l,p));}
+  p._icol=l.color;p._inm=p.name;}
+function drawUL(){
+  UL.forEach(l=>{
+    if(!l.g){l.g=L.featureGroup();l.gv=L.layerGroup();}
+    tog(l.gv,l.visible);tog(l.g,l.visible);
+    l.pins.forEach(p=>{ensurePin(l,p);
+      if(p.visible&&!l.g.hasLayer(p.mk))l.g.addLayer(p.mk);else if(!p.visible&&l.g.hasLayer(p.mk))l.g.removeLayer(p.mk);
+      const show=VSV===p&&p.visible&&p.vs;
+      if(show){if(!p.ov)buildOverlay(l,p);if(!l.gv.hasLayer(p.ov)){l.gv.addLayer(p.ov);l.gv.addLayer(p.circ);}}
+      else if(p.ov&&l.gv.hasLayer(p.ov)){l.gv.removeLayer(p.ov);l.gv.removeLayer(p.circ);}
+    });});}
+function buildOverlay(l,p){const im=p.vsImg||(p.vsImg=vsImage(p));
+  p.ov=L.imageOverlay(im.url,im.b,{opacity:+cfg.vsOp,interactive:false});
+  p.circ=L.circle([p.lat,p.lon],{radius:p.vs.R,color:l.color,weight:2,dashArray:'8 6',fill:false,interactive:false});}
+function dropOverlay(p){const l=ulOf(p);if(p.ov&&l){l.gv.removeLayer(p.ov);l.gv.removeLayer(p.circ);}p.ov=null;p.circ=null;p.vsImg=null;}
+function rebuildOverlays(){UL.forEach(l=>l.pins.forEach(p=>{if(p.ov)dropOverlay(p);else p.vsImg=null;}));drawUL();}
+function invalidateVS(p){if(VSV===p)exitVsView();if(p.vs){p.vs=null;idb.del('vs:'+p.id).catch(()=>{});}dropOverlay(p);updVsStatus(p);}
+
+function showVsView(p,noFit){
+  if(!p||!p.vs)return;
+  if(VSV&&VSV!==p){const old=VSV;VSV=null;dropOverlay(old);}
+  VSV=p;const l=ulOf(p);if(l)l.visible=true;p.visible=true;
+  if(!noFit)map.closePopup();drawUL();renderLayers();
+  const z=zalbeStats(p);
+  $('#vsBarTxt').innerHTML='👁 <b>'+esc(p.name)+'</b> · vidljivo <b style="color:'+cfg.vsCol+'">'+p.vs.pct.toFixed(0)+'%</b> · h '+p.h+' m · r '+p.r+' km'+
+    (z.n?' · žalbe vidljive <b>'+z.v+'/'+z.n+'</b>':'');
+  $('#vsBar').classList.add('on');
+  if(!noFit)map.fitBounds(L.latLng(p.lat,p.lon).toBounds(p.vs.R*2.1),{padding:[30,30]});}
+function exitVsView(){
+  if(!VSV)return;const p=VSV;VSV=null;dropOverlay(p);drawUL();renderLayers();refreshEditor(p);
+  $('#vsBar').classList.remove('on');}
+$('#vsExit').addEventListener('click',exitVsView);
+
+function deletePin(p){if(!p||!confirm('Obrisati pin „'+p.name+'“?'))return;const l=ulOf(p);
+  if(VSV===p)exitVsView();
+  dropOverlay(p);if(p.mk)l.g.removeLayer(p.mk);idb.del('vs:'+p.id).catch(()=>{});
+  if(PED&&PED.p===p)map.closePopup();
+  l.pins.splice(l.pins.indexOf(p),1);syncDel('pins',p.id);saveUL();drawUL();refresh();toast('Pin obrisan');}
+function movePin(p,toId){const from=ulOf(p),to=findUL(toId);if(!from||!to||from===to)return;
+  if(VSV===p)exitVsView();
+  if(p.mk){from.g.removeLayer(p.mk);p.mk=null;}dropOverlay(p);
+  from.pins.splice(from.pins.indexOf(p),1);to.pins.push(p);to.visible=true;to.open=true;syncPin(p);saveUL();drawUL();renderLayers();}
+function exportUL(l){if(!l.pins.length){toast('Grupa je prazna');return;}
+  const x=s=>String(s??'').replace(/[<>&'"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
+  const h=l.color.replace('#','');const kc='ff'+h.slice(4,6)+h.slice(2,4)+h.slice(0,2);
+  let k='<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>'+x(l.name)+'</name>'+
+    '<Style id="p"><IconStyle><color>'+kc+'</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon></IconStyle></Style>';
+  l.pins.forEach(p=>{k+='<Placemark><name>'+x(p.name)+'</name><styleUrl>#p</styleUrl><description>'+x((p.note?p.note+' | ':'')+'Visina '+p.h+' m | Radijus '+p.r+' km'+(p.vs?' | Vidljivo '+p.vs.pct.toFixed(1)+'%':''))+'</description>'+
+    '<ExtendedData><Data name="visina_m"><value>'+p.h+'</value></Data><Data name="radijus_km"><value>'+p.r+'</value></Data><Data name="visina_prijemnika_m"><value>'+p.ht+'</value></Data></ExtendedData>'+
+    '<Point><altitudeMode>relativeToGround</altitudeMode><coordinates>'+p.lon+','+p.lat+','+p.h+'</coordinates></Point></Placemark>';});
+  k+='</Document></kml>';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([k],{type:'application/vnd.google-earth.kml+xml'}));
+  a.download=(l.name||'Moji_pinovi').replace(/[\\/:*?"<>|]/g,'_')+'.kml';a.click();toast('KML izvezen','ok');}
+
+const QN={fast:'Brzo (1°)',normal:'Normalno (0,5°)',fine:'Fino (0,25°)'};
+function vsStatusTxt(p){if(p.busy!=null)return '⏳ računam '+p.busy+'%';if(!p.vs)return 'vidljivost nije izračunata';return (VSV===p?'👁 prikazano · ':'')+'vidljivo '+p.vs.pct.toFixed(0)+'%';}
+function zalbeAll(){const loc=S.items.filter(i=>i.lat!=null);if(loc.length)return loc;
+  const a=[];LAYERS.forEach(l=>{if(l.kind==='zalbe'&&l.visible)a.push(...l.data.items);});return a;}
+function zalbeStats(p){let n=0,v=0;zalbeAll().forEach(it=>{const r=vsLookup(p,it.lat,it.lon);if(r<0)return;n++;if(r)v++;});return {n,v};}
+function vsBigHtml(p){
+  if(p.busy!=null)return '⏳ Računam optičku vidljivost… <b>'+p.busy+'%</b>';
+  if(!p.vs)return 'Optička vidljivost nije izračunata.<br><span class="muted">Klikni „Izračunaj vidljivost“ (krug r = '+p.r+' km). Posle računanja mapa se osenči.</span>';
+  const z=zalbeStats(p);
+  return '<b style="color:'+cfg.vsCol+'">Vidljivo '+p.vs.pct.toFixed(1)+'%</b> površine kruga r = '+p.r+' km<br>'+
+    (z.n?'Žalbe u krugu: <b>'+z.n+'</b> · vidljivo <b style="color:var(--green)">'+z.v+'</b> · u senci <b style="color:var(--red)">'+(z.n-z.v)+'</b>':'<span class="muted">Nema žalbi u krugu</span>')+
+    '<br><span class="muted">Teren '+Math.round(p.vs.e0)+' m n.v. · vrh antene '+Math.round(p.vs.e0+(+p.h||0))+' m n.v.<br>'+esc(p.vs.src)+'</span>';}
+function updVsStatus(p){$$('[data-vsst="'+p.id+'"]').forEach(e=>e.textContent=vsStatusTxt(p));
+  if(PED&&PED.p===p){const b=PED.el.querySelector('[data-vsbig]');if(b)b.innerHTML=vsBigHtml(p);}}
+function refreshEditor(p){if(PED&&PED.p===p)fillEditorButtons();}
+function fillEditorButtons(){if(!PED)return;const p=PED.p,el=PED.el;
+  el.querySelector('[data-vsbig]').innerHTML=vsBigHtml(p);
+  el.querySelector('[data-a="vs"]').textContent=p.vs?'👁 Prikaži preko mape':'👁 Izračunaj vidljivost';
+  const t=el.querySelector('[data-a="re"]');t.style.display=p.vs?'':'none';
+  const e0=p.vs?p.vs.e0:p.e0;
+  el.querySelector('[data-pc]').innerHTML=p.lat.toFixed(6)+', '+p.lon.toFixed(6)+(e0!=null?' · teren '+Math.round(e0)+' m · vrh '+Math.round(e0+(+p.h||0))+' m n.v.':'');}
+function openPinEditor(p){
+  const l=ulOf(p);if(!l)return;
+  const el=document.createElement('div');el.className='pp ped';
+  el.innerHTML='<div class="pp-h"><b>📍 Moj pin</b><span class="badge" style="color:'+l.color+'">'+esc(l.name)+'</span></div>'+
+    '<div class="f"><label>Naziv</label><input class="inp" data-p="name" value="'+esc(p.name)+'"></div>'+
+    '<div class="r2"><div class="f"><label>Visina iznad zemlje (m)</label><input class="inp" type="number" inputmode="decimal" min="0" max="500" step="1" data-p="h" value="'+p.h+'"></div>'+
+    '<div class="f"><label>Visina prijemnika (m)</label><input class="inp" type="number" inputmode="decimal" min="0" max="100" step="0.5" data-p="ht" value="'+p.ht+'"></div></div>'+
+    '<div class="f"><label>Radijus vidljivosti: <b data-rl style="color:var(--accent2)"></b></label><div style="display:flex;gap:8px;align-items:center">'+
+      '<input type="range" min="0.5" max="50" step="0.5" data-p="r" value="'+p.r+'" style="flex:1"><input class="inp" type="number" inputmode="decimal" min="0.5" max="50" step="0.5" data-p="r2" value="'+p.r+'" style="width:74px"></div></div>'+
+    '<div class="r2"><div class="f"><label>Preciznost</label><select class="inp" data-p="q">'+Object.entries(QN).map(([k,v])=>'<option value="'+k+'"'+(p.q===k?' selected':'')+'>'+v+'</option>').join('')+'</select></div>'+
+    '<div class="f"><label>Grupa</label><select class="inp" data-p="lid">'+UL.map(x=>'<option value="'+x.id+'"'+(x===l?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div></div>'+
+    '<div class="f"><label>Napomena</label><textarea class="inp" data-p="note" rows="2">'+esc(p.note||'')+'</textarea></div>'+
+    '<div class="co" data-pc style="cursor:pointer" title="Klikni da kopiraš koordinate"></div>'+
+    '<div class="vsst" data-vsbig></div>'+
+    '<div class="acts"><button class="pri" data-a="vs"></button><button data-a="re">↻ Izračunaj ponovo</button><button data-a="ruler">📏 Meri odavde</button><button class="dng" data-a="del">🗑 Obriši</button></div>';
+  const q=s=>el.querySelector(s);
+  const rl=()=>{q('[data-rl]').textContent=p.r+' km (prečnik '+(p.r*2)+' km)';};rl();
+  const vsChange=()=>{invalidateVS(p);saveUL();syncPin(p);renderLayers();fillEditorButtons();};
+  q('[data-p="name"]').addEventListener('input',e=>{p.name=e.target.value||'Pin';saveUL();syncPin(p);ensurePin(ulOf(p),p);$$('[data-pedit="'+p.id+'"] b').forEach(b=>b.textContent='📍 '+p.name);});
+  q('[data-p="note"]').addEventListener('input',e=>{p.note=e.target.value;saveUL();syncPin(p);});
+  q('[data-p="h"]').addEventListener('change',e=>{p.h=Math.max(0,Math.min(500,+e.target.value||0));e.target.value=p.h;vsChange();});
+  q('[data-p="ht"]').addEventListener('change',e=>{p.ht=Math.max(0,Math.min(100,+e.target.value||0));e.target.value=p.ht;vsChange();});
+  q('[data-p="q"]').addEventListener('change',e=>{p.q=e.target.value;vsChange();});
+  q('[data-p="r"]').addEventListener('input',e=>{p.r=+e.target.value;q('[data-p="r2"]').value=p.r;rl();});
+  q('[data-p="r"]').addEventListener('change',()=>vsChange());
+  q('[data-p="r2"]').addEventListener('change',e=>{p.r=Math.max(0.5,Math.min(50,+e.target.value||10));e.target.value=p.r;q('[data-p="r"]').value=p.r;rl();vsChange();});
+  q('[data-p="lid"]').addEventListener('change',e=>{movePin(p,e.target.value);openPinEditor(p);});
+  q('[data-pc]').addEventListener('click',()=>copyText(p.lat.toFixed(6)+', '+p.lon.toFixed(6),'Koordinate kopirane'));
+  q('[data-a="vs"]').addEventListener('click',()=>{if(p.vs)showVsView(p);else runVS(p);});
+  q('[data-a="re"]').addEventListener('click',()=>{invalidateVS(p);runVS(p);});
+  q('[data-a="ruler"]').addEventListener('click',()=>{map.closePopup();rulerStart(L.latLng(p.lat,p.lon));});
+  q('[data-a="del"]').addEventListener('click',()=>deletePin(p));
+  L.DomEvent.disableClickPropagation(el);L.DomEvent.disableScrollPropagation(el);
+  const pop=L.popup({maxWidth:380,minWidth:isMobile()?230:330,offset:[0,-32],autoPanPadding:[30,30]}).setLatLng([p.lat,p.lon]).setContent(el).openOn(map);
+  PED={p,el,pop};fillEditorButtons();
+  pop.on('remove',()=>{if(PED&&PED.pop===pop)PED=null;});
+  if(p.e0==null&&!p.vs){pointElev(p.lat,p.lon).then(e=>{if(e!=null){p.e0=e;saveUL();syncPin(p);if(PED&&PED.p===p)fillEditorButtons();}});}}
+
+/* ---------- VISINE TERENA ---------- */
+const DEM_URL='https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+const DEM_SRC='Teren: AWS Terrain Tiles (SRTM/Copernicus ~30 m)';
+const demCache=new Map();
+function demTile(z,x,y){const k=z+'/'+x+'/'+y;if(demCache.has(k))return demCache.get(k);
+  const pr=new Promise((res,rej)=>{const im=new Image();im.crossOrigin='anonymous';
+    im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(im,0,0);
+      const d=g.getImageData(0,0,256,256).data;const h=new Float32Array(65536);
+      for(let i=0;i<65536;i++)h[i]=d[i*4]*256+d[i*4+1]+d[i*4+2]/256-32768;res(h);}catch(e){rej(e);}};
+    im.onerror=()=>rej(new Error('DEM pločica nedostupna'));
+    im.src=DEM_URL.replace('{z}',z).replace('{x}',x).replace('{y}',y);});
+  pr.catch(()=>demCache.delete(k));demCache.set(k,pr);return pr;}
+const lon2tx=(lon,z)=>Math.floor((lon+180)/360*Math.pow(2,z));
+const lat2ty=(lat,z)=>{const s=Math.sin(lat*Math.PI/180);return Math.floor((0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*Math.pow(2,z));};
+async function demSampler(s,w,n,e,zMax){
+  let z=zMax,x0,x1,y0,y1;
+  for(;z>=5;z--){x0=lon2tx(w,z);x1=lon2tx(e,z);y0=lat2ty(n,z);y1=lat2ty(s,z);if((x1-x0+1)*(y1-y0+1)<=36)break;}
+  const tiles=new Map(),jobs=[];
+  for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)jobs.push(demTile(z,x,y).then(t=>tiles.set(x+','+y,t)));
+  await Promise.all(jobs);
+  const N=256*Math.pow(2,z);
+  const get=(px,py)=>{const t=tiles.get(Math.floor(px/256)+','+Math.floor(py/256));return t?t[(py&255)*256+(px&255)]:NaN;};
+  const f=(lat,lon)=>{const sl=Math.sin(lat*Math.PI/180);const X=(lon+180)/360*N-0.5,Y=(0.5-Math.log((1+sl)/(1-sl))/(4*Math.PI))*N-0.5;
+    const x=Math.floor(X),y=Math.floor(Y),fx=X-x,fy=Y-y;const a=get(x,y),b=get(x+1,y),c=get(x,y+1),d=get(x+1,y+1);
+    if(isNaN(a)||isNaN(b)||isNaN(c)||isNaN(d)){const v=[a,b,c,d].find(v=>!isNaN(v));return v===undefined?NaN:v;}
+    return (a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy;};
+  return {f,res:40075016*Math.cos((s+n)/2*Math.PI/180)/N,src:DEM_SRC};}
+async function omSampler(s,w,n,e,onProg){
+  const G=48,lats=[],lons=[];
+  for(let i=0;i<G;i++)for(let j=0;j<G;j++){lats.push(n-(n-s)*i/(G-1));lons.push(w+(e-w)*j/(G-1));}
+  const grid=new Float32Array(G*G);
+  for(let k=0;k<lats.length;k+=100){
+    const la=lats.slice(k,k+100).map(v=>v.toFixed(5)).join(','),lo=lons.slice(k,k+100).map(v=>v.toFixed(5)).join(',');
+    const r=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+la+'&longitude='+lo);
+    if(!r.ok)throw new Error('Open-Meteo HTTP '+r.status);const j=await r.json();
+    (j.elevation||[]).forEach((v,i)=>grid[k+i]=+v||0);if(onProg)onProg(k/lats.length);await sleep(120);}
+  const f=(lat,lon)=>{const gi=(n-lat)/(n-s)*(G-1),gj=(lon-w)/(e-w)*(G-1);
+    const i=Math.max(0,Math.min(G-2,Math.floor(gi))),j=Math.max(0,Math.min(G-2,Math.floor(gj))),fi=Math.min(1,Math.max(0,gi-i)),fj=Math.min(1,Math.max(0,gj-j));
+    const a=grid[i*G+j],b=grid[i*G+j+1],c=grid[(i+1)*G+j],d=grid[(i+1)*G+j+1];
+    return (a*(1-fj)+b*fj)*(1-fi)+(c*(1-fj)+d*fj)*fi;};
+  return {f,res:(n-s)*111320/(G-1),src:'Teren: Open-Meteo (grublja mreža)'};}
+async function getSampler(s,w,n,e,zMax,onProg){
+  try{return await demSampler(s,w,n,e,zMax);}
+  catch(err){console.warn('DEM',err);toast('DEM pločice nedostupne – koristim Open-Meteo (sporije i grublje)');return await omSampler(s,w,n,e,onProg);}}
+async function pointElev(lat,lon){
+  try{const smp=await demSampler(lat-0.001,lon-0.001,lat+0.001,lon+0.001,13);const v=smp.f(lat,lon);if(isFinite(v))return v;}catch(e){}
+  try{const r=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+lat.toFixed(5)+'&longitude='+lon.toFixed(5));const j=await r.json();return +j.elevation[0];}catch(e){return null;}}
+
+/* ---------- OPTIČKA VIDLJIVOST ---------- */
+const MPD=111320;
+const vsSig=p=>[(+p.lat).toFixed(6),(+p.lon).toFixed(6),+p.h,+p.r,+p.ht,p.q].join('|');
+function vsAt(v,dx,dy,d){if(d<v.step)return 1;let az=Math.atan2(dx,dy);if(az<0)az+=2*Math.PI;
+  const ri=Math.round(az/(2*Math.PI)*v.nR)%v.nR;const si=Math.max(1,Math.min(v.nS,Math.round(d/v.step)));return v.vis[ri*v.nS+si-1];}
+function vsLookup(p,lat,lon){const v=p.vs;if(!v||!p.visible)return -1;const cl=Math.cos(p.lat*Math.PI/180);
+  const dy=(lat-p.lat)*MPD,dx=(lon-p.lon)*MPD*cl,d=Math.sqrt(dx*dx+dy*dy);if(d>v.R)return -1;return vsAt(v,dx,dy,d);}
+function vsImage(p){const v=p.vs,cl=Math.cos(p.lat*Math.PI/180);
+  const dLat=v.R/MPD,dLon=v.R/(MPD*cl);const N=Math.max(300,Math.min(isMobile()?600:900,Math.round(2*v.R/(v.step*1.2))));
+  const c=document.createElement('canvas');c.width=c.height=N;const g=c.getContext('2d');const img=g.createImageData(N,N);const D=img.data;
+  const vc=hexRgb(cfg.vsCol),sc=hexRgb(cfg.vsShCol),sh=cfg.vsShadow;let inside=0,vis=0;
+  for(let y=0;y<N;y++){const dy=(dLat-(y+0.5)/N*2*dLat)*MPD;
+    for(let x=0;x<N;x++){const dx=(-dLon+(x+0.5)/N*2*dLon)*MPD*cl;const d=Math.sqrt(dx*dx+dy*dy);if(d>v.R)continue;inside++;
+      const on=vsAt(v,dx,dy,d);const i=(y*N+x)*4;
+      if(on){vis++;D[i]=vc[0];D[i+1]=vc[1];D[i+2]=vc[2];D[i+3]=255;}
+      else if(sh){D[i]=sc[0];D[i+1]=sc[1];D[i+2]=sc[2];D[i+3]=255;}}}
+  g.putImageData(img,0,0);
+  return {url:c.toDataURL('image/png'),b:[[p.lat-dLat,p.lon-dLon],[p.lat+dLat,p.lon+dLon]],pct:inside?vis/inside*100:0};}
+async function runVS(p){
+  if(p.busy!=null)return;p.busy=0;updVsStatus(p);renderLayers();let ok=false;
+  try{
+    const Rr=Math.max(500,Math.min(50000,(+p.r||10)*1000)),lat0=p.lat,lon0=p.lon,cl=Math.cos(lat0*Math.PI/180);
+    const dLat=Rr/MPD,dLon=Rr/(MPD*cl);
+    const smp=await getSampler(lat0-dLat,lon0-dLon,lat0+dLat,lon0+dLon,Rr<=4000?13:12,pr=>{p.busy=Math.round(pr*20);updVsStatus(p);});
+    p.busy=20;updVsStatus(p);
+    const nR={fast:360,normal:720,fine:1440}[p.q]||720;
+    const step=Math.max(smp.res*0.7,Rr/1500),nS=Math.max(2,Math.ceil(Rr/step));
+    const vis=new Uint8Array(nR*nS);
+    let e0=smp.f(lat0,lon0);if(!isFinite(e0))e0=0;
+    const zo=e0+(+p.h||0),ht=+p.ht||0,K2=2*(4/3)*6371000;
+    let t=performance.now();
+    for(let r=0;r<nR;r++){
+      const az=r/nR*2*Math.PI,ca=Math.cos(az),sa=Math.sin(az);let maxA=-Infinity,lastE=e0;
+      for(let s=1;s<=nS;s++){const d=s*step;let E=smp.f(lat0+d*ca/MPD,lon0+d*sa/(MPD*cl));if(!isFinite(E))E=lastE;lastE=E;
+        const c=d*d/K2,at=(E-c-zo)/d,ag=(E+ht-c-zo)/d;
+        vis[r*nS+s-1]=ag>=maxA?1:0;if(at>maxA)maxA=at;}
+      if(performance.now()-t>40){p.busy=20+Math.round(r/nR*78);updVsStatus(p);await sleep(0);t=performance.now();}}
+    dropOverlay(p);
+    p.vs={sig:vsSig(p),nR,nS,step,vis,e0,R:Rr,src:smp.src,pct:0};p.e0=e0;
+    p.vsImg=vsImage(p);p.vs.pct=p.vsImg.pct;
+    try{await idb.set('vs:'+p.id,p.vs);}catch(e){console.warn(e);}
+    saveUL();syncPin(p);ok=true;
+  }catch(e){console.error(e);toast('Vidljivost: '+e.message,'err');}
+  finally{p.busy=null;updVsStatus(p);refreshEditor(p);
+    if(ok)showVsView(p);else{drawUL();renderLayers();}}}
+
+/* ---------- PRETRAGA ---------- */
+const sIn=$('#mapQ'),sRes=$('#srchRes');let sMk=null;const sHits=[];
+function hideRes(){sRes.style.display='none';}
+function showRes(list,msg){sHits.length=0;list.forEach(x=>sHits.push(x));
+  let h=list.map((x,i)=>'<div class="sr" data-i="'+i+'"><span class="ic">'+x.ic+'</span><div class="tx"><b>'+esc(x.t)+'</b><span>'+esc(x.s||'')+'</span></div></div>').join('');
+  if(msg)h+='<div class="sr-msg">'+esc(msg)+'</div>';
+  sRes.innerHTML=h;sRes.style.display=h?'block':'none';}
+function parseCoord(s){
+  s=s.trim();let m,lat,lon;
+  if((m=s.match(/^(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)$/))){lat=+m[1];lon=+m[2];}
+  else if((m=s.match(/^(-?\d+,\d+)\s*[;\s]\s*(-?\d+,\d+)$/))){lat=+m[1].replace(',','.');lon=+m[2].replace(',','.');}
+  else{const re=/(\d{1,3})\s*[°º:\s]\s*(\d{1,2})\s*['′:\s]\s*(\d{1,2}(?:[.,]\d+)?)\s*(?:["″]|'')?\s*([NSEWISZnsewisz])?/g;const a=[];let x;
+    while((x=re.exec(s))&&a.length<2){let v=+x[1]+(+x[2])/60+(+x[3].replace(',','.'))/3600;if(x[4]&&/[SWsw]/.test(x[4]))v=-v;a.push(v);}
+    if(a.length===2){lat=a[0];lon=a[1];}}
+  if(lat==null||!isFinite(lat)||!isFinite(lon))return null;
+  if(lat>=18&&lat<=23.5&&lon>=41.5&&lon<=46.5){const t=lat;lat=lon;lon=t;}
+  if(Math.abs(lat)>90||Math.abs(lon)>180)return null;
+  return L.latLng(lat,lon);}
+function bsMatch(q){q=norm(q);const out=[];if(q.length<2)return out;
+  for(const l of UL)for(const p of l.pins){if(p.name.toLowerCase().includes(q)){out.push({ic:'📍',t:p.name,s:'Moj pin · '+l.name,ll:L.latLng(p.lat,p.lon),z:15,pin:p});if(out.length>=6)break;}}
+  for(const ly of LAYERS){for(const f of ly.data.sites){if(f.name&&f.name.toLowerCase().includes(q)){out.push({ic:'📡',t:f.name,s:'BS · '+ly.name,ll:L.latLng(f.ll),z:16,ly});if(out.length>=12)return out;}}}
+  return out;}
+async function nomList(params,limit){
+  const p=new URLSearchParams(Object.assign({format:'jsonv2',limit:String(limit||1),'accept-language':'sr-Latn,sr,en'},cfg.cc?{countrycodes:cfg.cc.toLowerCase()}:{},params));
+  const r=await fetch('https://nominatim.openstreetmap.org/search?'+p.toString());
+  if(!r.ok)throw new Error('Nominatim HTTP '+r.status);const j=await r.json();
+  return j.map(x=>({lat:+x.lat,lon:+x.lon,label:x.display_name}));}
+async function photonList(q,limit){
+  const p=new URLSearchParams({q,limit:String(limit||1)});if((cfg.cc||'').toLowerCase()==='rs')p.set('bbox','18.8,42.2,23.1,46.25');
+  const r=await fetch('https://photon.komoot.io/api/?'+p.toString());
+  if(!r.ok)throw new Error('Photon HTTP '+r.status);const j=await r.json();
+  return (j.features||[]).map(f=>{const pr=f.properties||{};
+    const lbl=[pr.name,[pr.street,pr.housenumber].filter(Boolean).join(' '),pr.city||pr.town||pr.village,pr.county,pr.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(', ');
+    return {lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],label:lbl};});}
+async function geoSearch(q){
+  let r;
+  if(cfg.geocoder==='photon')r=await photonList(q,6);
+  else{try{r=await nomList({q},6);}catch(e){r=await photonList(q,6);}}
+  return r.map(x=>({ic:'🏠',t:x.label.split(',').slice(0,2).join(','),s:x.label,ll:L.latLng(x.lat,x.lon),z:17}));}
+async function doSearch(){
+  const q=sIn.value.trim();if(!q)return;
+  const c=parseCoord(q);if(c){hideRes();goTo({ll:c,t:'Koordinate',s:'',z:17});return;}
+  const loc=bsMatch(q);showRes(loc,'Tražim adresu…');
+  try{const g=await geoSearch(q);showRes(loc.concat(g),(loc.length||g.length)?'':'Nema rezultata za „'+q+'“');}
+  catch(e){showRes(loc,'Greška pretrage: '+e.message);}}
+function goTo(x){
+  sIn.blur();
+  if(x.ly&&!x.ly.visible){x.ly.visible=true;saveLV();applyVis();renderLayers();}
+  if(x.pin){const l=ulOf(x.pin);l.visible=true;x.pin.visible=true;saveUL();drawUL();renderLayers();
+    map.flyTo(x.ll,Math.max(map.getZoom(),x.z||15),{duration:.9});setTimeout(()=>openPinEditor(x.pin),950);$('#mapQClr').style.display='block';return;}
+  if(sMk)map.removeLayer(sMk);
+  sMk=L.marker(x.ll,{icon:L.divIcon({className:'',html:'<div class="spin"></div>',iconSize:[18,18],iconAnchor:[9,9]}),zIndexOffset:1500}).addTo(map);
+  sMk.bindPopup('<div class="pp"><div class="pp-h"><b>'+esc(x.t)+'</b><span class="badge">Pretraga</span></div>'+(x.s?'<div class="pp-o">'+esc(x.s)+'</div>':'')+
+    '<div class="acts" style="margin-bottom:8px"><button class="pri" data-addpin="'+x.ll.lat+','+x.ll.lng+'">📍 Dodaj pin ovde</button></div>'+llActs(x.ll.lat,x.ll.lng)+'</div>');
+  sMk.on('click',()=>{if(R.on){map.closePopup();rulerAdd(sMk.getLatLng());}});
+  sMk.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+  map.flyTo(x.ll,Math.max(map.getZoom(),x.z||16),{duration:.9});
+  setTimeout(()=>{if(sMk&&!R.on)sMk.openPopup();},950);
+  $('#mapQClr').style.display='block';}
+sIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}});
+sIn.addEventListener('input',()=>{const q=sIn.value.trim();$('#mapQClr').style.display=q?'block':'none';
+  if(!q){hideRes();return;}if(parseCoord(q)){showRes([],'Enter → idi na koordinate');return;}
+  const loc=bsMatch(q);showRes(loc,'Enter → traži adresu / grad');});
+sIn.addEventListener('focus',()=>{if(sRes.innerHTML)sRes.style.display='block';});
+$('#mapQBtn').addEventListener('click',doSearch);
+$('#mapQClr').addEventListener('click',()=>{sIn.value='';hideRes();$('#mapQClr').style.display='none';if(sMk){map.removeLayer(sMk);sMk=null;}});
+sRes.addEventListener('click',e=>{const r=e.target.closest('.sr');if(!r)return;const x=sHits[+r.dataset.i];if(x){hideRes();goTo(x);}});
+document.addEventListener('click',e=>{if(!e.target.closest('.srch'))hideRes();});
+
+/* ---------- LENJIR + AZIMUT + PROFIL TERENA ---------- */
+const R={on:false,pts:[],mk:[],line:null,tmp:null,prof:null,an:null,hov:null,hi:-1,req:0};
+function bearing(a,b){const toR=Math.PI/180,f1=a.lat*toR,f2=b.lat*toR,dl=(b.lng-a.lng)*toR;
+  const y=Math.sin(dl)*Math.cos(f2),x=Math.cos(f1)*Math.sin(f2)-Math.sin(f1)*Math.cos(f2)*Math.cos(dl);
+  return (Math.atan2(y,x)/toR+360)%360;}
+const DIR=['S','SSI','SI','ISI','I','IJI','JI','JJI','J','JJZ','JZ','ZJZ','Z','ZSZ','SZ','SSZ'];
+const dirName=az=>DIR[Math.round(az/22.5)%16];
+function rulerTip(a,b){const D=a.distanceTo(b),az=bearing(a,b);
+  return '<div style="text-align:center;line-height:1.45"><b style="font-size:13.5px">'+fmtDist(D)+'</b><br>'+
+    '<span style="color:#22d3ee">Azimut: <b>'+az.toFixed(1)+'°</b> ('+dirName(az)+')</span></div>';}
+function rulerStart(from){stopPick();rulerClear();R.on=true;$('#rulerBtn').classList.add('active');setCross(true);closeMenu();
+  banner('📏 Klikni tačku A (od nje se meri azimut)');if(from)rulerAdd(from);}
+function rulerStop(){if(!R.on)return;R.on=false;$('#rulerBtn').classList.remove('active');setCross(false);hideBanner();
+  if(R.tmp){map.removeLayer(R.tmp);R.tmp=null;}if(R.pts.length<2)rulerClear();}
+function rulerClear(){R.mk.forEach(m=>map.removeLayer(m));R.mk=[];R.pts=[];
+  if(R.line){map.removeLayer(R.line);R.line=null;}if(R.tmp){map.removeLayer(R.tmp);R.tmp=null;}
+  if(R.hov){map.removeLayer(R.hov);R.hov=null;}R.prof=null;R.an=null;R.req++;closeProf();}
+function rulerAdd(ll){
+  ll=L.latLng(ll);R.pts.push(ll);const i=R.pts.length-1;
+  const m=L.marker(ll,{draggable:true,zIndexOffset:2000,icon:L.divIcon({className:'',html:'<div class="rp'+(i?' b':'')+'">'+(i?'B':'A')+'</div>',iconSize:[28,28],iconAnchor:[14,14]})});
+  m.on('drag',e=>{R.pts[i]=e.target.getLatLng();drawRulerLine();});
+  m.on('dragend',()=>computeProfile());
+  m.addTo(map);R.mk.push(m);
+  if(R.pts.length===1)banner('📏 Sad klikni tačku B');
+  if(R.pts.length>=2){R.on=false;$('#rulerBtn').classList.remove('active');setCross(false);hideBanner();
+    if(R.tmp){map.removeLayer(R.tmp);R.tmp=null;}drawRulerLine();computeProfile();}}
+function lineColor(){return !R.an?'#22d3ee':R.an.status==='ok'?'#2ee59d':R.an.status==='warn'?'#ffd43b':'#ff4d6d';}
+function drawRulerLine(){
+  if(R.pts.length<2)return;const [a,b]=R.pts;const D=a.distanceTo(b);
+  const t=rulerTip(a,b);
+  if(!R.line){R.line=L.polyline([a,b],{color:lineColor(),weight:3.5,dashArray:'9 7',interactive:false}).addTo(map);
+    R.line.bindTooltip(t,{permanent:true,direction:'center',className:'rtip'});}
+  else{R.line.setLatLngs([a,b]);R.line.setStyle({color:lineColor()});R.line.setTooltipContent(t);}
+  R.line.openTooltip(L.latLng((a.lat+b.lat)/2,(a.lng+b.lng)/2));
+  const az=bearing(a,b);$('#profSum').textContent=fmtDist(D)+' · az. '+az.toFixed(1)+'° ('+dirName(az)+')';}
+map.on('mousemove',e=>{if(!R.on||R.pts.length!==1)return;const a=R.pts[0];
+  const t=rulerTip(a,e.latlng);
+  if(!R.tmp){R.tmp=L.polyline([a,e.latlng],{color:'#22d3ee',weight:2.5,dashArray:'6 6',interactive:false}).addTo(map);
+    R.tmp.bindTooltip(t,{permanent:true,direction:'right',offset:[14,0],className:'rtip'});}
+  else{R.tmp.setLatLngs([a,e.latlng]);R.tmp.setTooltipContent(t);}
+  R.tmp.openTooltip(e.latlng);});
+$('#rulerBtn').addEventListener('click',()=>{if(R.on)rulerStop();else rulerStart();});
+function openProf(){$('#prof').classList.add('open');$('#mapwrap').classList.add('prof-open');}
+function closeProf(){$('#prof').classList.remove('open');$('#mapwrap').classList.remove('prof-open');}
+$('#profClose').addEventListener('click',rulerClear);
+$('#profSwap').addEventListener('click',()=>{if(R.pts.length<2)return;R.pts.reverse();
+  R.mk.forEach((m,i)=>m.setLatLng(R.pts[i]));computeProfile();});
+async function computeProfile(){
+  if(R.pts.length<2)return;const [a,b]=R.pts;const D=a.distanceTo(b);
+  R.an=null;drawRulerLine();openProf();
+  $('#profMsg').textContent='Učitavam visine terena…';$('#profStats').innerHTML='';
+  const cv=$('#profCv');cv.getContext('2d').clearRect(0,0,cv.width,cv.height);
+  const req=++R.req;
+  try{
+    let el=[],lats=[],lons=[],N,src;
+    try{
+      const pad=0.003;const smp=await demSampler(Math.min(a.lat,b.lat)-pad,Math.min(a.lng,b.lng)-pad,Math.max(a.lat,b.lat)+pad,Math.max(a.lng,b.lng)+pad,13);
+      N=Math.max(30,Math.min(500,Math.round(D/(smp.res*0.8))));
+      for(let i=0;i<N;i++){const t=i/(N-1);const la=a.lat+(b.lat-a.lat)*t,lo=a.lng+(b.lng-a.lng)*t;lats.push(la);lons.push(lo);
+        const e=smp.f(la,lo);el.push(isFinite(e)?e:(el.length?el[el.length-1]:0));}
+      src=smp.src;
+    }catch(e1){
+      N=D<300?30:100;lats=[];lons=[];
+      for(let i=0;i<N;i++){const t=i/(N-1);lats.push(+(a.lat+(b.lat-a.lat)*t).toFixed(5));lons.push(+(a.lng+(b.lng-a.lng)*t).toFixed(5));}
+      const r=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+lats.join(',')+'&longitude='+lons.join(','));
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json();el=j.elevation;if(!el||el.length!==N)throw new Error('neispravan odgovor servisa');
+      src='Teren: Copernicus DEM ~90 m (Open-Meteo)';}
+    if(req!==R.req)return;
+    R.prof={D,src,pts:el.map((e,i)=>({d:D*i/(N-1),lat:lats[i],lon:lons[i],e:+e||0}))};
+    $('#profMsg').textContent='';drawProfile();
+  }catch(e){if(req!==R.req)return;R.prof=null;
+    $('#profMsg').textContent='Ne mogu da učitam visine terena ('+e.message+'). Rastojanje: '+fmtDist(D);
+    $('#profStats').innerHTML=statsHtml(null,D);}}
+function analyze(){
+  const P=R.prof.pts,D=R.prof.D,n=P.length;
+  const hA=+cfg.hA||0,hB=+cfg.hB||0,f=(+cfg.freq||900)/1000;const k=4/3,Re=6371000;
+  const yA=P[0].e+hA,yB=P[n-1].e+hB;
+  let obst=false,frBad=false,minC=Infinity,minCi=-1,up=0,down=0,maxSl=0;
+  const A=P.map((p,i)=>{const d1=p.d,d2=D-p.d;const bulge=d1*d2/(2*k*Re);const t=p.e+bulge;
+    const los=yA+(yB-yA)*(D?p.d/D:0);
+    const r=D>0?17.32*Math.sqrt(Math.max(0,(d1/1000)*(d2/1000))/(f*(D/1000))):0;const c=los-t;
+    if(i>0&&i<n-1){if(c<0)obst=true;if(c<0.6*r)frBad=true;if(c<minC){minC=c;minCi=i;}}
+    if(i>0){const dd=p.e-P[i-1].e;if(dd>0)up+=dd;else down-=dd;const dx=p.d-P[i-1].d;if(dx>0)maxSl=Math.max(maxSl,Math.abs(dd)/dx*100);}
+    return {d:p.d,e:p.e,t,los,r,c,lat:p.lat,lon:p.lon};});
+  const es=P.map(p=>p.e);
+  return {A,D,yA,yB,hA,hB,f,obst,frBad,minC,minCi,up,down,maxSl,max:Math.max(...es),min:Math.min(...es),
+    status:obst?'bad':frBad?'warn':'ok'};}
+function niceStep(r,t){const raw=r/t;const p=Math.pow(10,Math.floor(Math.log10(raw)));const m=raw/p;return (m<1.5?1:m<3?2:m<7?5:10)*p;}
+function drawProfile(){
+  if(!R.prof)return;const an=analyze();R.an=an;drawRulerLine();
+  const cv=$('#profCv'),w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
+  const dpr=window.devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  const pl=52,pr=16,pt=16,pb=28,W=w-pl-pr,H=h-pt-pb,D=an.D,A=an.A,n=A.length;
+  let lo=Math.min(...A.map(a=>a.e)),hi=Math.max(...A.map(a=>Math.max(a.t,a.los)),an.yA,an.yB);
+  const span=Math.max(10,hi-lo);lo-=span*0.12;hi+=span*0.12;
+  const X=d=>pl+(D?d/D:0)*W, Y=v=>pt+(hi-v)/(hi-lo)*H;
+  g.font='11px Segoe UI, system-ui, sans-serif';
+  const ys=niceStep(hi-lo,5);g.strokeStyle='rgba(255,255,255,.07)';g.fillStyle='#8a94b8';g.lineWidth=1;g.textAlign='right';g.textBaseline='middle';
+  for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const y=Math.round(Y(v))+.5;g.beginPath();g.moveTo(pl,y);g.lineTo(pl+W,y);g.stroke();g.fillText(Math.round(v)+' m',pl-6,y);}
+  const xs=niceStep(D,6);g.textAlign='center';g.textBaseline='top';
+  for(let d=0;d<=D+0.001;d+=xs){const x=Math.round(X(d))+.5;g.beginPath();g.moveTo(x,pt);g.lineTo(x,pt+H);g.stroke();g.fillText(D<2000?Math.round(d)+' m':(d/1000).toFixed(xs<1000?1:0)+' km',x,pt+H+7);}
+  g.save();g.beginPath();g.rect(pl,pt,W,H);g.clip();
+  g.beginPath();A.forEach((a,i)=>{const x=X(a.d),y=Y(a.los+a.r);i?g.lineTo(x,y):g.moveTo(x,y);});
+  for(let i=n-1;i>=0;i--)g.lineTo(X(A[i].d),Y(A[i].los-A[i].r));
+  g.closePath();g.fillStyle='rgba(34,211,238,.08)';g.fill();
+  g.setLineDash([4,4]);g.strokeStyle='rgba(34,211,238,.45)';g.lineWidth=1;
+  g.beginPath();A.forEach((a,i)=>{const x=X(a.d),y=Y(a.los-a.r);i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();
+  g.beginPath();A.forEach((a,i)=>{const x=X(a.d),y=Y(a.los+a.r);i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();
+  g.setLineDash([]);
+  const gr=g.createLinearGradient(0,pt,0,pt+H);gr.addColorStop(0,'rgba(201,164,108,.85)');gr.addColorStop(1,'rgba(120,86,48,.25)');
+  g.beginPath();g.moveTo(X(0),pt+H);A.forEach(a=>g.lineTo(X(a.d),Y(a.t)));g.lineTo(X(D),pt+H);g.closePath();g.fillStyle=gr;g.fill();
+  g.beginPath();A.forEach((a,i)=>{const x=X(a.d),y=Y(a.t);i?g.lineTo(x,y):g.moveTo(x,y);});g.strokeStyle='#e6c48e';g.lineWidth=1.8;g.stroke();
+  A.forEach((a,i)=>{if(i===0||i===n-1)return;if(a.c<0){g.fillStyle='#ff4d6d';g.beginPath();g.arc(X(a.d),Y(a.t),3,0,7);g.fill();}
+    else if(a.c<0.6*a.r){g.fillStyle='#ffd43b';g.beginPath();g.arc(X(a.d),Y(a.t),2.2,0,7);g.fill();}});
+  g.strokeStyle=lineColor();g.lineWidth=2.2;g.beginPath();g.moveTo(X(0),Y(an.yA));g.lineTo(X(D),Y(an.yB));g.stroke();
+  g.restore();
+  [[0,A[0].e,an.yA,'A'],[D,A[n-1].e,an.yB,'B']].forEach(([d,e,top,lb])=>{const x=X(d);
+    g.strokeStyle='#fff';g.lineWidth=3;g.beginPath();g.moveTo(x,Y(e));g.lineTo(x,Y(top));g.stroke();
+    g.fillStyle=lb==='A'?'#7c5cff':'#2563eb';g.beginPath();g.arc(x,Y(top),8,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=2;g.stroke();
+    g.fillStyle='#fff';g.font='bold 10px Segoe UI, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(lb,x,Y(top)+.5);});
+  if(R.hi>=0&&R.hi<n){const a=A[R.hi],x=X(a.d);
+    g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1;g.setLineDash([3,3]);g.beginPath();g.moveTo(x,pt);g.lineTo(x,pt+H);g.stroke();g.setLineDash([]);
+    g.fillStyle='#fff';g.beginPath();g.arc(x,Y(a.t),4,0,7);g.fill();
+    const lines=['Od A: '+fmtDist(a.d)+'  ·  do B: '+fmtDist(D-a.d),'Teren: '+Math.round(a.e)+' m n.v.','LOS: '+Math.round(a.los)+' m  ·  čistina: '+(a.c>=0?'+':'')+Math.round(a.c)+' m','F1 radijus: '+a.r.toFixed(1)+' m'];
+    g.font='11.5px Segoe UI, sans-serif';const bw=Math.max(...lines.map(l=>g.measureText(l).width))+18,bh=lines.length*16+10;
+    let bx=x+12;if(bx+bw>pl+W)bx=x-12-bw;const by=pt+6;
+    g.fillStyle='rgba(18,26,53,.95)';g.strokeStyle='rgba(255,255,255,.15)';g.beginPath();
+    if(g.roundRect)g.roundRect(bx,by,bw,bh,8);else g.rect(bx,by,bw,bh);g.fill();g.stroke();
+    g.fillStyle='#e7ecff';g.textAlign='left';g.textBaseline='top';lines.forEach((l,i)=>g.fillText(l,bx+9,by+6+i*16));}
+  $('#profStats').innerHTML=statsHtml(an,D);}
+function statsHtml(an,D){
+  const [a,b]=R.pts;const az1=bearing(b,a),az2=bearing(a,b);
+  let h='';
+  if(an){h+=an.status==='ok'?'<div class="los ok">✓ Optička vidljivost – 60% prve Fresnelove zone je čisto</div>':
+      an.status==='warn'?'<div class="los warn">⚠ Linija vidljivosti postoji, ali je Fresnelova zona delimično zaklonjena</div>':
+      '<div class="los bad">✕ Teren zaklanja vezu (nema optičke vidljivosti)</div>';}
+  h+='<table>';
+  const row=(k,v)=>h+='<tr><td>'+k+'</td><td>'+v+'</td></tr>';
+  row('Rastojanje A–B',fmtDist(D));
+  row('Azimut A → B','<span style="color:#22d3ee">'+az2.toFixed(1)+'° ('+dirName(az2)+')</span>');
+  row('Azimut B → A',az1.toFixed(1)+'° ('+dirName(az1)+')');
+  if(an){const A=an.A,n=A.length;
+    row('Teren A / B',Math.round(A[0].e)+' / '+Math.round(A[n-1].e)+' m');
+    row('Razlika B − A',(A[n-1].e-A[0].e>=0?'+':'')+Math.round(A[n-1].e-A[0].e)+' m');
+    row('Najviša / najniža',Math.round(an.max)+' / '+Math.round(an.min)+' m');
+    row('Uspon / pad','↑ '+Math.round(an.up)+' m  ↓ '+Math.round(an.down)+' m');
+    row('Prosečan nagib',(D?((A[n-1].e-A[0].e)/D*100).toFixed(1):'0')+' %');
+    row('Najveći nagib',an.maxSl.toFixed(1)+' %');
+    if(an.minCi>=0)row('Najmanja čistina',(an.minC>=0?'+':'')+Math.round(an.minC)+' m na '+fmtDist(A[an.minCi].d)+' od A');
+    row('Antena A / B',an.hA+' / '+an.hB+' m');}
+  h+='</table><div class="muted" style="font-size:10.5px;margin-top:6px;line-height:1.45">'+esc(R.prof?R.prof.src:'')+', bez zgrada i šume. k=4/3.</div>';
+  return h;}
+function profHover(clientX){if(!R.an)return;const rc=$('#profCv').getBoundingClientRect();
+  const pl=52,pr=16,W=rc.width-pl-pr;const t=Math.min(1,Math.max(0,(clientX-rc.left-pl)/W));
+  const n=R.an.A.length;const i=Math.round(t*(n-1));if(i===R.hi)return;R.hi=i;drawProfile();
+  const a=R.an.A[i];const ll=L.latLng(a.lat,a.lon);
+  if(!R.hov)R.hov=L.circleMarker(ll,{radius:7,color:'#fff',weight:2.5,fillColor:'#ff4d6d',fillOpacity:1,interactive:false}).addTo(map);else R.hov.setLatLng(ll);}
+$('#profCv').addEventListener('mousemove',e=>profHover(e.clientX));
+$('#profCv').addEventListener('touchmove',e=>{if(e.touches[0]){e.preventDefault();profHover(e.touches[0].clientX);}},{passive:false});
+$('#profCv').addEventListener('mouseleave',()=>{R.hi=-1;if(R.hov){map.removeLayer(R.hov);R.hov=null;}if(R.an)drawProfile();});
+window.addEventListener('resize',()=>{if(R.prof)drawProfile();updCompass();});
+
+/* ---------- EXCEL (admin) ---------- */
+const fileInp=$('#file');
+$('#drop').addEventListener('click',()=>fileInp.click());
+$('#emptyLoad').addEventListener('click',()=>fileInp.click());
+fileInp.addEventListener('change',()=>{if(fileInp.files[0])loadFile(fileInp.files[0]);fileInp.value='';});
+['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();if(isAdmin())$('#drop').classList.add('over');}));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();$('#drop').classList.remove('over');}));
+document.addEventListener('drop',e=>{if(!isAdmin())return;const fs=e.dataTransfer?[...e.dataTransfer.files]:[];
+  const k=fs.filter(f=>/\.(kml|kmz)$/i.test(f.name));if(k.length)importKmlFiles(k);
+  const x=fs.find(f=>/\.(xlsx|xls|xlsm|csv)$/i.test(f.name));if(x)loadFile(x);});
+function loadFile(f){
+  if(typeof XLSX==='undefined'){toast('Excel biblioteka nije učitana – proveri internet','err');return;}
+  const r=new FileReader();
+  r.onload=ev=>{try{
+    S.wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});S.file=f.name;
+    const sel=$('#sheetSel');sel.innerHTML=S.wb.SheetNames.map(n=>'<option>'+esc(n)+'</option>').join('');
+    if(!S.wb.SheetNames.includes(cfg.sheet))cfg.sheet=S.wb.SheetNames[0];sel.value=cfg.sheet;saveCfg();
+    readSheet();$('#fileName').textContent=f.name;$('#fileDot').classList.add('on');
+    toast('Učitan fajl: '+f.name+' ('+S.data.length+' redova)','ok');
+  }catch(err){console.error(err);toast('Greška pri čitanju fajla: '+err.message,'err');}};
+  r.readAsArrayBuffer(f);}
+$('#sheetSel').addEventListener('change',e=>{cfg.sheet=e.target.value;saveCfg();readSheet();});
+function readSheet(){
+  const ws=S.wb&&S.wb.Sheets[cfg.sheet];S.data=[];
+  if(ws&&ws['!ref']){const d=XLSX.utils.decode_range(ws['!ref']);
+    S.data=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false,blankrows:true,range:XLSX.utils.encode_range({s:{r:0,c:0},e:d.e})});}
+  buildItems();renderPreview();updHints();}
+function headerRow(){return cfg.hasHeader?(S.data[+cfg.skip||0]||[]):[];}
+function dataStart(){return (+cfg.skip||0)+(cfg.hasHeader?1:0);}
+const OPS={eq:'Jednako',neq:'Nije jednako',contains:'Sadrži',starts:'Počinje sa',empty:'Prazno',notempty:'Nije prazno'};
+function rowPasses(row){
+  const rules=(cfg.rules||[]).filter(r=>colIdx(r.col)>=0);if(!rules.length)return true;
+  const test=r=>{let v=cell(row,r.col),q=String(r.val??'').trim();if(cfg.caseIns){v=v.toLowerCase();q=q.toLowerCase();}
+    switch(r.op){case 'eq':return v===q;case 'neq':return v!==q;case 'contains':return v.includes(q);
+      case 'starts':return v.startsWith(q);case 'empty':return v==='';case 'notempty':return v!=='';}return false;};
+  return cfg.match==='any'?rules.some(test):rules.every(test);}
+function buildItems(){
+  stopRun();S.items=[];S.sel=null;const hdr=headerRow();const ex=extraCols();
+  for(let i=dataStart();i<S.data.length;i++){const row=S.data[i];
+    if(!row||row.every(c=>String(c).trim()===''))continue;
+    if(!rowPasses(row))continue;
+    const it={id:i,rowNum:i+1,ops:cell(row,cfg.colOps),ul:cell(row,cfg.colUl),br:cell(row,cfg.colBr),
+      extra:ex.map(c=>({h:(hdr[colIdx(c)]||('Kolona '+c)),v:cell(row,c)})).filter(e=>e.v!==''),lat:null,lon:null,status:'pending'};
+    it.key=norm(it.ops)+'|'+norm(it.ul)+'|'+norm(it.br);
+    if(!it.ops&&!it.ul)it.status='noaddr';
+    else if(cache[it.key]){const c=cache[it.key];it.lat=c.lat;it.lon=c.lon;it.status=c.level;}
+    S.items.push(it);}
+  makeGroup();refresh();updMatchInfo();
+  $('#runBtn').disabled=!S.items.length;
+  if(S.items.some(i=>i.lat!=null))fitAll(true);}
+async function query(q,structured){
+  const k=(structured?'s:':'q:')+norm(q);if(k in missQ)return missQ[k];
+  let list;
+  if(cfg.geocoder==='photon')list=await photonList(q,1);
+  else{try{list=await nomList(structured||{q},1);}catch(e){list=await photonList(q,1);}}
+  const res=list[0]?{lat:list[0].lat,lon:list[0].lon}:null;
+  missQ[k]=res;await sleep(Math.max(200,+cfg.delay||1100));return res;}
+async function geocode(it){
+  const c=cfg.country;const tries=[];
+  if(it.ul){const lvl=it.br?'ok':'street';const q=[(it.ul+' '+it.br).trim(),it.ops,c].filter(Boolean).join(', ');
+    if(cfg.geocoder==='nominatim'){const st={street:(it.br+' '+it.ul).trim()};if(it.ops)st.city=it.ops;if(c)st.country=c;tries.push({lvl,q,st});}
+    tries.push({lvl,q});
+    if(cfg.fallback&&it.br)tries.push({lvl:'street',q:[it.ul,it.ops,c].filter(Boolean).join(', ')});}
+  if((cfg.fallback||!it.ul)&&it.ops)tries.push({lvl:'city',q:[it.ops,c].filter(Boolean).join(', ')});
+  for(const t of tries){if(S.stop)return null;const r=await query(t.q,t.st);if(r)return {lat:r.lat,lon:r.lon,level:t.lvl};}
+  return null;}
+$('#runBtn').addEventListener('click',run);
+async function run(){
+  if(S.running){S.stop=true;return;}
+  const todo=S.items.filter(i=>i.status==='pending'||i.status==='error');
+  if(!todo.length){toast('Sve adrese su već obrađene');return;}
+  if(!cfg.zVis){cfg.zVis=true;saveCfg();applyVis();}
+  S.running=true;S.stop=false;updRunBtn();$('#prog').style.display='block';$('#ptext').style.display='block';
+  let n=0,ok=0;
+  for(const it of todo){if(S.stop)break;
+    $('#ptext').textContent='Tražim: '+[it.ul,it.br,it.ops].filter(Boolean).join(' ')+'  ('+(n+1)+'/'+todo.length+')';
+    try{const r=await geocode(it);
+      if(S.stop&&!r)break;
+      if(r){it.lat=r.lat;it.lon=r.lon;it.status=r.level;cache[it.key]=r;saveCache();addMarker(it);ok++;}
+      else it.status='notfound';
+    }catch(e){console.error(e);it.status='error';toast('Greška servisa: '+e.message,'err');await sleep(2000);}
+    n++;$('#prog i').style.width=(n/todo.length*100)+'%';refreshSoon();}
+  const stopped=S.stop;S.running=false;S.stop=false;updRunBtn();refresh();
+  setTimeout(()=>{$('#prog').style.display='none';$('#ptext').style.display='none';$('#prog i').style.width='0';},1200);
+  toast((stopped?'Zaustavljeno. ':'Gotovo! ')+'Postavljeno '+ok+' od '+n+' pinova.','ok');
+  if(cfg.autoFit)fitAll();}
+function stopRun(){if(S.running)S.stop=true;}
+function updRunBtn(){const b=$('#runBtn');b.classList.toggle('primary',!S.running);b.classList.toggle('stop',S.running);
+  b.querySelector('span').textContent=S.running?'Zaustavi':'Postavi pinove';}
+let rq=false;function refreshSoon(){if(rq)return;rq=true;requestAnimationFrame(()=>{rq=false;refresh();});}
+function refresh(){
+  const total=Math.max(0,S.data.filter((r,i)=>i>=dataStart()&&r&&r.some(c=>String(c).trim()!=='')).length);
+  $('#stTotal').textContent=total;$('#stFilt').textContent=S.items.length;
+  $('#stMap').textContent=S.items.filter(i=>i.lat!=null).length;
+  $('#stNf').textContent=S.items.filter(i=>['notfound','noaddr','error'].includes(i.status)).length;
+  $('#emptyState').style.display=(S.items.length||LAYERS.length||UL.some(l=>l.pins.length))?'none':'grid';
+  renderList();renderLayers();}
+$('#q').addEventListener('input',renderList);$('#qf').addEventListener('change',renderList);
+function renderList(){
+  const q=norm($('#q').value),f=$('#qf').value;
+  let arr=S.items.filter(it=>{
+    if(f==='map'&&it.lat==null)return false;if(f==='nf'&&!['notfound','noaddr','error'].includes(it.status))return false;
+    if(f==='pending'&&it.status!=='pending')return false;
+    if(q&&!norm([it.ops,it.ul,it.br,it.rowNum,...it.extra.map(e=>e.v)].join(' ')).includes(q))return false;return true;});
+  const L_=$('#list');
+  if(!S.items.length){L_.innerHTML='<div class="empty-list">'+(S.data.length?'Nijedan red ne prolazi filter. Proveri Podešavanja → Filter.':'Učitaj fajl da vidiš listu žalbi.')+'</div>';return;}
+  if(!arr.length){L_.innerHTML='<div class="empty-list">Nema rezultata.</div>';return;}
+  const max=400,more=arr.length-max;arr=arr.slice(0,max);
+  L_.innerHTML=arr.map(it=>{const nf=it.lat==null&&it.status!=='pending';
+    return '<div class="item'+(S.sel===it.id?' sel':'')+'" data-id="'+it.id+'"><span class="d" style="background:'+HEX[it.status]+'"></span>'+
+    '<div class="t"><b>'+esc((it.ul+' '+it.br).trim()||'(bez ulice)')+'</b><span>'+esc(it.ops||'—')+' · red '+it.rowNum+'</span></div>'+
+    (nf?'<button class="btn sm" data-pick="'+it.id+'" title="Postavi ručno na mapi">📍 Ručno</button>':'<span class="badge">'+LABEL[it.status]+'</span>')+'</div>';}).join('')+
+    (more>0?'<div class="empty-list">+ još '+more+' (suzi pretragu)</div>':'');}
+$('#list').addEventListener('click',e=>{
+  const p=e.target.closest('[data-pick]');if(p){e.stopPropagation();startPick(+p.dataset.pick);return;}
+  const el=e.target.closest('.item');if(el){closeMenu();select(+el.dataset.id,true);}});
+function select(id,fly){
+  const prev=S.sel;S.sel=id;
+  [prev,id].forEach(x=>{const it=S.items.find(i=>i.id===x);if(it&&S.markers[x])S.markers[x].setIcon(icon(it));});
+  $$('#list .item').forEach(x=>x.classList.toggle('sel',+x.dataset.id===id));
+  const m=S.markers[id];if(!fly||!m)return;
+  if(!cfg.zVis){cfg.zVis=true;saveCfg();applyVis();renderLayers();}
+  const open=()=>{map.flyTo(m.getLatLng(),Math.max(map.getZoom(),17),{duration:.8});setTimeout(()=>m.openPopup(),850);};
+  if(cfg.cluster&&group.zoomToShowLayer)group.zoomToShowLayer(m,open);else open();}
+function fitAll(silent){const pts=S.items.filter(i=>i.lat!=null).map(i=>[i.lat,i.lon]);
+  if(!pts.length||!cfg.zVis){const b=allBsBounds();if(b){fitTo(b);return;}if(!silent)toast('Nema pinova na mapi');return;}
+  map.fitBounds(pts,{padding:[50,50],maxZoom:16});}
+$('#fitBtn').addEventListener('click',()=>{closeMenu();fitAll();});
+function rowsForExport(){return S.items.map(it=>{const o={'Excel red':it.rowNum,'Opština':it.ops,'Ulica':it.ul,'Broj':it.br};
+  it.extra.forEach(e=>o[e.h]=e.v);o['Lat']=it.lat!=null?+it.lat.toFixed(6):'';o['Lon']=it.lon!=null?+it.lon.toFixed(6):'';o['Preciznost']=LABEL[it.status];
+  UL.forEach(l=>l.pins.forEach(p=>{if(!p.vs||it.lat==null)return;const r=vsLookup(p,it.lat,it.lon);if(r>=0)o['Vidljivo sa: '+p.name]=r?'DA':'NE';}));
+  return o;});}
+$('#xlsBtn').addEventListener('click',()=>{if(!S.items.length)return toast('Nema podataka za izvoz');
+  const ws=XLSX.utils.json_to_sheet(rowsForExport());const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Zalbe bez BS');
+  XLSX.writeFile(wb,'Zalbe_bez_BS_koordinate.xlsx');toast('Excel izvezen','ok');});
+$('#kmlBtn').addEventListener('click',()=>{const pts=S.items.filter(i=>i.lat!=null);if(!pts.length)return toast('Nema pinova za izvoz');
+  const x=s=>String(s??'').replace(/[<>&'"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
+  const col={ok:'ff6d4dff',street:'ff439fff',city:'ff3bd4ff',manual:'ffff8cb1'};
+  let k='<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Žalbe bez BS</name>';
+  Object.keys(col).forEach(s=>k+='<Style id="'+s+'"><IconStyle><color>'+col[s]+'</color><Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon></IconStyle></Style>');
+  pts.forEach(it=>{k+='<Placemark><name>'+x((it.ul+' '+it.br).trim()||it.ops)+'</name><styleUrl>#'+it.status+'</styleUrl><description>'+
+    x('Opština: '+it.ops+' | Red: '+it.rowNum+' | '+LABEL[it.status]+(it.extra.length?' | '+it.extra.map(e=>e.h+': '+e.v).join(' | '):''))+
+    '</description><Point><coordinates>'+it.lon+','+it.lat+',0</coordinates></Point></Placemark>';});
+  k+='</Document></kml>';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([k],{type:'application/vnd.google-earth.kml+xml'}));
+  a.download='Zalbe_bez_BS.kml';a.click();toast('KML izvezen (Google Earth)','ok');});
+
+/* ---------- PODEŠAVANJA ---------- */
+const BS_KEYS=['siteR','secOp','kmlColors2','cluster'];
+function updLegend(){$('#lgVis').style.background=cfg.vsCol;$('#lgSh').style.background=cfg.vsShCol;
+  $('#vbV').style.background=cfg.vsCol;$('#vbS').style.background=cfg.vsShCol;}
+function bindCfg(){
+  $$('[data-k]').forEach(el=>{const k=el.dataset.k;
+    if(el.type==='checkbox')el.checked=!!cfg[k];else el.value=cfg[k]??'';
+    el.oninput=el.onchange=()=>{let v=el.type==='checkbox'?el.checked:el.value;
+      if(el.classList.contains('col-inp')){v=v.toUpperCase().replace(/[^A-Z]/g,'');el.value=v;}
+      if(k==='extra')v=v.toUpperCase();if(k==='cc')v=v.toLowerCase();
+      if(el.type==='number'||el.type==='range')v=+v||0;
+      if(k==='freq')v=+v;
+      cfg[k]=v;saveCfg();
+      if(k==='base')setBase(v);if(k==='cluster')makeGroup();
+      if(k==='osmSrc')rebuildOsm();
+      if(k==='hasHeader'||k==='skip'||k==='caseIns')updMatchInfo();
+      if(BS_KEYS.includes(k)){LAYERS.forEach(drawLayer);applyVis();}
+      if(k==='secMinZoom')applyVis();if(k==='lblZoom')updLabels();
+      if(k==='secOp')$('#secOpV').textContent=Math.round(v*100)+'%';
+      if(k==='vsOp'){$('#vsOpV').textContent=Math.round(v*100)+'%';UL.forEach(l=>l.pins.forEach(p=>{if(p.ov)p.ov.setOpacity(+v);}));}
+      if(['vsCol','vsShCol','vsShadow'].includes(k)){rebuildOverlays();updLegend();}
+      if((k==='hA'||k==='hB'||k==='freq')&&R.prof)drawProfile();
+      if(!['hA','hB','freq','vsOp'].includes(k)){renderPreview();updHints();}};});
+  $('#secOpV').textContent=Math.round((+cfg.secOp)*100)+'%';
+  $('#vsOpV').textContent=Math.round((+cfg.vsOp)*100)+'%';
+  updLegend();
+  $$('#matchSeg button').forEach(b=>{b.classList.toggle('active',b.dataset.m===cfg.match);
+    b.onclick=()=>{cfg.match=b.dataset.m;saveCfg();$$('#matchSeg button').forEach(x=>x.classList.toggle('active',x===b));updMatchInfo();};});
+  renderRules();updHints();saveCache();updOsmInfo();}
+function renderRules(){
+  $('#rules').innerHTML=(cfg.rules||[]).map((r,i)=>'<div class="rule" data-i="'+i+'">'+
+    '<input class="inp col-inp" data-r="col" maxlength="3" placeholder="J" value="'+esc(r.col)+'">'+
+    '<select class="inp" data-r="op">'+Object.entries(OPS).map(([k,v])=>'<option value="'+k+'"'+(r.op===k?' selected':'')+'>'+v+'</option>').join('')+'</select>'+
+    '<input class="inp" data-r="val" placeholder="npr. n" value="'+esc(r.val)+'"'+(['empty','notempty'].includes(r.op)?' disabled':'')+'>'+
+    '<button class="x" data-del="'+i+'" title="Obriši">×</button></div>').join('')||'<div class="muted" style="margin-bottom:10px">Nema pravila – uzimaju se svi redovi.</div>';}
+function onRuleEdit(el){const row=el.closest('.rule');if(!row||!el.dataset.r)return;
+  const r=cfg.rules[+row.dataset.i];let v=el.value;if(el.dataset.r==='col'){v=v.toUpperCase().replace(/[^A-Z]/g,'');el.value=v;}
+  r[el.dataset.r]=v;saveCfg();if(el.dataset.r==='op')row.querySelector('[data-r=val]').disabled=['empty','notempty'].includes(v);
+  updMatchInfo();renderPreview();}
+$('#rules').addEventListener('input',e=>onRuleEdit(e.target));
+$('#rules').addEventListener('change',e=>onRuleEdit(e.target));
+$('#rules').addEventListener('click',e=>{const d=e.target.closest('[data-del]');if(!d)return;cfg.rules.splice(+d.dataset.del,1);saveCfg();renderRules();updMatchInfo();renderPreview();});
+$('#addRule').addEventListener('click',()=>{cfg.rules.push({col:'',op:'eq',val:''});saveCfg();renderRules();});
+function updHints(){const h=headerRow();
+  ['colOps','colUl','colBr'].forEach(k=>{const i=colIdx(cfg[k]);const el=$('[data-h="'+k+'"]');
+    el.textContent=i<0?(cfg[k]?'Neispravno slovo':''):(h[i]?'→ „'+h[i]+'“':(S.data.length?'→ kolona '+cfg[k]:''));});
+  const ex=extraCols();$('[data-h="extra"]').textContent=ex.length&&h.length?'→ '+ex.map(c=>h[colIdx(c)]||c).join(', '):'';}
+function updMatchInfo(){const el=$('#matchInfo');if(!S.data.length){el.textContent='Učitaj fajl da vidiš koliko redova prolazi filter.';return;}
+  let n=0,t=0;for(let i=dataStart();i<S.data.length;i++){const r=S.data[i];if(!r||r.every(c=>String(c).trim()===''))continue;t++;if(rowPasses(r))n++;}
+  el.innerHTML='✓ Filter trenutno uzima <b>'+n+'</b> od '+t+' redova. Klikni <b>Primeni</b> da osvežiš mapu.';}
+function renderPreview(){const box=$('#prev');if(!S.data.length){box.innerHTML='<div class="empty-list">Nema učitanog fajla.</div>';return;}
+  const rows=S.data.slice(0,15+(+cfg.skip||0));const nc=Math.min(60,Math.max(...rows.map(r=>r.length),1));
+  const fc_=new Set((cfg.rules||[]).map(r=>colIdx(r.col))),ac=new Set([cfg.colOps,cfg.colUl,cfg.colBr].map(colIdx));
+  const cls=c=>fc_.has(c)?'cf':ac.has(c)?'ca':'';const hi=cfg.hasHeader?(+cfg.skip||0):-1;
+  let h='<table class="prev"><thead><tr><th></th>';for(let c=0;c<nc;c++)h+='<th class="'+cls(c)+'">'+colLet(c)+'</th>';h+='</tr></thead><tbody>';
+  rows.forEach((r,i)=>{h+='<tr class="'+(i===hi?'hdr':'')+'"><td class="rn">'+(i+1)+'</td>';for(let c=0;c<nc;c++)h+='<td class="'+cls(c)+'" title="'+esc(r[c])+'">'+esc(r[c])+'</td>';h+='</tr>';});
+  box.innerHTML=h+'</tbody></table>';}
+$('#applyCfg').addEventListener('click',()=>{if(S.wb)readSheet();LAYERS.forEach(drawLayer);applyVis();showView('map');toast('Podešavanja primenjena','ok');});
+$('#resetCfg').addEventListener('click',()=>{if(!confirm('Vratiti sva podešavanja na podrazumevana?'))return;
+  const act=cfg.activeUL;cfg=JSON.parse(JSON.stringify(DEF));cfg.sheet=S.wb?S.wb.SheetNames[0]:'';cfg.activeUL=act;saveCfg();bindCfg();rebuildOsm();setBase(cfg.base);
+  if(S.wb){$('#sheetSel').value=cfg.sheet;readSheet();}LAYERS.forEach(drawLayer);rebuildOverlays();applyVis();renderLayers();toast('Podešavanja vraćena');});
+$('#clearCache').addEventListener('click',()=>{if(!confirm('Obrisati sve zapamćene koordinate (i ručno postavljene)?'))return;
+  cache={};Object.keys(missQ).forEach(k=>delete missQ[k]);saveCache();if(S.wb)buildItems();toast('Keš obrisan');});
+
+/* ================================================================
+   SERVER (Supabase): prijava, slojevi, pinovi, sinhronizacija, korisnici
+   ================================================================ */
+const toAscii=s=>String(s||'').toLowerCase().trim().replace(/č|ć/g,'c').replace(/š/g,'s').replace(/ž/g,'z').replace(/đ/g,'dj').replace(/\s+/g,'.');
+const userEmail=u=>{u=String(u||'').trim();return u.includes('@')?u.toLowerCase():toAscii(u)+'@'+EMAIL_DOMAIN;};
+function sbConf(){const u=(SUPABASE_URL||localStorage.getItem('zm_sb_url')||'').trim(),k=(SUPABASE_ANON_KEY||localStorage.getItem('zm_sb_key')||'').trim();return {u,k};}
+
+/* ---------- prijava ---------- */
+function showLogin(msg){$('#login').classList.remove('hide');$('#lgMsg').textContent=msg||'';
+  const c=sbConf();$('#cfgBox').classList.toggle('on',!c.u||!c.k);
+  setTimeout(()=>$('#lgUser').focus(),50);}
+function makeClient(){const c=sbConf();if(!c.u||!c.k||!window.supabase)return null;
+  return window.supabase.createClient(c.u,c.k,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'zm_auth'}});}
+$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();
+  if($('#cfgBox').classList.contains('on')){const u=$('#cfgUrl').value.trim(),k=$('#cfgKey').value.trim();
+    if(!/^https:\/\/.+/.test(u)||k.length<30){$('#lgMsg').textContent='Unesi ispravan Supabase URL i anon ključ.';return;}
+    localStorage.setItem('zm_sb_url',u);localStorage.setItem('zm_sb_key',k);}
+  if(!window.supabase){$('#lgMsg').textContent='Nema interneta – biblioteka za server nije učitana.';return;}
+  sb=sb||makeClient();if(!sb){$('#lgMsg').textContent='Server nije podešen.';return;}
+  const user=$('#lgUser').value,pass=$('#lgPass').value;if(!user||!pass){$('#lgMsg').textContent='Unesi korisničko ime i lozinku.';return;}
+  $('#lgBtn').disabled=true;$('#lgMsg').textContent='';
+  const {data,error}=await sb.auth.signInWithPassword({email:userEmail(user),password:pass});
+  $('#lgBtn').disabled=false;
+  if(error){$('#lgMsg').textContent=/invalid/i.test(error.message)?'Pogrešno korisničko ime ili lozinka.':/confirm/i.test(error.message)?'Nalog nije potvrđen (u Supabase isključi „Confirm email“).':error.message;return;}
+  await afterLogin(data.user);});
+$('#logoutBtn').addEventListener('click',async()=>{const n=Object.keys(OB).length;
+  if(n&&!confirm(n+' izmena još nije poslato na server (nema interneta?). Ako se odjaviš, ostaju sačuvane na ovom uređaju i poslaće se kad se ponovo prijaviš. Odjava?'))return;
+  if(!confirm('Odjaviti se?'))return;
+  try{await sb.auth.signOut();}catch(e){}location.reload();});
+$('#pwBtn').addEventListener('click',async()=>{const a=prompt('Nova lozinka (najmanje 6 znakova):');if(a===null)return;
+  if(a.length<6){toast('Lozinka mora imati najmanje 6 znakova','err');return;}
+  const b=prompt('Ponovi novu lozinku:');if(b!==a){toast('Lozinke se ne poklapaju','err');return;}
+  const {error}=await sb.auth.updateUser({password:a});toast(error?'Greška: '+error.message:'Lozinka promenjena',error?'err':'ok');});
+
+async function afterLogin(user){
+  let prof=null;
+  try{const r=await sb.from('profiles').select('*').eq('id',user.id).single();if(r.error)throw r.error;prof=r.data;
+    localStorage.setItem('zm_me',JSON.stringify(prof));}
+  catch(e){const c=JSON.parse(localStorage.getItem('zm_me')||'null');
+    if(c&&c.id===user.id){prof=c;toast('Bez interneta – radiš sa sačuvanim podacima');}
+    else{showLogin('Ne mogu da učitam profil: '+(e.message||e));return;}}
+  if(!prof.active){try{await sb.auth.signOut();}catch(_){}showLogin('Nalog nije aktivan – javi se administratoru.');return;}
+  ME=prof;document.body.classList.toggle('is-admin',prof.role==='admin');
+  $('#meName').textContent=prof.username;$('#meRole').textContent=prof.role==='admin'?'admin':'teren';
+  $('#login').classList.add('hide');
+  loadLV();loadOB();
+  try{const c=JSON.parse(localStorage.getItem(ulKey())||'[]');setUL(c.map(l=>Object.assign({},l,{pins:(l.pins||[]).map(p=>Object.assign({},p))})),true);}catch(e){}
+  applyVis();refresh();showView('map');map.invalidateSize();
+  await Promise.allSettled([loadServerLayers(),loadPins()]);
+  await migrateOld();flush();
+  if(!isAdmin()&&LAYERS.length&&!UL.some(l=>l.pins.length)){const b=allBsBounds();if(b)fitTo(b);}}
+
+/* ---------- slojevi na serveru ---------- */
+async function layerText(row){const key='L:'+row.id;
+  try{const c=await idb.get(key);if(c&&typeof c==='string')return c;}catch(e){}
+  const {data,error}=await sb.storage.from('layers').download(row.path);if(error)throw new Error(error.message||'preuzimanje nije uspelo');
+  const t=await data.text();idb.set(key,t).catch(()=>{});return t;}
+let layLoading=false;
+async function loadServerLayers(manual){
+  if(!sb||!ME||layLoading)return;layLoading=true;
+  let rows;
+  try{const r=await sb.from('layers').select('*').order('sort',{ascending:true}).order('created_at',{ascending:true});if(r.error)throw r.error;rows=r.data;
+    idb.set('layers_list_'+ME.id,rows).catch(()=>{});}
+  catch(e){rows=await idb.get('layers_list_'+ME.id).catch(()=>null);if(!rows){toast('Slojevi: '+(e.message||e),'err');layLoading=false;return;}
+    if(manual)toast('Bez interneta – prikazujem sačuvane slojeve');}
+  LAYERS.forEach(ly=>{tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);});
+  LAYERS=[];visSig='';renderLayers();
+  for(const row of rows){
+    try{const t0=performance.now();const text=await layerText(row);const t1=performance.now();
+      const data=row.kind==='zalbe'?parseZalbe(text):parseKML(text);
+      LAYERS.push(buildLayer(row,data));applyVis();renderLayers();
+      if(manual&&row.kind!=='zalbe')showPerf(LAYERS[LAYERS.length-1],{read:t1-t0,parse:performance.now()-t1,render:0});}
+    catch(e){console.warn(e);toast(row.name+': '+e.message,'err');}}
+  layLoading=false;refresh();if(manual)toast('Slojevi osveženi ('+LAYERS.length+')','ok');}
+async function uploadLayer(name,kind,text,color){
+  const id=newId(),path=id+(kind==='zalbe'?'.json':'.kml');
+  const up=await sb.storage.from('layers').upload(path,new Blob([text],{type:kind==='zalbe'?'application/json':'application/xml'}),{upsert:true,contentType:kind==='zalbe'?'application/json':'application/xml'});
+  if(up.error)throw new Error(up.error.message);
+  const row={id,name,kind,color,visible_to_users:true,path,size:text.length,created_by:ME.id,sort:LAYERS.length};
+  const r=await sb.from('layers').insert(row).select().single();
+  if(r.error){await sb.storage.from('layers').remove([path]);throw new Error(r.error.message);}
+  idb.set('L:'+id,text).catch(()=>{});return r.data;}
+async function importKmlFiles(files){
+  if(!isAdmin())return;
+  const hadAny=LAYERS.length>0;
+  for(const file of files){
+    try{
+      toast('Šaljem na server: '+file.name+'…');
+      const t0=performance.now();const text=await readKmlFile(file);const t1=performance.now();
+      const data=parseKML(text);const t2=performance.now();
+      if(!data.sites.length&&!data.polys.length&&!data.lines.length){toast(file.name+': nema tačaka ni poligona','err');continue;}
+      const row=await uploadLayer(file.name.replace(/\.(kml|kmz)$/i,''),'kml',text,nextColor());
+      const ly=buildLayer(row,data);LAYERS.push(ly);applyVis();renderLayers();
+      await nextFrame();showPerf(ly,{read:t1-t0,parse:t2-t1,render:performance.now()-t2});
+      toast(ly.name+': '+data.sites.length+' lokacija, '+data.polys.length+' sektora – objavljeno','ok');
+    }catch(err){console.error(err);toast(file.name+': '+err.message,'err');}}
+  refresh();if(!hadAny){const b=allBsBounds();if(b)fitTo(b);}}
+async function shareLayer(ly){if(!ly||!isAdmin())return;const v=!ly.shared;
+  const {error}=await sb.from('layers').update({visible_to_users:v}).eq('id',ly.id);
+  if(error){toast('Greška: '+error.message,'err');return;}
+  ly.shared=v;renderLayers();toast(v?'„'+ly.name+'“ sada vide svi korisnici':'„'+ly.name+'“ vidiš samo ti','ok');}
+async function colorLayer(ly){if(!isAdmin())return;const {error}=await sb.from('layers').update({color:ly.color}).eq('id',ly.id);if(error)toast('Boja nije sačuvana: '+error.message,'err');}
+async function deleteServerLayer(ly){if(!ly||!isAdmin()||!confirm('Obrisati sloj „'+ly.name+'“ sa servera? Nestaće i svim korisnicima.'))return;
+  const r=await sb.from('layers').delete().eq('id',ly.id);if(r.error){toast('Greška: '+r.error.message,'err');return;}
+  await sb.storage.from('layers').remove([ly.path]);idb.del('L:'+ly.id).catch(()=>{});
+  tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);LAYERS=LAYERS.filter(l=>l!==ly);visSig='';
+  applyVis();refresh();toast('Sloj obrisan','ok');}
+$('#pubBtn').addEventListener('click',async()=>{
+  const pts=S.items.filter(i=>i.lat!=null);if(!pts.length){toast('Nema postavljenih žalbi za objavu','err');return;}
+  const d=new Date();const def='Žalbe '+String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
+  const name=prompt('Naziv sloja koji vide korisnici ('+pts.length+' žalbi):',def);if(name===null)return;
+  try{const json=JSON.stringify({v:1,items:pts.map(it=>({lat:+it.lat.toFixed(6),lon:+it.lon.toFixed(6),ops:it.ops,ul:it.ul,br:it.br,rowNum:it.rowNum,status:it.status,extra:it.extra}))});
+    const row=await uploadLayer(name.trim()||def,'zalbe',json,'#ff4d6d');
+    LAYERS.push(buildLayer(row,parseZalbe(json)));applyVis();renderLayers();toast('Objavljeno: '+pts.length+' žalbi','ok');}
+  catch(e){toast('Objava nije uspela: '+e.message,'err');}});
+
+/* ---------- pinovi: učitavanje ---------- */
+function rowToPin(r){return {id:r.id,name:r.name||'Pin',lat:+r.lat,lon:+r.lon,h:+r.h,r:+r.r,ht:+r.ht,q:r.q||'normal',note:r.note||'',visible:r.visible!==false,e0:r.e0==null?null:+r.e0};}
+function setUL(groups,noFit){
+  const old={};UL.forEach(l=>l.pins.forEach(p=>{old[p.id]=p;}));
+  const vsvId=VSV?VSV.id:null;if(VSV){const p=VSV;VSV=null;dropOverlay(p);$('#vsBar').classList.remove('on');}
+  UL.forEach(l=>{if(l.g)map.removeLayer(l.g);if(l.gv)map.removeLayer(l.gv);});
+  groups.forEach(l=>{l.visible=l.visible!==false;l.open=l.open!==false;l.pins.forEach(p=>{const o=old[p.id];if(o&&o.vs&&o.vs.sig===vsSig(p))p.vs=o.vs;if(o&&o.busy!=null)p.busy=o.busy;});});
+  UL=groups;saveUL();drawUL();renderLayers();
+  if(vsvId){const p=findPin(vsvId);if(p&&p.vs)showVsView(p,true);}
+  restoreVS();}
+async function restoreVS(){let any=false;
+  for(const l of UL)for(const p of l.pins){if(p.vs)continue;try{const v=await idb.get('vs:'+p.id);if(v&&v.sig===vsSig(p)&&v.vis){p.vs=v;any=true;}}catch(e){}}
+  if(any)renderLayers();}
+let pinsLoading=false;
+async function loadPins(){
+  if(!sb||!ME||pinsLoading)return;pinsLoading=true;
+  try{
+    const [g,p]=await Promise.all([sb.from('pin_groups').select('*').eq('owner',ME.id).order('created_at'),sb.from('pins').select('*').eq('owner',ME.id).order('created_at')]);
+    if(g.error)throw g.error;if(p.error)throw p.error;
+    const groups=g.data.map(r=>({id:r.id,name:r.name,color:r.color||'#f59e0b',visible:r.visible,open:r.open,pins:[]}));
+    const byId={};groups.forEach(x=>byId[x.id]=x);
+    p.data.forEach(r=>{const l=byId[r.group_id];if(l)l.pins.push(rowToPin(r));});
+    /* nesinhronizovane lokalne izmene imaju prednost */
+    Object.values(OB).forEach(e=>{
+      if(e.t==='pin_groups'&&e.op==='up'){const ex=byId[e.row.id];if(ex)Object.assign(ex,{name:e.row.name,color:e.row.color,visible:e.row.visible,open:e.row.open});
+        else{const n={id:e.row.id,name:e.row.name,color:e.row.color,visible:e.row.visible,open:e.row.open,pins:[]};groups.push(n);byId[n.id]=n;}}});
+    Object.values(OB).forEach(e=>{
+      if(e.t==='pins'){groups.forEach(l=>{l.pins=l.pins.filter(x=>x.id!==e.row.id);});
+        if(e.op==='up'&&byId[e.row.group_id])byId[e.row.group_id].pins.push(rowToPin(e.row));}
+      if(e.t==='pin_groups'&&e.op==='del'){const i=groups.findIndex(x=>x.id===e.row.id);if(i>=0)groups.splice(i,1);}});
+    if(PED)map.closePopup();
+    setUL(groups);
+  }catch(e){console.warn('pinovi',e);if(navigator.onLine)toast('Pinovi sa servera: '+(e.message||e),'err');}
+  pinsLoading=false;}
+
+/* ---------- sinhronizacija (radi i bez interneta – šalje kad se vrati) ---------- */
+let OB={},SYNC_ERR='';
+const obKey=()=>'zm_ob_'+(ME?ME.id:'x');
+function loadOB(){try{OB=JSON.parse(localStorage.getItem(obKey())||'{}');}catch(e){OB={};}updSync();}
+function saveOB(){if(ME)localStorage.setItem(obKey(),JSON.stringify(OB));updSync();}
+function syncPin(p){if(!ME||!p)return;const l=ulOf(p);if(!l)return;
+  OB['pins:'+p.id]={t:'pins',op:'up',row:{id:p.id,owner:ME.id,group_id:l.id,name:p.name,lat:p.lat,lon:p.lon,h:+p.h||0,r:+p.r||10,ht:+p.ht||0,q:p.q||'normal',note:p.note||'',visible:p.visible!==false,e0:p.e0==null?null:+p.e0,updated_at:new Date().toISOString()}};
+  saveOB();flushSoon();}
+function syncGroup(l){if(!ME||!l)return;
+  OB['pin_groups:'+l.id]={t:'pin_groups',op:'up',row:{id:l.id,owner:ME.id,name:l.name,color:l.color,visible:l.visible!==false,open:l.open!==false,updated_at:new Date().toISOString()}};
+  saveOB();flushSoon();}
+function syncDel(t,id){if(!ME)return;
+  if(t==='pin_groups')Object.keys(OB).forEach(k=>{const e=OB[k];if(e.t==='pins'&&e.op==='up'&&e.row.group_id===id)delete OB[k];});
+  OB[t+':'+id]={t,op:'del',row:{id}};saveOB();flushSoon();}
+let flT=null,flushing=false;
+function flushSoon(){clearTimeout(flT);flT=setTimeout(flush,700);}
+async function flush(){
+  if(flushing||!sb||!ME)return;const keys=Object.keys(OB);if(!keys.length){SYNC_ERR='';updSync();return;}
+  if(!navigator.onLine){updSync();return;}
+  flushing=true;updSync();
+  const ord=e=>e.t==='pin_groups'&&e.op==='up'?0:e.t==='pins'&&e.op==='up'?1:e.t==='pins'?2:3;
+  const list=keys.map(k=>[k,OB[k]]).sort((a,b)=>ord(a[1])-ord(b[1]));
+  let fail=null;
+  for(const [k,e] of list){if(OB[k]!==e)continue;
+    try{const r=e.op==='up'?await sb.from(e.t).upsert(e.row):await sb.from(e.t).delete().eq('id',e.row.id);
+      if(r.error)throw r.error;if(OB[k]===e)delete OB[k];}
+    catch(err){fail=err;break;}}
+  flushing=false;saveOB();
+  if(fail){SYNC_ERR=fail.message||String(fail);console.warn('sync',fail);setTimeout(flush,15000);}else SYNC_ERR='';
+  updSync();}
+function updSync(){const c=$('#syncChip'),n=Object.keys(OB).length;c.classList.remove('ok','wait','err');
+  if(!navigator.onLine){c.classList.add('err');c.textContent='⚠ Offline'+(n?' · '+n:'');c.title='Nema interneta – izmene su sačuvane na uređaju i biće poslate kad se vrati veza';}
+  else if(SYNC_ERR){c.classList.add('err');c.textContent='⚠ '+n;c.title='Greška pri slanju: '+SYNC_ERR;}
+  else if(n||flushing){c.classList.add('wait');c.textContent='⏳ '+(n||'');c.title='Šaljem izmene na server…';}
+  else{c.classList.add('ok');c.textContent='☁ ✓';c.title='Sve je sačuvano na serveru';}}
+$('#syncChip').addEventListener('click',()=>{flush();if(SYNC_ERR)toast('Poslednja greška: '+SYNC_ERR,'err');});
+window.addEventListener('online',()=>{updSync();flush();setTimeout(()=>{loadPins();},1500);});
+window.addEventListener('offline',updSync);
+setInterval(()=>{if(ME)flush();},30000);
+function canRefresh(){return ME&&!PED&&!R.on&&!Object.keys(OB).length&&!UL.some(l=>l.pins.some(p=>p.busy!=null));}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ME){flush();if(canRefresh())loadPins();}});
+setInterval(()=>{if(document.visibilityState==='visible'&&canRefresh())loadPins();},90000);
+
+/* ---------- prebacivanje starih lokalnih pinova na nalog ---------- */
+async function migrateOld(){
+  let old;try{old=JSON.parse(localStorage.getItem(LS_OLD_UL)||'null');}catch(e){old=null;}
+  if(!old||!old.length)return;const n=old.reduce((s,l)=>s+(l.pins||[]).length,0);
+  if(!n){localStorage.removeItem(LS_OLD_UL);return;}
+  if(!confirm('Na ovom računaru postoji '+n+' pinova iz stare verzije programa. Prebaciti ih na tvoj nalog '+ME.username+'?')){
+    if(confirm('Obrisati ih trajno iz stare verzije (da te više ne pita)?'))localStorage.setItem(LS_OLD_UL+'_bak',localStorage.getItem(LS_OLD_UL)),localStorage.removeItem(LS_OLD_UL);return;}
+  old.forEach(o=>{const l={id:newId(),name:o.name||'Grupa',color:o.color||'#f59e0b',visible:true,open:true,pins:[]};UL.push(l);syncGroup(l);
+    (o.pins||[]).forEach(q=>{const p={id:newId(),name:q.name||'Pin',lat:+q.lat,lon:+q.lon,h:+q.h||30,r:+q.r||10,ht:+(q.ht??1.5),q:q.q||'normal',note:q.note||'',visible:q.visible!==false,e0:q.e0??null};
+      l.pins.push(p);syncPin(p);});});
+  localStorage.setItem(LS_OLD_UL+'_bak',localStorage.getItem(LS_OLD_UL));localStorage.removeItem(LS_OLD_UL);
+  saveUL();drawUL();renderLayers();toast('Prebačeno '+n+' pinova na nalog','ok');}
+
+/* ---------- korisnici (admin) ---------- */
+async function loadUsers(){if(!isAdmin())return;const tb=$('#usrBody');
+  const {data,error}=await sb.from('profiles').select('*').order('username');
+  if(error){tb.innerHTML='<tr><td colspan="5" style="color:var(--red)">'+esc(error.message)+'</td></tr>';return;}
+  tb.innerHTML=data.map(u=>'<tr data-uid="'+u.id+'"><td><b>'+esc(u.username)+'</b>'+(u.id===ME.id?' <span class="muted">(ti)</span>':'')+'</td>'+
+    '<td><select class="inp" data-urole'+(u.id===ME.id?' disabled':'')+'><option value="user"'+(u.role==='user'?' selected':'')+'>Korisnik</option><option value="admin"'+(u.role==='admin'?' selected':'')+'>Admin</option></select></td>'+
+    '<td><span class="pill '+(u.active?'on':'off')+'">'+(u.active?'aktivan':'neaktivan')+'</span></td>'+
+    '<td class="hm muted">'+new Date(u.created_at).toLocaleDateString('sr')+'</td>'+
+    '<td style="text-align:right">'+(u.id===ME.id?'':'<button class="btn sm'+(u.active?' danger':'')+'" data-uact="'+(u.active?'0':'1')+'">'+(u.active?'Deaktiviraj':'Aktiviraj')+'</button>')+'</td></tr>').join('')||
+    '<tr><td colspan="5" class="muted">Nema korisnika.</td></tr>';}
+$('#usrReload').addEventListener('click',loadUsers);
+$('#usrBody').addEventListener('change',async e=>{const s=e.target.closest('[data-urole]');if(!s)return;const id=s.closest('tr').dataset.uid;
+  const {error}=await sb.from('profiles').update({role:s.value}).eq('id',id);toast(error?'Greška: '+error.message:'Uloga promenjena',error?'err':'ok');if(error)loadUsers();});
+$('#usrBody').addEventListener('click',async e=>{const b=e.target.closest('[data-uact]');if(!b)return;const id=b.closest('tr').dataset.uid;const on=b.dataset.uact==='1';
+  if(!on&&!confirm('Deaktivirati korisnika? Neće moći da se prijavi (pinovi ostaju sačuvani).'))return;
+  const {error}=await sb.from('profiles').update({active:on}).eq('id',id);toast(error?'Greška: '+error.message:(on?'Aktiviran':'Deaktiviran'),error?'err':'ok');loadUsers();});
+$('#nuBtn').addEventListener('click',async()=>{
+  const name=toAscii($('#nuName').value),pass=$('#nuPass').value,role=$('#nuRole').value;
+  if(!/^[a-z0-9._-]{2,30}$/.test(name)){toast('Korisničko ime: 2–30 znakova, mala slova, brojevi, . _ -','err');return;}
+  if(pass.length<6){toast('Lozinka mora imati najmanje 6 znakova','err');return;}
+  const c=sbConf();$('#nuBtn').disabled=true;
+  try{
+    const tmp=window.supabase.createClient(c.u,c.k,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'zm_tmp_'+Date.now()}});
+    const {data,error}=await tmp.auth.signUp({email:name+'@'+EMAIL_DOMAIN,password:pass});
+    if(error)throw new Error(/registered|exists/i.test(error.message)?'Korisnik „'+name+'“ već postoji':error.message);
+    const uid=data.user&&data.user.id;if(!uid)throw new Error('Server nije vratio korisnika');
+    if(data.user.identities&&!data.user.identities.length)throw new Error('Korisnik „'+name+'“ već postoji');
+    await sleep(400);
+    const r=await sb.from('profiles').update({active:true,role}).eq('id',uid);if(r.error)throw new Error(r.error.message);
+    try{await tmp.auth.signOut();}catch(_){}
+    toast('Kreiran korisnik „'+name+'“ – prijava: '+name+' / lozinka koju si uneo','ok');
+    $('#nuName').value='';$('#nuPass').value='';loadUsers();
+  }catch(e){toast(e.message,'err');}
+  $('#nuBtn').disabled=false;});
+
+/* ---------- start ---------- */
+bindCfg();makeGroup();drawUL();renderLayers();updSync();
+(async()=>{
+  if(!window.supabase){showLogin('Nema interneta – server nije dostupan. Otvori ponovo kad se povežeš.');return;}
+  sb=makeClient();if(!sb){showLogin();return;}
+  try{const {data:{session}}=await sb.auth.getSession();
+    if(session&&session.user)await afterLogin(session.user);else showLogin();}
+  catch(e){showLogin(e.message);}
+})();
+})();
+</script>
+</body>
+</html>
