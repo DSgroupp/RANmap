@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Žalbe bez BS – Mapa</title>
+<title>RANmap – Žalbe bez BS</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -46,6 +46,7 @@ header{height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 
 .chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:12.5px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chip.me{color:var(--text)}
 .chip.me .role{font-size:10.5px;padding:1px 7px;border-radius:6px;background:rgba(124,92,255,.25);color:#cfc2ff}
+.chip.sync{cursor:pointer}
 .chip.sync.ok{color:var(--green)}.chip.sync.wait{color:var(--yellow)}.chip.sync.err{color:var(--red)}
 .hbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;flex:none;font-size:15px}
 .hbtn:hover{background:rgba(255,255,255,.09)}
@@ -57,7 +58,6 @@ main{flex:1;position:relative;min-height:0}
 .view{position:absolute;inset:0;display:none}
 .view.active{display:flex}
 
-/* LOGIN */
 .login{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:20px;background:
   radial-gradient(900px 500px at 10% 0%,rgba(124,92,255,.30),transparent 60%),
   radial-gradient(800px 500px at 100% 100%,rgba(34,211,238,.18),transparent 60%),#0a0f1e}
@@ -88,6 +88,7 @@ aside .list{flex:1 0 auto;min-height:160px}
 .btn.primary:hover{filter:brightness(1.1)}
 .btn.stop{border:0;background:linear-gradient(135deg,#ff4d6d,#ff9f43);color:#fff}
 .btn.danger{color:#ff8fa3;border-color:rgba(255,77,109,.35)}
+.btn.ok{color:var(--green);border-color:rgba(46,229,157,.35)}
 .btn.sm{padding:6px 10px;font-size:12px;border-radius:9px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .row{display:flex;gap:8px}.row>.btn{flex:1}
@@ -290,8 +291,8 @@ input.swc::-moz-color-swatch{border:2px solid rgba(255,255,255,.55);border-radiu
 .mapwrap.prof-open .leaflet-bottom{bottom:322px}
 .mapwrap.prof-open .legend{display:none}
 
-#view-settings,#view-users{overflow-y:auto;display:none}
-#view-settings.active,#view-users.active{display:block}
+#view-settings{overflow-y:auto;display:none}
+#view-settings.active{display:block}
 .set-wrap{max-width:1250px;margin:0 auto;padding:24px 22px 60px}
 .set-head{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
 .set-head h1{margin:0;font-size:22px}.set-head p{margin:3px 0 0;color:var(--muted)}
@@ -299,6 +300,7 @@ input.swc::-moz-color-swatch{border:2px solid rgba(255,255,255,.55);border-radiu
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;backdrop-filter:blur(14px)}
 .card.full{grid-column:1/-1}
+.card.users{border-color:rgba(124,92,255,.35);background:linear-gradient(135deg,rgba(124,92,255,.09),rgba(34,211,238,.04))}
 .card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:9px}
 .card h3 .n{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
 .card .desc{color:var(--muted);font-size:12.5px;margin:0 0 14px;line-height:1.5}
@@ -308,6 +310,8 @@ input.swc::-moz-color-swatch{border:2px solid rgba(255,255,255,.55);border-radiu
 .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .cols2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.nu-row{display:grid;grid-template-columns:1.2fr 1.2fr 1fr auto;gap:10px;align-items:end;margin-bottom:16px}
+.nu-row .f{margin:0}
 .col-inp{text-transform:uppercase;font-weight:700;letter-spacing:1px;text-align:center}
 .rule{display:grid;grid-template-columns:80px 170px 1fr 38px;gap:8px;margin-bottom:8px;align-items:center}
 .rule .x{height:38px;border-radius:10px;border:1px solid rgba(255,77,109,.35);background:transparent;color:#ff8fa3;cursor:pointer;font-size:16px}
@@ -327,11 +331,12 @@ table.prev tr.hdr td{font-weight:700;color:#fff;background:rgba(124,92,255,.12)}
 table.prev .ca{background:rgba(34,211,238,.10)}
 table.prev .cf{background:rgba(255,212,59,.10)}
 table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
-/* korisnici */
 .utbl{width:100%;border-collapse:collapse;font-size:13px}
 .utbl th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--border)}
-.utbl td{padding:9px 10px;border-bottom:1px solid var(--border)}
+.utbl td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.utbl tr.dis td{opacity:.55}
 .utbl select{width:auto;padding:5px 8px;border-radius:8px}
+.utbl .ua{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 .pill{font-size:11px;padding:2px 8px;border-radius:7px;font-weight:700}
 .pill.on{background:rgba(46,229,157,.12);color:var(--green)}.pill.off{background:rgba(255,77,109,.12);color:var(--red)}
 
@@ -343,7 +348,6 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
 @media(max-width:1100px){.prof-stats{width:240px}}
 @media(max-width:1000px){.chip.fi{display:none}}
 
-/* ======== TELEFON ======== */
 @media(max-width:760px){
   header{height:56px;padding:0 10px;gap:8px}
   #menuBtn{display:grid;place-items:center}
@@ -377,6 +381,7 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
   .ped,.ctx{width:auto;min-width:0;max-width:78vw}
   .ctx .crow{flex-wrap:wrap}
   .grid{grid-template-columns:1fr}.cols4,.cols3{grid-template-columns:1fr 1fr}
+  .nu-row{grid-template-columns:1fr 1fr}
   .set-wrap{padding:16px 12px 50px}
   .utbl .hm{display:none}
   #toasts{left:12px;right:12px;bottom:12px}
@@ -389,11 +394,11 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
   <form class="login-card glass" id="loginForm" autocomplete="on">
     <div class="logo" style="margin:0 auto;width:56px;height:56px;border-radius:17px">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 10v12"/><path d="M8 22h8"/><circle cx="12" cy="8" r="2"/><path d="M7.8 3.8a6 6 0 0 0 0 8.4"/><path d="M16.2 3.8a6 6 0 0 1 0 8.4"/><path d="M4.9 1a10 10 0 0 0 0 14"/><path d="M19.1 1a10 10 0 0 1 0 14"/></svg></div>
-    <h2>Žalbe bez BS</h2>
+    <h2>RANmap</h2>
     <p>Prijavi se korisničkim imenom i lozinkom</p>
     <div class="cfgbox" id="cfgBox">
       <b>Server nije podešen</b>
-      <span>Unesi Supabase URL i anon ključ (Project Settings → API). Pamti se na ovom uređaju.</span>
+      <span>Unesi Supabase URL i anon ključ.</span>
       <input class="inp" id="cfgUrl" placeholder="https://xxxx.supabase.co">
       <input class="inp" id="cfgKey" placeholder="anon public key">
     </div>
@@ -410,18 +415,17 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
     <div class="logo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10v12"/><path d="M8 22h8"/><circle cx="12" cy="8" r="2"/><path d="M7.8 3.8a6 6 0 0 0 0 8.4"/><path d="M16.2 3.8a6 6 0 0 1 0 8.4"/><path d="M4.9 1a10 10 0 0 0 0 14"/><path d="M19.1 1a10 10 0 0 1 0 14"/></svg>
     </div>
-    <div><b>Žalbe bez BS</b><small>Radio planiranje · mapa žalbi korisnika</small></div>
+    <div><b>RANmap</b><small>Radio planiranje · žalbe korisnika</small></div>
   </div>
   <nav class="tabs">
     <button class="tab active" data-view="map">🗺️<span class="tl">Mapa</span></button>
-    <button class="tab admin-only" data-view="users">👥<span class="tl">Korisnici</span></button>
     <button class="tab admin-only" data-view="settings">⚙️<span class="tl">Podešavanja</span></button>
   </nav>
   <div class="hdr-right">
     <div class="chip sync" id="syncChip" title="Status čuvanja na serveru">☁</div>
     <div class="chip fi admin-only"><span class="dot" id="fileDot"></span><span id="fileName">Excel nije učitan</span></div>
     <div class="chip me"><span>👤</span><span class="nm" id="meName"></span><span class="role" id="meRole"></span></div>
-    <button class="hbtn" id="pwBtn" title="Promeni lozinku">🔑</button>
+    <button class="hbtn" id="pwBtn" title="Promeni svoju lozinku">🔑</button>
     <button class="hbtn" id="logoutBtn" title="Odjava">⎋</button>
   </div>
 </header>
@@ -573,42 +577,10 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
     </div>
   </section>
 
-  <!-- ================= KORISNICI ================= -->
-  <section class="view" id="view-users">
-    <div class="set-wrap">
-      <div class="set-head">
-        <div><h1>Korisnici</h1><p>Korisnici vide samo mapu, slojeve označene sa 👥 i svoje pinove.</p></div>
-        <div class="actions"><button class="btn" id="usrReload">↻ Osveži</button></div>
-      </div>
-      <div class="grid">
-        <div class="card">
-          <h3><span class="n">+</span>Novi korisnik</h3>
-          <p class="desc">Korisničko ime: mala slova, brojevi, tačka ili crtica (npr. <b>ivan</b>). Lozinka najmanje 6 znakova.</p>
-          <div class="f"><label>Korisničko ime</label><input class="inp" id="nuName" autocapitalize="none" spellcheck="false" placeholder="ivan"></div>
-          <div class="f"><label>Lozinka</label><input class="inp" id="nuPass" type="text" placeholder="min. 6 znakova"></div>
-          <div class="f"><label>Uloga</label><select class="inp" id="nuRole"><option value="user">Korisnik (teren)</option><option value="admin">Administrator</option></select></div>
-          <button class="btn primary" id="nuBtn">Kreiraj korisnika</button>
-        </div>
-        <div class="card">
-          <h3><span class="n">i</span>Kako radi</h3>
-          <p class="desc" style="margin:0">• Korisnik se prijavljuje istim imenom i lozinkom na telefonu i računaru – pinovi su mu isti svuda.<br>
-          • <b>Deaktiviraj</b> = korisnik više ne može da uđe (pinovi mu ostaju sačuvani).<br>
-          • Lozinku korisnik menja sam (🔑 gore desno). Ako je zaboravi, deaktiviraj stari nalog i napravi novi.<br>
-          • Slojeve sa 👥 (zeleno) vide svi korisnici; svaki korisnik ih može sakriti/prikazati samo kod sebe.</p>
-        </div>
-        <div class="card full">
-          <h3><span class="n">👥</span>Lista korisnika</h3>
-          <div style="overflow-x:auto"><table class="utbl"><thead><tr><th>Korisnik</th><th>Uloga</th><th>Status</th><th class="hm">Kreiran</th><th></th></tr></thead><tbody id="usrBody"><tr><td colspan="5" class="muted">Učitavam…</td></tr></tbody></table></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= PODEŠAVANJA ================= -->
   <section class="view" id="view-settings">
     <div class="set-wrap">
       <div class="set-head">
-        <div><h1>Podešavanja</h1><p>Sve se automatski čuva u pregledaču na ovom računaru.</p></div>
+        <div><h1>Podešavanja</h1><p>Korisnici se čuvaju na serveru. Ostala podešavanja se čuvaju na ovom računaru.</p></div>
         <div class="actions">
           <button class="btn danger" id="resetCfg">Vrati podrazumevano</button>
           <button class="btn primary" id="applyCfg">✓ Primeni i idi na mapu</button>
@@ -616,6 +588,19 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
       </div>
 
       <div class="grid">
+        <div class="card full users">
+          <h3><span class="n">👥</span>Korisnici<button class="btn sm" id="usrReload" style="margin-left:auto">↻ Osveži</button></h3>
+          <p class="desc">Korisnik vidi samo mapu, slojeve označene sa 👥 i svoje pinove. Prijava je istim imenom i lozinkom na telefonu i računaru. Korisničko ime: mala slova, brojevi, tačka ili crtica (npr. <b>ivan</b>). Lozinka najmanje 6 znakova.</p>
+          <div class="nu-row">
+            <div class="f"><label>Novo korisničko ime</label><input class="inp" id="nuName" autocapitalize="none" spellcheck="false" placeholder="ivan"></div>
+            <div class="f"><label>Lozinka</label><input class="inp" id="nuPass" type="text" placeholder="min. 6 znakova" autocomplete="new-password"></div>
+            <div class="f"><label>Uloga</label><select class="inp" id="nuRole"><option value="user">Korisnik (teren)</option><option value="admin">Administrator</option></select></div>
+            <button class="btn primary" id="nuBtn">+ Kreiraj</button>
+          </div>
+          <div style="overflow-x:auto"><table class="utbl"><thead><tr><th>Korisnik</th><th>Uloga</th><th>Status</th><th class="hm">Kreiran</th><th style="text-align:right">Akcije</th></tr></thead>
+            <tbody id="usrBody"><tr><td colspan="5" class="muted">Učitavam…</td></tr></tbody></table></div>
+        </div>
+
         <div class="card">
           <h3><span class="n">1</span>Fajl i list</h3>
           <p class="desc">Izaberi list (sheet) iz Excel fajla i da li prvi red sadrži nazive kolona.</p>
@@ -722,12 +707,10 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
 <div id="toasts"></div>
 <script>
 /* ================================================================
-   PODEŠAVANJE SERVERA – upiši svoje podatke iz Supabase
-   (Supabase → Project Settings → API → Project URL i anon public key)
-   Ako ostaviš prazno, program će ih tražiti na ekranu za prijavu.
+   SERVER – Supabase projekat RANmap
    ================================================================ */
-const SUPABASE_URL = '';
-const SUPABASE_ANON_KEY = '';
+const SUPABASE_URL = 'https://mdjkzcffflvlacmpaskg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamt6Y2ZmZmx2bGFjbXBhc2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MzUyODYsImV4cCI6MjExMTAxMTI4Nn0.TFDm4utnZiwjA15HEb40AqGd3Ru6WCv49qKs8kBOESE';
 const EMAIL_DOMAIN = 'mapa.local';   // korisnik "ivan" = ivan@mapa.local
 
 (function(){
@@ -790,12 +773,11 @@ const idb={
 };
 
 $$('.tab').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
-function showView(v){if((v==='settings'||v==='users')&&!isAdmin())v='map';
+function showView(v){if(v==='settings'&&!isAdmin())v='map';
   $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
   $$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));closeMenu();
   if(v==='map')setTimeout(()=>{map.invalidateSize();if(R.prof)drawProfile();updCompass();},50);
-  else if(v==='settings')renderPreview();
-  else if(v==='users')loadUsers();}
+  else if(v==='settings'){renderPreview();loadUsers();}}
 
 /* ---------- MAPA ---------- */
 const CAN_ROTATE=typeof L.Map.prototype.setBearing==='function';
@@ -1144,7 +1126,6 @@ function layerBounds(ly){const pts=[];ly.data.sites.forEach(f=>pts.push(f.ll));l
 function allBsBounds(){let b=null;LAYERS.forEach(ly=>{if(!ly.visible)return;const x=layerBounds(ly);if(x)b=b?b.extend(x):x;});return b;}
 function fitTo(b){map.fitBounds(b,{padding:[40,40]});}
 
-/* lokalno stanje vidljivosti slojeva (svaki korisnik za sebe) */
 const lvKey=()=>'zm_lv_'+(ME?ME.id:'x');
 function loadLV(){try{LV=JSON.parse(localStorage.getItem(lvKey())||'{}');}catch(e){LV={};}}
 function saveLV(){LAYERS.forEach(l=>LV[l.id]={v:l.visible,s:l.showSites,c:l.showSec});localStorage.setItem(lvKey(),JSON.stringify(LV));}
@@ -1969,7 +1950,7 @@ $('#clearCache').addEventListener('click',()=>{if(!confirm('Obrisati sve zapamć
    ================================================================ */
 const toAscii=s=>String(s||'').toLowerCase().trim().replace(/č|ć/g,'c').replace(/š/g,'s').replace(/ž/g,'z').replace(/đ/g,'dj').replace(/\s+/g,'.');
 const userEmail=u=>{u=String(u||'').trim();return u.includes('@')?u.toLowerCase():toAscii(u)+'@'+EMAIL_DOMAIN;};
-function sbConf(){const u=(SUPABASE_URL||localStorage.getItem('zm_sb_url')||'').trim(),k=(SUPABASE_ANON_KEY||localStorage.getItem('zm_sb_key')||'').trim();return {u,k};}
+function sbConf(){const u=(SUPABASE_URL||localStorage.getItem('zm_sb_url')||'').trim().replace(/\/rest\/v1\/?$/,'').replace(/\/+$/,''),k=(SUPABASE_ANON_KEY||localStorage.getItem('zm_sb_key')||'').trim();return {u,k};}
 
 /* ---------- prijava ---------- */
 function showLogin(msg){$('#login').classList.remove('hide');$('#lgMsg').textContent=msg||'';
@@ -1990,10 +1971,10 @@ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();
   if(error){$('#lgMsg').textContent=/invalid/i.test(error.message)?'Pogrešno korisničko ime ili lozinka.':/confirm/i.test(error.message)?'Nalog nije potvrđen (u Supabase isključi „Confirm email“).':error.message;return;}
   await afterLogin(data.user);});
 $('#logoutBtn').addEventListener('click',async()=>{const n=Object.keys(OB).length;
-  if(n&&!confirm(n+' izmena još nije poslato na server (nema interneta?). Ako se odjaviš, ostaju sačuvane na ovom uređaju i poslaće se kad se ponovo prijaviš. Odjava?'))return;
-  if(!confirm('Odjaviti se?'))return;
+  if(n&&!confirm(n+' izmena još nije poslato na server (nema interneta?). Ostaju sačuvane na ovom uređaju i poslaće se kad se ponovo prijaviš. Odjava?'))return;
+  if(!n&&!confirm('Odjaviti se?'))return;
   try{await sb.auth.signOut();}catch(e){}location.reload();});
-$('#pwBtn').addEventListener('click',async()=>{const a=prompt('Nova lozinka (najmanje 6 znakova):');if(a===null)return;
+$('#pwBtn').addEventListener('click',async()=>{const a=prompt('Tvoja nova lozinka (najmanje 6 znakova):');if(a===null)return;
   if(a.length<6){toast('Lozinka mora imati najmanje 6 znakova','err');return;}
   const b=prompt('Ponovi novu lozinku:');if(b!==a){toast('Lozinke se ne poklapaju','err');return;}
   const {error}=await sb.auth.updateUser({password:a});toast(error?'Greška: '+error.message:'Lozinka promenjena',error?'err':'ok');});
@@ -2004,7 +1985,7 @@ async function afterLogin(user){
     localStorage.setItem('zm_me',JSON.stringify(prof));}
   catch(e){const c=JSON.parse(localStorage.getItem('zm_me')||'null');
     if(c&&c.id===user.id){prof=c;toast('Bez interneta – radiš sa sačuvanim podacima');}
-    else{showLogin('Ne mogu da učitam profil: '+(e.message||e));return;}}
+    else{showLogin('Ne mogu da učitam profil: '+(e.message||e)+' – da li je pokrenut supabase_setup.sql?');return;}}
   if(!prof.active){try{await sb.auth.signOut();}catch(_){}showLogin('Nalog nije aktivan – javi se administratoru.');return;}
   ME=prof;document.body.classList.toggle('is-admin',prof.role==='admin');
   $('#meName').textContent=prof.username;$('#meRole').textContent=prof.role==='admin'?'admin':'teren';
@@ -2102,7 +2083,6 @@ async function loadPins(){
     const groups=g.data.map(r=>({id:r.id,name:r.name,color:r.color||'#f59e0b',visible:r.visible,open:r.open,pins:[]}));
     const byId={};groups.forEach(x=>byId[x.id]=x);
     p.data.forEach(r=>{const l=byId[r.group_id];if(l)l.pins.push(rowToPin(r));});
-    /* nesinhronizovane lokalne izmene imaju prednost */
     Object.values(OB).forEach(e=>{
       if(e.t==='pin_groups'&&e.op==='up'){const ex=byId[e.row.id];if(ex)Object.assign(ex,{name:e.row.name,color:e.row.color,visible:e.row.visible,open:e.row.open});
         else{const n={id:e.row.id,name:e.row.name,color:e.row.color,visible:e.row.visible,open:e.row.open,pins:[]};groups.push(n);byId[n.id]=n;}}});
@@ -2115,7 +2095,7 @@ async function loadPins(){
   }catch(e){console.warn('pinovi',e);if(navigator.onLine)toast('Pinovi sa servera: '+(e.message||e),'err');}
   pinsLoading=false;}
 
-/* ---------- sinhronizacija (radi i bez interneta – šalje kad se vrati) ---------- */
+/* ---------- sinhronizacija ---------- */
 let OB={},SYNC_ERR='';
 const obKey=()=>'zm_ob_'+(ME?ME.id:'x');
 function loadOB(){try{OB=JSON.parse(localStorage.getItem(obKey())||'{}');}catch(e){OB={};}updSync();}
@@ -2158,50 +2138,64 @@ function canRefresh(){return ME&&!PED&&!R.on&&!Object.keys(OB).length&&!UL.some(
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&ME){flush();if(canRefresh())loadPins();}});
 setInterval(()=>{if(document.visibilityState==='visible'&&canRefresh())loadPins();},90000);
 
-/* ---------- prebacivanje starih lokalnih pinova na nalog ---------- */
+/* ---------- prebacivanje starih lokalnih pinova ---------- */
 async function migrateOld(){
   let old;try{old=JSON.parse(localStorage.getItem(LS_OLD_UL)||'null');}catch(e){old=null;}
   if(!old||!old.length)return;const n=old.reduce((s,l)=>s+(l.pins||[]).length,0);
   if(!n){localStorage.removeItem(LS_OLD_UL);return;}
   if(!confirm('Na ovom računaru postoji '+n+' pinova iz stare verzije programa. Prebaciti ih na tvoj nalog '+ME.username+'?')){
-    if(confirm('Obrisati ih trajno iz stare verzije (da te više ne pita)?'))localStorage.setItem(LS_OLD_UL+'_bak',localStorage.getItem(LS_OLD_UL)),localStorage.removeItem(LS_OLD_UL);return;}
+    if(confirm('Da te više ne pita za njih?')){localStorage.setItem(LS_OLD_UL+'_bak',localStorage.getItem(LS_OLD_UL));localStorage.removeItem(LS_OLD_UL);}return;}
   old.forEach(o=>{const l={id:newId(),name:o.name||'Grupa',color:o.color||'#f59e0b',visible:true,open:true,pins:[]};UL.push(l);syncGroup(l);
     (o.pins||[]).forEach(q=>{const p={id:newId(),name:q.name||'Pin',lat:+q.lat,lon:+q.lon,h:+q.h||30,r:+q.r||10,ht:+(q.ht??1.5),q:q.q||'normal',note:q.note||'',visible:q.visible!==false,e0:q.e0??null};
       l.pins.push(p);syncPin(p);});});
   localStorage.setItem(LS_OLD_UL+'_bak',localStorage.getItem(LS_OLD_UL));localStorage.removeItem(LS_OLD_UL);
   saveUL();drawUL();renderLayers();toast('Prebačeno '+n+' pinova na nalog','ok');}
 
-/* ---------- korisnici (admin) ---------- */
+/* ================================================================
+   KORISNICI (Podešavanja → Korisnici) – samo admin
+   ================================================================ */
+const rpcErr=e=>{const m=(e&&e.message)||String(e);
+  if(/function .* does not exist|Could not find the function/i.test(m))return 'Na serveru nedostaju funkcije za korisnike – pokreni ponovo supabase_setup.sql';
+  return m;};
 async function loadUsers(){if(!isAdmin())return;const tb=$('#usrBody');
   const {data,error}=await sb.from('profiles').select('*').order('username');
   if(error){tb.innerHTML='<tr><td colspan="5" style="color:var(--red)">'+esc(error.message)+'</td></tr>';return;}
-  tb.innerHTML=data.map(u=>'<tr data-uid="'+u.id+'"><td><b>'+esc(u.username)+'</b>'+(u.id===ME.id?' <span class="muted">(ti)</span>':'')+'</td>'+
-    '<td><select class="inp" data-urole'+(u.id===ME.id?' disabled':'')+'><option value="user"'+(u.role==='user'?' selected':'')+'>Korisnik</option><option value="admin"'+(u.role==='admin'?' selected':'')+'>Admin</option></select></td>'+
-    '<td><span class="pill '+(u.active?'on':'off')+'">'+(u.active?'aktivan':'neaktivan')+'</span></td>'+
+  tb.innerHTML=data.map(u=>{const me=u.id===ME.id;
+    return '<tr data-uid="'+u.id+'" data-un="'+esc(u.username)+'" class="'+(u.active?'':'dis')+'"><td><b>'+esc(u.username)+'</b>'+(me?' <span class="muted">(ti)</span>':'')+'</td>'+
+    '<td><select class="inp" data-urole'+(me?' disabled title="Ne možeš menjati svoju ulogu"':'')+'><option value="user"'+(u.role==='user'?' selected':'')+'>Korisnik</option><option value="admin"'+(u.role==='admin'?' selected':'')+'>Admin</option></select></td>'+
+    '<td><span class="pill '+(u.active?'on':'off')+'">'+(u.active?'aktivan':'blokiran')+'</span></td>'+
     '<td class="hm muted">'+new Date(u.created_at).toLocaleDateString('sr')+'</td>'+
-    '<td style="text-align:right">'+(u.id===ME.id?'':'<button class="btn sm'+(u.active?' danger':'')+'" data-uact="'+(u.active?'0':'1')+'">'+(u.active?'Deaktiviraj':'Aktiviraj')+'</button>')+'</td></tr>').join('')||
+    '<td><div class="ua"><button class="btn sm" data-upw title="Postavi novu lozinku">🔑 Lozinka</button>'+
+    (me?'':'<button class="btn sm '+(u.active?'danger':'ok')+'" data-uon="'+(u.active?'0':'1')+'">'+(u.active?'⛔ Blokiraj':'✓ Aktiviraj')+'</button>'+
+      '<button class="btn sm danger" data-udel title="Trajno obriši korisnika i sve njegove pinove">🗑 Obriši</button>')+'</div></td></tr>';}).join('')||
     '<tr><td colspan="5" class="muted">Nema korisnika.</td></tr>';}
 $('#usrReload').addEventListener('click',loadUsers);
 $('#usrBody').addEventListener('change',async e=>{const s=e.target.closest('[data-urole]');if(!s)return;const id=s.closest('tr').dataset.uid;
   const {error}=await sb.from('profiles').update({role:s.value}).eq('id',id);toast(error?'Greška: '+error.message:'Uloga promenjena',error?'err':'ok');if(error)loadUsers();});
-$('#usrBody').addEventListener('click',async e=>{const b=e.target.closest('[data-uact]');if(!b)return;const id=b.closest('tr').dataset.uid;const on=b.dataset.uact==='1';
-  if(!on&&!confirm('Deaktivirati korisnika? Neće moći da se prijavi (pinovi ostaju sačuvani).'))return;
-  const {error}=await sb.from('profiles').update({active:on}).eq('id',id);toast(error?'Greška: '+error.message:(on?'Aktiviran':'Deaktiviran'),error?'err':'ok');loadUsers();});
+$('#usrBody').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const tr=b.closest('tr'),id=tr.dataset.uid,un=tr.dataset.un;
+  if(b.hasAttribute('data-upw')){
+    const p=prompt('Nova lozinka za „'+un+'“ (najmanje 6 znakova):');if(p===null)return;
+    if(p.length<6){toast('Lozinka mora imati najmanje 6 znakova','err');return;}
+    if(id===ME.id){const {error}=await sb.auth.updateUser({password:p});toast(error?'Greška: '+error.message:'Tvoja lozinka je promenjena',error?'err':'ok');return;}
+    const {error}=await sb.rpc('admin_set_password',{target:id,new_password:p});
+    toast(error?'Greška: '+rpcErr(error):'Lozinka za „'+un+'“ promenjena – nova: '+p,error?'err':'ok');return;}
+  if(b.dataset.uon!==undefined){const on=b.dataset.uon==='1';
+    if(!on&&!confirm('Blokirati „'+un+'“? Neće moći da se prijavi ni da vidi podatke (pinovi ostaju sačuvani).'))return;
+    const {error}=await sb.from('profiles').update({active:on}).eq('id',id);toast(error?'Greška: '+error.message:(on?'„'+un+'“ aktiviran':'„'+un+'“ blokiran'),error?'err':'ok');loadUsers();return;}
+  if(b.hasAttribute('data-udel')){
+    if(!confirm('TRAJNO obrisati korisnika „'+un+'“ i sve njegove pinove?'))return;
+    if(prompt('Za potvrdu upiši korisničko ime: '+un)!==un){toast('Brisanje otkazano');return;}
+    const {error}=await sb.rpc('admin_delete_user',{target:id});
+    toast(error?'Greška: '+rpcErr(error):'Korisnik „'+un+'“ obrisan',error?'err':'ok');loadUsers();}});
 $('#nuBtn').addEventListener('click',async()=>{
   const name=toAscii($('#nuName').value),pass=$('#nuPass').value,role=$('#nuRole').value;
   if(!/^[a-z0-9._-]{2,30}$/.test(name)){toast('Korisničko ime: 2–30 znakova, mala slova, brojevi, . _ -','err');return;}
   if(pass.length<6){toast('Lozinka mora imati najmanje 6 znakova','err');return;}
-  const c=sbConf();$('#nuBtn').disabled=true;
+  $('#nuBtn').disabled=true;
   try{
-    const tmp=window.supabase.createClient(c.u,c.k,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:'zm_tmp_'+Date.now()}});
-    const {data,error}=await tmp.auth.signUp({email:name+'@'+EMAIL_DOMAIN,password:pass});
-    if(error)throw new Error(/registered|exists/i.test(error.message)?'Korisnik „'+name+'“ već postoji':error.message);
-    const uid=data.user&&data.user.id;if(!uid)throw new Error('Server nije vratio korisnika');
-    if(data.user.identities&&!data.user.identities.length)throw new Error('Korisnik „'+name+'“ već postoji');
-    await sleep(400);
-    const r=await sb.from('profiles').update({active:true,role}).eq('id',uid);if(r.error)throw new Error(r.error.message);
-    try{await tmp.auth.signOut();}catch(_){}
-    toast('Kreiran korisnik „'+name+'“ – prijava: '+name+' / lozinka koju si uneo','ok');
+    const {error}=await sb.rpc('admin_create_user',{p_username:name,p_password:pass,p_role:role,p_domain:EMAIL_DOMAIN});
+    if(error)throw new Error(/already|postoji|duplicate|unique/i.test(error.message)?'Korisnik „'+name+'“ već postoji':rpcErr(error));
+    toast('Kreiran „'+name+'“ – prijava: '+name+' / '+pass,'ok');
     $('#nuName').value='';$('#nuPass').value='';loadUsers();
   }catch(e){toast(e.message,'err');}
   $('#nuBtn').disabled=false;});
