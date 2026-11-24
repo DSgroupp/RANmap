@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RANmap">
-<title>RANmap – Žalbe bez BS</title>
+<title>RANmap</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -42,7 +42,6 @@ header{height:64px;flex:none;display:flex;align-items:center;gap:16px;padding:0 
 .chip.me{color:var(--text)}.chip.me .role{font-size:10.5px;padding:1px 7px;border-radius:6px;background:rgba(124,92,255,.25);color:#cfc2ff}
 .chip.sync{cursor:pointer}.chip.sync.ok{color:var(--green)}.chip.sync.wait{color:var(--yellow)}.chip.sync.err{color:var(--red)}
 .hbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;flex:none;font-size:15px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}.dot.on{background:var(--green)}
 main{flex:1;position:relative;min-height:0}
 .view{position:absolute;inset:0;display:none}.view.active{display:flex}
 .login{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:calc(20px + var(--sat)) 20px calc(20px + var(--sab));background:radial-gradient(900px 500px at 10% 0%,rgba(124,92,255,.30),transparent 60%),#0a0f1e}
@@ -65,18 +64,19 @@ aside>*{flex:none}
 .btn:hover{background:rgba(255,255,255,.09)}
 .btn.primary{border:0;background:linear-gradient(135deg,var(--accent),#5b8cff 55%,var(--accent2));color:#fff}
 .btn.stop{border:0;background:linear-gradient(135deg,#ff4d6d,#ff9f43);color:#fff}
+.btn.warn{border-color:rgba(255,212,59,.6);color:var(--yellow);box-shadow:0 0 0 3px rgba(255,212,59,.12)}
 .btn.danger{color:#ff8fa3;border-color:rgba(255,77,109,.35)}.btn.ok{color:var(--green);border-color:rgba(46,229,157,.35)}
 .btn.sm{padding:6px 10px;font-size:12px;border-radius:9px}.btn:disabled{opacity:.45}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>.btn{flex:1}
-.progress{height:7px;border-radius:9px;background:var(--panel2);overflow:hidden;display:none}
+.progress{height:7px;border-radius:9px;background:var(--panel2);overflow:hidden;display:none;margin-top:10px}
 .progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.ptext{font-size:12px;color:var(--muted);display:none}
+.ptext{font-size:12px;color:var(--muted);display:none;margin-top:4px}
 .search{display:flex;gap:8px}
 .inp{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:11px;outline:none}
 .inp:focus{border-color:var(--accent)}select.inp option{background:#141b33}input[type=color].inp{padding:3px;height:38px}
-.list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;max-height:460px}.list>*{flex:none}
+.list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;max-height:420px}.list>*{flex:none}
 .item{display:flex;gap:10px;align-items:center;padding:9px 11px;border-radius:12px;background:var(--panel2);border:1px solid transparent;cursor:pointer}
-.item.sel{border-color:var(--accent)}.item .d{width:10px;height:10px;border-radius:50%;flex:none}
+.item:hover{border-color:var(--border)}.item .d{width:10px;height:10px;border-radius:50%;flex:none}
 .item .t{flex:1;min-width:0}.item .t b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item .t span{font-size:11.5px;color:var(--muted)}
 .badge{font-size:10.5px;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,.07);color:var(--muted);white-space:nowrap}
 .empty-list{color:var(--muted);text-align:center;padding:20px 10px;font-size:12.5px}.muted{color:var(--muted)}
@@ -84,14 +84,15 @@ aside>*{flex:none}
 .lay-card.pins{background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(239,68,68,.04));border-color:rgba(245,158,11,.28)}
 .lay-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.lay-head b{font-size:13.5px;white-space:nowrap}.lay-head .row{gap:6px;flex-wrap:nowrap}
 .lay-scroll{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;overflow-x:hidden}.lay-scroll>*{flex:none}
+.lgh{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 2px 0}
 .lr{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 7px;border-radius:11px;background:var(--panel2);border:1px solid var(--border);overflow:hidden}
-.lr.off .ln,.lr.off .sw,.lr.off .swc{opacity:.38}.lr.grp{background:rgba(255,255,255,.06)}.lr.grp.act{border-color:rgba(245,158,11,.55)}.lr.loc{border-color:rgba(255,212,59,.45)}
+.lr.off .ln,.lr.off .sw,.lr.off .swc{opacity:.38}.lr.grp{background:rgba(255,255,255,.06)}.lr.grp.act{border-color:rgba(245,158,11,.55)}
 .lr.prow{margin-left:16px;min-height:40px;padding:4px 6px;gap:6px;border-left:3px solid var(--gc,#f59e0b);border-radius:4px 10px 10px 4px}
 .lr.prow.view{background:rgba(46,229,157,.08)}
 .tw{width:18px;border:0;background:transparent;color:var(--muted);cursor:pointer;flex:none;font-size:11px;padding:0}
 .eye{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none;padding:0}
 .eye.sm{width:26px;height:26px}.eye.on{color:var(--accent2);border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.1)}
-.sw{width:18px;height:18px;border-radius:6px;flex:none;border:2px solid rgba(255,255,255,.5)}
+.sw{width:18px;height:18px;border-radius:6px;flex:none;border:2px solid rgba(255,255,255,.5);display:inline-block}
 input.swc{width:22px;height:22px;padding:0;border:0;background:none;cursor:pointer;flex:none;-webkit-appearance:none;appearance:none}
 input.swc::-webkit-color-swatch-wrapper{padding:0}input.swc::-webkit-color-swatch{border:2px solid rgba(255,255,255,.55);border-radius:6px}
 .ln{flex:1 1 auto;min-width:0;overflow:hidden}.ln b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -126,10 +127,10 @@ input.swc::-webkit-color-swatch-wrapper{padding:0}input.swc::-webkit-color-swatc
 .basepop.on{display:flex}.basepop button{border:0;background:transparent;color:var(--text);padding:12px;border-radius:10px;text-align:left;font-weight:600;font-size:15px}
 .basepop button.active{background:linear-gradient(135deg,var(--accent),var(--accent2))}
 .legend{position:absolute;left:14px;bottom:34px;z-index:500;padding:10px 13px;border-radius:13px;font-size:12px;display:flex;flex-direction:column;gap:6px}
-.legend div{display:flex;align-items:center;gap:8px}.legend i{width:11px;height:11px;border-radius:50%;border:2px solid #fff}.legend i.sq{border-radius:3px;border:0}
+.legend div{display:flex;align-items:center;gap:8px}.legend i{width:11px;height:11px;border-radius:3px}
 .empty-state{position:absolute;inset:0;z-index:450;display:grid;place-items:center;pointer-events:none;padding:16px}
 .empty-card{pointer-events:auto;text-align:center;padding:26px 30px;border-radius:22px;max-width:440px}.empty-card p{color:var(--muted)}
-.pick-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:660;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;display:none;gap:10px;align-items:center;white-space:nowrap}
+.pick-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:660;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:600;display:none;gap:10px;align-items:center;white-space:nowrap;max-width:90%}
 .vsbar{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:655;display:none;align-items:center;gap:14px;padding:8px 8px 8px 16px;border-radius:14px;font-size:13px;max-width:calc(100% - 520px);white-space:nowrap}
 .vsbar.on{display:flex}.vsbar .t{overflow:hidden;text-overflow:ellipsis}.vsbar .lg{display:flex;gap:10px;font-size:12px;color:var(--muted)}
 .vsbar .lg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px}
@@ -137,10 +138,9 @@ input.swc::-webkit-color-swatch-wrapper{padding:0}input.swc::-webkit-color-swatc
 .compass{position:absolute;right:14px;bottom:112px;z-index:640;width:62px;height:62px;border-radius:50%;cursor:pointer;display:grid;place-items:center;user-select:none}
 .compass .rose{position:absolute;inset:4px}.compass .deg{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;background:rgba(12,18,36,.85);padding:1px 7px;border-radius:7px}
 .compass.off{display:none}.mapwrap.prof-open .compass{bottom:434px}
-.zpin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2.5px solid #fff;position:relative}
+.zpin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2.5px solid #fff;position:relative;box-shadow:0 3px 10px rgba(0,0,0,.45)}
 .zpin::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;top:6.5px;left:6.5px}
-.cl{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;background:radial-gradient(circle,rgba(255,77,109,.95) 45%,rgba(255,77,109,.35) 46%)}
-.cl.m{width:48px;height:48px}.cl.l{width:58px;height:58px;background:radial-gradient(circle,rgba(124,92,255,.95) 45%,rgba(124,92,255,.35) 46%)}
+.cl{border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;border:3px solid rgba(255,255,255,.75);box-shadow:0 0 0 5px rgba(0,0,0,.25)}
 .rp{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;border:2.5px solid #fff;background:linear-gradient(135deg,var(--accent),var(--accent2))}
 .rp.b{background:linear-gradient(135deg,#0ea5e9,#2563eb)}.rp.bs{border-color:#ffd43b;box-shadow:0 0 0 3px rgba(255,212,59,.35)}
 .spin{width:18px;height:18px;border-radius:50%;background:var(--accent2);border:3px solid #fff}
@@ -215,46 +215,54 @@ input.swc::-webkit-color-swatch-wrapper{padding:0}input.swc::-webkit-color-swatc
 .card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;min-width:0}.card.full{grid-column:1/-1}
 .card h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:9px}
 .card .desc{color:var(--muted);font-size:12.5px;margin:0 0 14px;line-height:1.5}
-.f{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.f label{font-size:12px;color:var(--muted);font-weight:600}.f .hint{font-size:11.5px;color:var(--accent2);min-height:14px}
+.f{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.f label{font-size:12px;color:var(--muted);font-weight:600}
 .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.cols2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .nu-row{display:grid;grid-template-columns:1.2fr 1.2fr 1fr auto;gap:10px;align-items:end}.nu-row .f{margin:0}
-.col-inp{text-transform:uppercase;font-weight:700;text-align:center}
-.rule{display:grid;grid-template-columns:80px 170px 1fr 38px;gap:8px;margin-bottom:8px;align-items:center}
+.rule{display:grid;grid-template-columns:200px 150px 1fr 38px;gap:8px;margin-bottom:8px;align-items:center}
 .rule .x{height:38px;border-radius:10px;border:1px solid rgba(255,77,109,.35);background:transparent;color:#ff8fa3;cursor:pointer}
 .seg{display:inline-flex;gap:3px;padding:3px;border-radius:11px;background:rgba(0,0,0,.25);border:1px solid var(--border)}
 .seg button{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:600}.seg button.active{background:var(--accent);color:#fff}
 .chk{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px;margin:6px 0}.chk input{width:17px;height:17px;accent-color:var(--accent)}
 input[type=range]{width:100%;accent-color:var(--accent2)}
 .match-info{margin-top:10px;padding:10px 12px;border-radius:11px;background:rgba(46,229,157,.08);color:var(--green);font-size:12.5px}
-.prev-wrap{overflow:auto;max-height:360px;border-radius:12px;border:1px solid var(--border)}
+.match-info.dirty{background:rgba(255,212,59,.08);color:var(--yellow)}
+.prev-wrap{overflow:auto;max-height:320px;border-radius:12px;border:1px solid var(--border);margin-top:8px}
 table.prev{border-collapse:collapse;font-size:12px;width:max-content;min-width:100%}
-table.prev th,table.prev td{padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+table.prev th,table.prev td{padding:6px 9px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
 table.prev th{position:sticky;top:0;background:#151d3a;color:var(--muted)}table.prev tr.hdr td{font-weight:700;background:rgba(124,92,255,.12)}
-table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(255,212,59,.10)}
+table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(255,212,59,.10)}table.prev .cx{background:rgba(46,229,157,.08)}
 .tbl-wrap{overflow-x:auto}
 .utbl{width:100%;border-collapse:collapse;font-size:13px}.utbl th{text-align:left;color:var(--muted);font-size:12px;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
 .utbl td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}.utbl tr.dis td{opacity:.55}.utbl select{width:auto;padding:5px 8px}
-.utbl .ua{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}.utbl td.c{text-align:center}
+.utbl .ua{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}.utbl td.c,.utbl th.c{text-align:center}
 .utbl input[type=checkbox]{width:19px;height:19px;accent-color:var(--accent)}
-.pill{font-size:11px;padding:2px 8px;border-radius:7px;font-weight:700;white-space:nowrap}.pill.on{background:rgba(46,229,157,.12);color:var(--green)}.pill.off{background:rgba(255,77,109,.12);color:var(--red)}.pill.y{background:rgba(255,212,59,.12);color:var(--yellow)}
+.pill{font-size:11px;padding:3px 9px;border-radius:7px;font-weight:700;white-space:nowrap;border:0;cursor:default}.pill.on{background:rgba(46,229,157,.12);color:var(--green)}.pill.off{background:rgba(255,77,109,.12);color:var(--red)}.pill.y{background:rgba(255,212,59,.12);color:var(--yellow)}
+button.pill{cursor:pointer}
 .uchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.uchip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel2);font-size:12px;cursor:pointer}
+.uchip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--panel2);font-size:12px;cursor:pointer;max-width:100%}
 .uchip input{accent-color:var(--accent)}
+.grph{margin:14px 0 8px;font-size:13px;color:var(--accent2)}
 .diag{padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--border);font:12.5px/1.7 Consolas,monospace;white-space:pre-wrap;min-height:60px;max-height:520px;overflow:auto}
 .diag .g{color:var(--green)}.diag .r{color:var(--red)}.diag .y{color:var(--yellow)}
 .note{padding:10px 12px;border-radius:11px;background:rgba(255,212,59,.07);border:1px solid rgba(255,212,59,.3);color:var(--yellow);font-size:12.5px;line-height:1.5}
+.ds{border-left:4px solid var(--dc,#ff4d6d)}
+.dshead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.dshead .ln b{font-size:15px}.dshead .ln .sub{font-size:12px;white-space:normal}
+.dsopt{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.ds.open .dsopt{display:block}
+.dslist{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.dsec{font-size:12.5px;font-weight:700;margin:14px 0 6px;color:var(--text)}
+details summary{cursor:pointer;color:var(--muted);font-size:12.5px;margin-top:12px}
 
 .bnav{display:none}
 #toasts{position:fixed;bottom:22px;right:22px;z-index:6000;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 30px)}
-.toast{padding:12px 16px;border-radius:12px;background:#151d3a;border:1px solid var(--border);font-size:13px;border-left:4px solid var(--accent)}
+.toast{padding:12px 16px;border-radius:12px;background:#151d3a;border:1px solid var(--border);font-size:13px;border-left:4px solid var(--accent);max-width:460px}
 .toast.ok{border-left-color:var(--green)}.toast.err{border-left-color:var(--red)}
 .scrim{display:none}
-@media(max-width:1000px){.chip.fi{display:none}}
 @media(max-width:760px){
   .m-only{display:inline-flex!important}.d-only{display:none!important}
   header{height:calc(54px + var(--sat));padding:var(--sat) 10px 0 10px;gap:8px;background:rgba(10,15,30,.97)}
   .brand small{display:none}.logo{width:34px;height:34px}
-  .tabs,.chip.fi{display:none}.hdr-right{gap:6px}.chip{padding:7px 10px;max-width:120px;font-size:13px}.chip.me .role{display:none}.hbtn{width:38px;height:38px}
+  .tabs{display:none}.hdr-right{gap:6px}.chip{padding:7px 10px;max-width:120px;font-size:13px}.chip.me .role{display:none}.hbtn{width:38px;height:38px}
   .bnav{display:flex;flex:none;height:calc(var(--bnh) + var(--sab));padding-bottom:var(--sab);background:rgba(10,15,30,.98);border-top:1px solid var(--border);z-index:1600}
   .bnav button{flex:1;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;font-weight:600;position:relative}
   .bnav button .i{font-size:22px;line-height:1}.bnav button.active{color:#fff}
@@ -298,15 +306,16 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
   .vsbar{top:auto;bottom:10px;left:10px;right:70px;transform:none;max-width:none;white-space:normal;flex-wrap:wrap;gap:6px}.vsbar .lg{display:none}.vsbar .x{width:100%;padding:11px}
   .mapwrap.vs-open .fabs{bottom:110px}
   .pick-banner{top:72px;left:10px;right:70px;transform:none;white-space:normal;justify-content:space-between}
-  /* podešavanja na telefonu: kartice gore, vodoravno */
   .set-layout{flex-direction:column}
-  .snav{width:auto;flex-direction:row;padding:8px 8px;gap:6px;border-right:0;border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;flex:none;-webkit-overflow-scrolling:touch}
+  .snav{width:auto;flex-direction:row;padding:8px;gap:6px;border-right:0;border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;flex:none;-webkit-overflow-scrolling:touch}
   .snav h2{display:none}
   .snav button{padding:8px 12px;font-size:13px;flex:none;border:1px solid var(--border);background:var(--panel2)}
   .snav button .ic{width:22px;height:22px;font-size:13px;background:transparent}
   .spane{padding:14px 10px 40px}
   .grid{grid-template-columns:1fr;gap:12px}.cols4,.cols3{grid-template-columns:1fr 1fr}.nu-row{grid-template-columns:1fr 1fr}
-  .rule{grid-template-columns:60px 1fr 1fr 38px}.phead .actions{margin-left:0;width:100%}.phead .actions .btn{flex:1}
+  .rule{grid-template-columns:1fr 1fr;}.rule .x{width:100%}
+  .phead .actions{margin-left:0;width:100%}.phead .actions .btn{flex:1}
+  .stats{grid-template-columns:repeat(2,1fr)}
   .utbl .hm{display:none}
   #toasts{left:10px;right:10px;bottom:calc(var(--bnh) + var(--sab) + 12px)}
 }
@@ -330,7 +339,6 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
   <nav class="tabs"><button class="tab active" data-view="map">🗺️ Mapa</button><button class="tab admin-only" data-view="settings">⚙️ Podešavanja</button></nav>
   <div class="hdr-right">
     <div class="chip sync" id="syncChip">☁</div>
-    <div class="chip fi admin-only"><span class="dot" id="fileDot"></span><span id="fileName">Excel nije učitan</span></div>
     <div class="chip me"><span>👤</span><span class="nm" id="meName"></span><span class="role" id="meRole"></span></div>
     <button class="hbtn" id="pwBtn" title="Promeni lozinku">🔑</button><button class="hbtn" id="logoutBtn" title="Odjava">⎋</button>
   </div>
@@ -361,7 +369,7 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
         <button class="fab" id="rulerFab" data-perm="ruler">📏</button><button class="fab" id="gpsFab">🎯</button></div>
       <div class="vsbar glass" id="vsBar"><span class="t" id="vsBarTxt"></span><span class="lg"><span><i id="vbV"></i>vidljivo</span><span><i id="vbS"></i>senka</span></span><button class="x" id="vsExit">✕ Izađi iz prikaza</button></div>
       <div class="compass glass" id="compass"><svg class="rose" id="rose" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/><polygon points="50,16 58,50 42,50" fill="#ff4d6d"/><polygon points="50,84 58,50 42,50" fill="#cfd6ee"/><text x="50" y="35" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="800" fill="#fff">N</text></svg><span class="deg" id="compDeg">0°</span></div>
-      <div class="legend glass"><div><i style="background:var(--red)"></i>Tačna adresa</div><div><i style="background:var(--orange)"></i>Samo ulica</div><div><i style="background:var(--yellow)"></i>Samo opština</div><div><i style="background:var(--violet)"></i>Ručno</div><div><i class="sq" id="lgVis"></i>Vidljivo sa pina</div><div><i class="sq" id="lgSh"></i>U senci</div></div>
+      <div class="legend glass" id="legend"><div><i id="lgVis"></i>Vidljivo sa pina</div><div><i id="lgSh"></i>U senci</div></div>
       <div class="pick-banner" id="pickBanner"><span id="bannerTxt"></span><button class="btn sm" id="pickCancel">Otkaži</button></div>
       <div class="prof glass" id="prof">
         <div class="prof-head"><b>📏 Profil terena</b><span class="sum" id="profSum"></span>
@@ -373,8 +381,8 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
           </div></div>
         <div class="prof-body"><div class="prof-cvw"><canvas id="profCv"></canvas><div class="prof-msg" id="profMsg"></div></div><div class="prof-stats" id="profStats"></div></div>
       </div>
-      <div class="empty-state admin-only" id="emptyState"><div class="empty-card glass"><h2>Dobrodošao u RANmap</h2><p>Slojeve sa baznim stanicama i izveštaj žalbi učitavaš u Podešavanjima.</p>
-        <div class="row"><button class="btn primary" data-goset="kml">🗂️ KML BS</button><button class="btn" data-goset="zalbe">📄 Žalbe bez PBS</button></div></div></div>
+      <div class="empty-state admin-only" id="emptyState"><div class="empty-card glass"><h2>Dobrodošao u RANmap</h2><p>Slojeve sa baznim stanicama i Excel fajlove sa žalbama uvoziš u Podešavanjima.</p>
+        <div class="row"><button class="btn primary" data-goset="kml">📡 KML BS</button><button class="btn" data-goset="pbs">📄 Žalbe bez PBS</button><button class="btn" data-goset="zal">📋 Žalbe</button></div></div></div>
     </div>
   </section>
 
@@ -383,14 +391,14 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
       <h2>⚙️ Podešavanja</h2>
       <button data-st="users"><span class="ic">👥</span>User / Pass</button>
       <button data-st="diag"><span class="ic">🩺</span>Provera servera</button>
-      <button data-st="zalbe"><span class="ic">📄</span>Žalbe bez PBS</button>
+      <button data-st="pbs"><span class="ic">📄</span>Žalbe bez PBS</button>
       <button data-st="kml"><span class="ic">📡</span>KML BS</button>
-      <button data-st="excel"><span class="ic">📊</span>Excel</button>
+      <button data-st="zal"><span class="ic">📋</span>Žalbe</button>
       <button data-st="perms"><span class="ic">🔐</span>Permissions</button>
     </nav>
     <div class="sbody" id="sbody">
+      <input type="file" id="xlFile" hidden>
 
-      <!-- 1) USER / PASS -->
       <div class="spane" data-sp="users">
         <div class="phead"><div><h1>👥 Korisnici i lozinke</h1><p>Pravljenje naloga, promena lozinke, blokiranje i brisanje.</p></div><div class="actions"><button class="btn" id="usrReload">↻ Osveži</button></div></div>
         <div class="card"><h3>➕ Novi korisnik</h3><p class="desc">Korisničko ime: mala slova, brojevi, tačka ili crtica (npr. <b>ivan</b>). Lozinka najmanje 6 znakova.</p>
@@ -402,37 +410,24 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
           <div class="tbl-wrap"><table class="utbl"><thead><tr><th>Korisnik</th><th>Uloga</th><th>Status</th><th class="hm">Kreiran</th><th style="text-align:right">Akcije</th></tr></thead><tbody id="usrBody"></tbody></table></div></div>
       </div>
 
-      <!-- 2) PROVERA SERVERA -->
       <div class="spane" data-sp="diag">
         <div class="phead"><div><h1>🩺 Provera servera</h1><p>Internet, biblioteke, prijava, prava, tabele i upis na server.</p></div><div class="actions"><button class="btn primary" id="diagBtn">▶ Pokreni proveru</button></div></div>
         <div class="card"><div class="diag" id="diagOut">Klikni „Pokreni proveru“.</div></div>
       </div>
 
-      <!-- 3) ŽALBE BEZ PBS -->
-      <div class="spane" data-sp="zalbe">
-        <div class="phead"><div><h1>📄 Žalbe bez PBS</h1><p>Učitaj izveštaj, postavi pinove na mapu i objavi ih korisnicima.</p></div></div>
-        <div class="card">
-          <div class="drop" id="drop"><b>📄 Učitaj izveštaj žalbi (Excel / CSV)</b><span>Klikni i izaberi fajl · na računaru možeš i da ga prevučeš ovde</span><input type="file" id="file" hidden></div>
-          <div class="stats" style="margin-top:14px"><div class="stat"><b id="stTotal">0</b><span>Redova</span></div><div class="stat s2"><b id="stFilt">0</b><span>Bez PBS</span></div><div class="stat s3"><b id="stMap">0</b><span>Na mapi</span></div><div class="stat s4"><b id="stNf">0</b><span>Nije nađ.</span></div></div>
-          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-            <button class="btn primary" id="runBtn" disabled><span>📍 Postavi pinove (geokodiranje)</span></button>
-            <div class="progress" id="prog"><i></i></div><div class="ptext" id="ptext"></div>
-            <div class="row"><button class="btn sm" id="fitBtn">🗺️ Prikaži na mapi</button><button class="btn sm" id="xlsBtn">⬇ Excel sa koordinatama</button><button class="btn sm" id="kmlBtn">⬇ KML</button><button class="btn sm primary" id="pubBtn">☁ Objavi korisnicima</button></div>
-          </div>
-          <div class="muted" style="font-size:12px;margin-top:10px">Kolone adrese i filter (npr. kolona J = „n“) podešavaš u kartici <b>📊 Excel</b>.</div>
-        </div>
-        <div class="card"><h3>📋 Lista žalbi</h3>
-          <div class="search" style="margin-bottom:10px"><input class="inp" id="q" placeholder="Pretraga: ulica, opština, red…"><select class="inp" id="qf" style="width:150px"><option value="all">Sve</option><option value="map">Na mapi</option><option value="nf">Nije nađeno</option><option value="pending">Na čekanju</option></select></div>
-          <div class="list" id="list"><div class="empty-list">Učitaj fajl da vidiš listu žalbi.</div></div></div>
+      <div class="spane" data-sp="pbs">
+        <div class="phead"><div><h1>📄 Žalbe bez PBS</h1><p>Uvezeni izveštaj, kolone, filter i postavljanje pinova. Ko vidi sloj – u 🔐 Permissions.</p></div></div>
+        <div class="card"><div class="drop" data-xdrop="pbs"><b>📄 Uvezi izveštaj žalbi bez PBS (Excel / CSV)</b><span>Novi fajl zamenjuje postojeći · na računaru možeš i da ga prevučeš ovde</span></div></div>
+        <div id="pbsList" class="dslists"></div>
+        <div class="card geo-card"></div>
       </div>
 
-      <!-- 4) KML BS -->
       <div class="spane" data-sp="kml">
         <div class="phead"><div><h1>📡 KML bazne stanice</h1><p>Ubacivanje slojeva na server, boje, brisanje i prikaz.</p></div><div class="actions"><button class="btn" id="kmlReload">↻ Osveži sa servera</button></div></div>
-        <div class="card"><div class="drop" id="kmlDrop"><b>🗂️ Dodaj KML / KMZ sloj</b><span>Klikni i izaberi fajl (može više odjednom) · sloj ide na server i vide ga korisnici</span><input type="file" id="kmlFile" multiple hidden></div>
+        <div class="card"><div class="drop" id="kmlDrop"><b>🗂️ Dodaj KML / KMZ sloj</b><span>Klikni i izaberi fajl (može više odjednom) · ko vidi sloj podešavaš u 🔐 Permissions</span><input type="file" id="kmlFile" multiple hidden></div>
           <div class="perf" id="bsPerf" style="margin-top:10px"></div></div>
-        <div class="card"><h3>🗂️ Slojevi na serveru</h3><p class="desc">Ko vidi koji sloj podešavaš u kartici 🔐 Permissions.</p>
-          <div class="tbl-wrap"><table class="utbl"><thead><tr><th>Boja</th><th>Naziv</th><th>BS</th><th>Sektori</th><th>Visina antene</th><th class="hm">Veličina</th><th></th></tr></thead><tbody id="kmlBody"></tbody></table></div></div>
+        <div class="card"><h3>🗂️ Slojevi na serveru</h3>
+          <div class="tbl-wrap"><table class="utbl"><thead><tr><th>Boja</th><th>Naziv</th><th>BS</th><th>Sektori</th><th>Visina antene</th><th>Ko vidi</th><th></th></tr></thead><tbody id="kmlBody"></tbody></table></div></div>
         <div class="grid">
           <div class="card"><h3>🎨 Prikaz slojeva</h3>
             <div class="cols2"><div class="f"><label>Veličina tačke BS (px)</label><input class="inp" type="number" min="2" max="14" data-k="siteR"></div>
@@ -457,38 +452,19 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
         </div>
       </div>
 
-      <!-- 5) EXCEL -->
-      <div class="spane" data-sp="excel">
-        <div class="phead"><div><h1>📊 Excel – kolone, filter i geokodiranje</h1><p>Kako program čita izveštaj žalbi.</p></div><div class="actions"><button class="btn danger" id="resetCfg">Vrati podrazumevano</button><button class="btn primary" id="applyCfg">✓ Primeni</button></div></div>
-        <div class="grid">
-          <div class="card"><h3>📄 Fajl i list</h3>
-            <div class="f"><label>List (sheet)</label><select class="inp" id="sheetSel"><option value="">— učitaj fajl u „Žalbe bez PBS“ —</option></select></div>
-            <label class="chk"><input type="checkbox" data-k="hasHeader"> Prvi red je zaglavlje</label>
-            <div class="f"><label>Preskoči prvih N redova</label><input class="inp" type="number" min="0" data-k="skip" style="width:120px"></div></div>
-          <div class="card"><h3>📍 Kolone adrese</h3>
-            <div class="cols3"><div class="f"><label>Opština</label><input class="inp col-inp" data-k="colOps" maxlength="3"><div class="hint" data-h="colOps"></div></div><div class="f"><label>Ulica</label><input class="inp col-inp" data-k="colUl" maxlength="3"><div class="hint" data-h="colUl"></div></div><div class="f"><label>Broj</label><input class="inp col-inp" data-k="colBr" maxlength="3"><div class="hint" data-h="colBr"></div></div></div>
-            <div class="f"><label>Dodatne kolone za prikaz u pinu (npr. A,E,K)</label><input class="inp" data-k="extra" style="text-transform:uppercase"></div></div>
-          <div class="card full"><h3>🔎 Filter – koje redove uzima</h3><p class="desc">Npr. kolona <b>J</b> → <b>Jednako</b> → <b>n</b> uzima samo redove bez planirane BS.</p>
-            <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px;flex-wrap:wrap"><div class="seg" id="matchSeg"><button data-m="all">Sva pravila (I)</button><button data-m="any">Bilo koje (ILI)</button></div>
-              <label class="chk" style="margin:0"><input type="checkbox" data-k="caseIns"> Ne razlikuj velika/mala slova</label></div>
-            <div id="rules"></div><button class="btn sm" id="addRule">+ Dodaj pravilo</button><div class="match-info" id="matchInfo"></div></div>
-          <div class="card full"><h3>🌍 Geokodiranje</h3>
-            <div class="cols4"><div class="f"><label>Servis</label><select class="inp" data-k="geocoder"><option value="nominatim">Nominatim</option><option value="photon">Photon</option></select></div><div class="f"><label>Pauza (ms)</label><input class="inp" type="number" min="200" data-k="delay"></div><div class="f"><label>Država</label><input class="inp" data-k="country"></div><div class="f"><label>Kod države</label><input class="inp" data-k="cc" maxlength="2"></div></div>
-            <label class="chk"><input type="checkbox" data-k="fallback"> Ako ne nađe adresu, pin na ulicu / opštinu</label>
-            <label class="chk"><input type="checkbox" data-k="cluster"> Grupiši bliske pinove žalbi (klasteri)</label>
-            <label class="chk"><input type="checkbox" data-k="autoFit"> Automatski zumiraj posle obrade</label>
-            <button class="btn sm danger" id="clearCache">Obriši zapamćene koordinate (<span id="cacheN">0</span>)</button></div>
-          <div class="card full"><h3>👁 Pregled fajla</h3><div class="prev-wrap" id="prev"><div class="empty-list">Nema učitanog fajla.</div></div></div>
-        </div>
+      <div class="spane" data-sp="zal">
+        <div class="phead"><div><h1>📋 Žalbe</h1><p>Uvezi jedan ili više Excel fajlova. Svaki fajl je poseban sloj na mapi sa svojim kolonama, filterom i podacima na pinu.</p></div></div>
+        <div class="card"><div class="drop" data-xdrop="gen"><b>📋 Uvezi Excel / CSV sa žalbama</b><span>Može više fajlova odjednom · na računaru možeš i da ih prevučeš ovde</span></div></div>
+        <div id="zalList" class="dslists"></div>
+        <div class="card geo-card"></div>
       </div>
 
-      <!-- 6) PERMISSIONS -->
       <div class="spane" data-sp="perms">
         <div class="phead"><div><h1>🔐 Permissions</h1><p>Šta svaki korisnik sme da radi i koje slojeve vidi.</p></div><div class="actions"><button class="btn" id="permReload">↻ Osveži</button></div></div>
         <div class="note" id="permNote" style="display:none"></div>
         <div class="card"><h3>🧩 Funkcije po korisniku</h3><p class="desc">Administrator uvek ima sve. Promena se čuva odmah; korisnik je vidi pri sledećem otvaranju programa.</p>
-          <div class="tbl-wrap"><table class="utbl"><thead><tr><th>Korisnik</th><th class="c">📍 Pinovi</th><th class="c">📏 Lenjir i profil</th><th class="c">👁 Optička vidljivost</th><th class="c">📄 Objavljene žalbe</th></tr></thead><tbody id="permBody"></tbody></table></div></div>
-        <div class="card"><h3>🗂️ Pristup slojevima</h3><p class="desc"><b>Svi korisnici</b> – vide svi · <b>Izabrani</b> – samo štiklirani · <b>Samo admin</b> – niko od korisnika.</p>
+          <div class="tbl-wrap"><table class="utbl"><thead><tr><th>Korisnik</th><th class="c">📍 Pinovi</th><th class="c">📏 Lenjir i profil</th><th class="c">👁 Optička vidljivost</th><th class="c">📄 Žalbe na mapi</th></tr></thead><tbody id="permBody"></tbody></table></div></div>
+        <div class="card"><h3>🗂️ Pristup slojevima</h3><p class="desc"><b>Svi korisnici</b> – vide svi · <b>Izabrani</b> – samo štiklirani · <b>Samo admin</b> – niko od korisnika. Novi uvezeni Excel je podrazumevano „Samo admin“.</p>
           <div id="accBody"></div></div>
       </div>
 
@@ -502,20 +478,18 @@ table.prev .ca{background:rgba(34,211,238,.10)}table.prev .cf{background:rgba(25
 const SUPABASE_URL = 'https://mdjkzcffflvlacmpaskg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamt6Y2ZmZmx2bGFjbXBhc2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MzUyODYsImV4cCI6MjExMTAxMTI4Nn0.TFDm4utnZiwjA15HEb40AqGd3Ru6WCv49qKs8kBOESE';
 const EMAIL_DOMAIN = 'mapa.local';
-const APP_VER = 'v16';
+const APP_VER = 'v17';
 (function(){
 "use strict";
 const LS_CFG='zalbeMapa_cfg_v1', LS_CACHE='zalbeMapa_geo_v1';
-const DEF={sheet:'',hasHeader:true,skip:0,colOps:'B',colUl:'C',colBr:'D',extra:'',rules:[{col:'J',op:'eq',val:'n'}],match:'all',caseIns:true,
-  geocoder:'nominatim',delay:1100,country:'Srbija',cc:'rs',fallback:true,cluster:true,autoFit:true,base:'osm',osmSrc:'auto',coordFmt:'dd',
-  siteR:5,secOp:0.25,secMinZoom:10,lblZoom:15,kmlColors2:false,zVis:true,hA:1.5,freq:900,
+const DEF={geocoder:'nominatim',delay:1100,country:'Srbija',cc:'rs',fallback:true,cluster:true,base:'osm',osmSrc:'auto',coordFmt:'dd',
+  siteR:5,secOp:0.25,secMinZoom:10,lblZoom:15,kmlColors2:false,hA:1.5,freq:900,
   pinH:30,pinR:10,pinHt:1.5,pinQ:'normal',vsCol:'#2ee59d',vsShCol:'#ff4d6d',vsOp:0.55,vsShadow:true,activeUL:'',setTab:'users'};
 let cfg; try{cfg=Object.assign({},DEF,JSON.parse(localStorage.getItem(LS_CFG)||'{}'));}catch(e){cfg=Object.assign({},DEF);}
 if(!['osm','sat','hyb','topo'].includes(cfg.base))cfg.base='osm';
 let cache; try{cache=JSON.parse(localStorage.getItem(LS_CACHE)||'{}');}catch(e){cache={};}
 const missQ={};
-const S={wb:null,file:'',data:[],items:[],markers:{},running:false,stop:false,pick:null,sel:null};
-let LAYERS=[],UL=[],PED=null,visSig='',VSV=null,ME=null,sb=null,LV={},USERS=[];
+let LAYERS=[],UL=[],PED=null,visSig='',VSV=null,ME=null,sb=null,LV={},USERS=[],PICK=null;
 const isAdmin=()=>!!(ME&&ME.role==='admin');
 const PERM_KEYS=['pins','ruler','vs','zalbe'];
 const can=k=>isAdmin()||!ME||((ME.perms||{})[k]!==false);
@@ -525,12 +499,11 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
 const saveCfg=()=>localStorage.setItem(LS_CFG,JSON.stringify(cfg));
-const saveCache=()=>{try{localStorage.setItem(LS_CACHE,JSON.stringify(cache));}catch(e){}; $('#cacheN').textContent=Object.keys(cache).length;};
+const saveCache=()=>{try{localStorage.setItem(LS_CACHE,JSON.stringify(cache));}catch(e){}; $$('.cacheN').forEach(e=>e.textContent=Object.keys(cache).length);};
 function colIdx(l){l=String(l||'').trim().toUpperCase();if(!/^[A-Z]{1,3}$/.test(l))return -1;let n=0;for(const ch of l)n=n*26+(ch.charCodeAt(0)-64);return n-1;}
 function colLet(i){let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
 function cell(row,l){const i=colIdx(l);if(i<0||!row)return '';return String(row[i]??'').trim();}
 const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
-const extraCols=()=>String(cfg.extra||'').toUpperCase().split(/[,;\s]+/).filter(x=>colIdx(x)>=0);
 const fmtDist=m=>m<1000?Math.round(m)+' m':(m/1000).toFixed(m<10000?2:1)+' km';
 const n0=v=>Math.round(v).toLocaleString('sr');
 const num=v=>parseFloat(String(v).replace(',','.'));
@@ -571,11 +544,11 @@ function showView(v){if(v==='settings'&&!isAdmin())v='map';closeDlg();
 function setTab(t){if(!$('[data-sp="'+t+'"]'))t='users';cfg.setTab=t;saveCfg();
   $$('#snav button').forEach(b=>b.classList.toggle('active',b.dataset.st===t));$$('.spane').forEach(p=>p.classList.toggle('active',p.dataset.sp===t));
   $('#sbody').scrollTop=0;const ab=$('#snav button.active');if(ab&&isMobile())ab.scrollIntoView({inline:'center',block:'nearest'});
-  if(t==='users')loadUsers();else if(t==='perms')loadPerms();else if(t==='kml')renderKmlTab();else if(t==='excel'){renderPreview();updHints();updMatchInfo();}else if(t==='zalbe')renderList();}
+  if(t==='users')loadUsers();else if(t==='perms')loadPerms();else if(t==='kml')renderKmlTab();else if(t==='pbs')renderDsTab('pbs');else if(t==='zal')renderDsTab('gen');}
 $('#snav').addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(b)setTab(b.dataset.st);});
 function goMap(){showView('map');}
 
-/* ---------- prozor (računar oblačić, telefon panel odozdo) ---------- */
+/* ---------- prozor ---------- */
 let DLG=null;
 function closeDlg(){if(!DLG)return;const d=DLG;DLG=null;document.body.classList.remove('dlg-open');d.cbs.forEach(f=>{try{f();}catch(e){}});setTimeout(()=>{if(!DLG)$('#dlgBody').innerHTML='';},250);}
 $('#dlgClose').addEventListener('click',closeDlg);
@@ -626,41 +599,23 @@ $$('[data-l]').forEach(b=>b.addEventListener('click',()=>{setBase(b.dataset.l);$
 $('#baseFab').addEventListener('click',e=>{e.stopPropagation();$('#basePop').classList.toggle('on');});
 document.addEventListener('click',e=>{if(!e.target.closest('#basePop,#baseFab'))$('#basePop').classList.remove('on');});
 setBase(cfg.base);
-let group;
-function makeGroup(){if(group)map.removeLayer(group);
-  group=cfg.cluster?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,chunkedLoading:true,iconCreateFunction:clusterIcon}):L.featureGroup();
-  S.markers={};S.items.forEach(it=>{if(it.lat!=null)addMarker(it);});applyVis();}
-function clusterIcon(c){const n=c.getChildCount();const k=n<10?'':n<50?'m':'l';const s=n<10?40:n<50?48:58;return L.divIcon({html:'<div class="cl '+k+'">'+n+'</div>',className:'',iconSize:[s,s]});}
-const COLORS={ok:'var(--red)',street:'var(--orange)',city:'var(--yellow)',manual:'var(--violet)'};
-const LABEL={ok:'Tačna adresa',street:'Samo ulica',city:'Samo opština',manual:'Ručno',notfound:'Nije nađeno',pending:'Na čekanju',noaddr:'Nema adrese',error:'Greška'};
-const HEX={ok:'#ff4d6d',street:'#ff9f43',city:'#ffd43b',manual:'#b18cff',notfound:'#5d6688',pending:'#5d6688',noaddr:'#3c4466',error:'#ff4d6d'};
-function icon(it){return L.divIcon({className:'',html:'<div class="zpin" style="--c:'+(COLORS[it.status]||'var(--red)')+'"></div>',iconSize:[26,26],iconAnchor:[13,31]});}
+function clusterIcon(c,col){const n=c.getChildCount();const s=n<10?36:n<50?44:54;
+  return L.divIcon({html:'<div class="cl" style="width:'+s+'px;height:'+s+'px;background:'+col+'">'+n+'</div>',className:'',iconSize:[s,s]});}
+function zIcon(col){return L.divIcon({className:'',html:'<div class="zpin" style="--c:'+col+'"></div>',iconSize:[26,26],iconAnchor:[13,31]});}
 const RMETA={};let rmetaN=0;
 function regMeta(m){if(!m)return '';const k='m'+(++rmetaN);RMETA[k]=m;return k;}
 function llActs(lat,lon,meta){const c=lat.toFixed(6)+', '+lon.toFixed(6);const mk=regMeta(meta);
   return '<div class="co">'+c+'</div><div class="acts"><a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener">Google Maps</a>'+
   '<button data-copy="'+c+'">📋 Kopiraj</button>'+(can('ruler')?'<button data-ruler="'+lat+','+lon+'"'+(mk?' data-rmeta="'+mk+'"':'')+'>📏 Meri odavde</button>':'')+'</div>';}
-function popupHtml(it){const ex=(it.extra||[]).map(e=>'<tr><td>'+esc(e.h)+'</td><td>'+esc(e.v)+'</td></tr>').join('');
-  const vs=[];UL.forEach(l=>l.pins.forEach(p=>{const r=vsLookup(p,it.lat,it.lon);if(r>=0)vs.push((r?'✓ ':'✕ ')+p.name);}));
-  return '<div class="pp"><div class="pp-h"><b>'+esc(((it.ul||'')+' '+(it.br||'')).trim()||'—')+'</b><span class="badge" style="color:'+(HEX[it.status]||'#ff4d6d')+'">'+(LABEL[it.status]||'')+'</span></div>'+
-   '<div class="pp-o">'+esc(it.ops||'—')+(it.rowNum?' · Excel red '+it.rowNum:'')+'</div>'+(ex?'<table>'+ex+'</table>':'')+
-   (vs.length?'<div class="pp-o">Vidljivost sa pinova: '+vs.map(esc).join(' · ')+'</div>':'')+llActs(it.lat,it.lon)+'</div>';}
-function zalbaClick(m,it,ro){if(R.on){closeAllPops();rulerAdd(m.getLatLng());return;}if(!ro)S.sel=it.id;openPop(m.getLatLng(),popupHtml(it),{title:'📄 Žalba',popup:{offset:[0,-28]}});}
-function addMarker(it){if(S.markers[it.id])group.removeLayer(S.markers[it.id]);
-  const m=L.marker([it.lat,it.lon],{icon:icon(it),draggable:!isMobile()&&isAdmin()});m.on('click',()=>zalbaClick(m,it,false));
-  m.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
-  m.on('dragend',e=>{const p=e.target.getLatLng();it.lat=p.lat;it.lon=p.lng;it.status='manual';cache[it.key]={lat:p.lat,lon:p.lng,level:'manual'};saveCache();m.setIcon(icon(it));refresh();});
-  S.markers[it.id]=m;group.addLayer(m);}
 map.on('popupopen',e=>bindPopActions(e.popup.getElement()));
 function banner(t){$('#bannerTxt').textContent=t;$('#pickBanner').style.display='flex';}
 function hideBanner(){$('#pickBanner').style.display='none';}
 function setCross(on){$('#map').classList.toggle('picking',on);}
 $('#pickCancel').addEventListener('click',()=>{stopPick();rulerStop();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(S.pick!=null)stopPick();if(R.on)rulerStop();else if(VSV)exitVsView();hideRes();closeMenu();closeDlg();}});
-function startPick(id){goMap();rulerStop();S.pick=id;setCross(true);closeMenu();banner('📍 Klikni na mapu da postaviš pin žalbe');}
-function stopPick(){if(S.pick==null)return;S.pick=null;setCross(false);hideBanner();}
-function doPick(ll){const it=S.items.find(x=>x.id===S.pick);stopPick();if(!it)return;it.lat=ll.lat;it.lon=ll.lng;it.status='manual';cache[it.key]={lat:it.lat,lon:it.lon,level:'manual'};saveCache();addMarker(it);refresh();toast('Pin ručno postavljen','ok');}
-map.on('click',e=>{if(R.on){rulerAdd(e.latlng);return;}if(S.pick!=null){doPick(e.latlng);return;}closeDlg();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(PICK)stopPick();if(R.on)rulerStop();else if(VSV)exitVsView();hideRes();closeMenu();closeDlg();}});
+function startPick(ly,it){goMap();rulerStop();PICK={ly,it};setCross(true);closeMenu();banner('📍 Klikni na mapu: '+itTitle(it));}
+function stopPick(){if(!PICK)return;PICK=null;setCross(false);hideBanner();}
+map.on('click',e=>{if(R.on){rulerAdd(e.latlng);return;}if(PICK){doPick(e.latlng);return;}closeDlg();});
 
 let meMk=null,meAcc=null,gpsPin=false,meLL=null,meAccV=0;
 function locate(addPin){if(!navigator.geolocation){toast('Uređaj ne podržava GPS','err');return;}gpsPin=!!addPin;$('#gpsBtn').classList.add('active');$('#gpsFab').classList.add('active');
@@ -748,8 +703,6 @@ function parseKML(text){text=String(text||'').replace(/^\uFEFF/,'');let doc=new 
       const ce=(ob||p).getElementsByTagNameNS('*','coordinates')[0]||(ob||p).getElementsByTagName('coordinates')[0];const c=parseCoords(ce?ce.textContent:'');if(c.length>2)res.polys.push(Object.assign({ll:c,kind:'Sektor'},base));}
     for(const p of tags('LineString')){const ce=p.getElementsByTagNameNS('*','coordinates')[0]||p.getElementsByTagName('coordinates')[0];const c=parseCoords(ce?ce.textContent:'');if(c.length>1)res.lines.push(Object.assign({ll:c,kind:'Linija'},base));}}
   return res;}
-function parseZalbe(text){const j=JSON.parse(text);const items=(j.items||[]).filter(i=>isFinite(i.lat)&&isFinite(i.lon));items.forEach((it,i)=>{it.id='s'+i;});return {sites:[],polys:[],lines:[],items};}
-/* ćelije iz opisa: "SD62D1 900 59 12062 32 51026 65° 27.2 m 5° (0+5) 67.4°" */
 const SECT_RE=/^\s*(\S+)\b.*?(\d{1,3}(?:[.,]\d+)?)\s*°\s+(\d{1,3}(?:[.,]\d+)?)\s*m\b\s*(-?\d{1,2}(?:[.,]\d+)?)?\s*°?\s*(?:\(\s*(-?\d+(?:[.,]\d+)?)\s*\+\s*(-?\d+(?:[.,]\d+)?)\s*\))?\s*(\d{1,3}(?:[.,]\d+)?)?\s*°?/;
 const H_KEY=/(ant[a-z_ .]*(h|vis|height|hgt))|((h|vis|height|hgt)[a-z_ .]*ant)|visina|height|hgt|^agl$|^h$/i;
 function bsInfo(f){if(!f)return {h:null,sectors:[]};if(f._info)return f._info;
@@ -775,13 +728,20 @@ function bsPopup(f,siteF){const s=siteF||f;const i=bsInfo(s);const meta=bsMeta(s
 function attachBSEvents(g,ly){
   g.on('click',e=>{const l=e.propagatedFrom||e.layer;if(!l||!l._f)return;const f=l._f;const site=f.kind==='BS lokacija'?f:nearestSite(ly,e.latlng,600);
     if(R.on){if(site)rulerAdd(L.latLng(site.ll),bsMeta(site));else rulerAdd(e.latlng);return;}
-    if(S.pick!=null){doPick(e.latlng);return;}openPop(e.latlng,bsPopup(f,site),{title:'📡 '+(f.name||'Bazna stanica')});});
+    if(PICK){doPick(e.latlng);return;}openPop(e.latlng,bsPopup(f,site),{title:'📡 '+(f.name||'Bazna stanica')});});
   g.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
   g.on('mouseover',e=>{if(isMobile())return;const l=e.propagatedFrom||e.layer;if(!l||!l._f||!l._f.name)return;hoverTip.setContent(esc(l._f.name));map.openTooltip(hoverTip,e.latlng);});
   g.on('mouseout',()=>map.closeTooltip(hoverTip));}
 function drawLayer(ly){
-  if(ly.kind==='zalbe'){if(ly.g.z)map.removeLayer(ly.g.z);ly.g.z=cfg.cluster?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,iconCreateFunction:clusterIcon}):L.featureGroup();
-    ly.data.items.forEach(it=>{const m=L.marker([it.lat,it.lon],{icon:icon(it)});m.on('click',()=>zalbaClick(m,it,true));ly.g.z.addLayer(m);});visSig='';return;}
+  if(ly.kind==='zalbe'){if(ly.g.z)map.removeLayer(ly.g.z);const col=ly.color;
+    ly.g.z=cfg.cluster?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,chunkedLoading:true,iconCreateFunction:c=>clusterIcon(c,col)}):L.featureGroup();
+    const drag=isAdmin()&&!isMobile()&&!ly.ds.legacy;const ic=zIcon(col);
+    ly.data.items.forEach(it=>{const m=L.marker([it.lat,it.lon],{icon:ic,draggable:drag});
+      m.on('click',()=>{if(R.on){rulerAdd(m.getLatLng());return;}if(PICK){doPick(m.getLatLng());return;}openPop(m.getLatLng(),itemPopup(ly,it),{title:'📄 '+ly.name,popup:{offset:[0,-28]}});});
+      m.on('contextmenu',e=>{if(e.originalEvent)L.DomEvent.preventDefault(e.originalEvent);showCtx(e.latlng);});
+      if(drag)m.on('dragend',e=>{const p=e.target.getLatLng();it.lat=p.lat;it.lon=p.lng;it.status='manual';ly.ds.geo[it.key]={lat:p.lat,lon:p.lng,level:'manual'};scheduleSave(ly);toast('Pin pomeren – čuva se na serveru','ok');});
+      ly.g.z.addLayer(m);});
+    visSig='';return;}
   ly.g.sites.clearLayers();ly.g.sec.clearLayers();const kc=cfg.kmlColors2,op=+cfg.secOp,col=ly.color;
   for(const f of ly.data.polys){f.lyName=ly.name;const s=f.st||{};const fc=kc&&s.poly?s.poly.c:col;
     const l=L.polygon(f.ll,{renderer:cvBS,color:kc&&s.line?s.line.c:fc,weight:1,opacity:.9,fillColor:fc,fillOpacity:(kc&&s.fill===false)?0:op,bubblingMouseEvents:false});l._f=f;ly.g.sec.addLayer(l);}
@@ -790,7 +750,7 @@ function drawLayer(ly){
     const l=L.circleMarker(f.ll,{renderer:cvBS,radius:+cfg.siteR||5,color:'#fff',weight:1.5,fillColor:kc&&s.icon&&s.icon.c!=='#ffffff'?s.icon.c:col,fillOpacity:1,bubblingMouseEvents:false});l._f=f;ly.g.sites.addLayer(l);}
   visSig='';}
 function tog(l,on){if(!l)return;if(on&&!map.hasLayer(l))map.addLayer(l);else if(!on&&map.hasLayer(l))map.removeLayer(l);}
-function applyVis(){if(group)tog(group,cfg.zVis&&isAdmin());const z=map.getZoom(),mz=+cfg.secMinZoom||0;const want=[];
+function applyVis(){const z=map.getZoom(),mz=+cfg.secMinZoom||0;const want=[];
   LAYERS.forEach(ly=>{if(ly.kind==='zalbe'){if(ly.visible&&ly.g.z)want.push(ly.g.z);return;}if(ly.visible&&ly.showSec&&z>=mz)want.push(ly.g.sec);});
   LAYERS.forEach(ly=>{if(ly.kind!=='zalbe'&&ly.visible&&ly.showSites)want.push(ly.g.sites);});
   const sig=want.map(g=>L.stamp(g)).join(',');
@@ -799,25 +759,26 @@ function applyVis(){if(group)tog(group,cfg.zVis&&isAdmin());const z=map.getZoom(
   if(hasSec&&z<mz){h.style.display='block';h.textContent='ⓘ Sektori se vide od zuma '+mz+' (trenutno '+z+')';}else h.style.display='none';updLabels();}
 map.on('zoomend',applyVis);
 function updLabels(){labelsLayer.clearLayers();if(map.getZoom()<(+cfg.lblZoom||15))return;const b=map.getBounds().pad(0.25);let n=0;
-  for(const ly of LAYERS){if(!ly.visible||!ly.showSites)continue;for(const f of ly.data.sites){if(!f.name||!b.contains(f.ll))continue;
+  for(const ly of LAYERS){if(!ly.visible||!ly.showSites||ly.kind==='zalbe')continue;for(const f of ly.data.sites){if(!f.name||!b.contains(f.ll))continue;
       labelsLayer.addLayer(L.tooltip({permanent:true,direction:'right',offset:[6,0],interactive:false}).setLatLng(f.ll).setContent(esc(f.name)));if(++n>=(isMobile()?150:400))return;}}}
 map.on('moveend',updLabels);
 function layerBounds(ly){const pts=[];ly.data.sites.forEach(f=>pts.push(f.ll));ly.data.polys.forEach(f=>pts.push(f.ll[0]));ly.data.items.forEach(i=>pts.push([i.lat,i.lon]));return pts.length?L.latLngBounds(pts):null;}
 function allBsBounds(){let b=null;LAYERS.forEach(ly=>{if(!ly.visible)return;const x=layerBounds(ly);if(x)b=b?b.extend(x):x;});return b;}
-function fitTo(b){map.fitBounds(b,{padding:[40,40]});}
+function fitTo(b){if(b)map.fitBounds(b,{padding:[40,40],maxZoom:16});}
 const lvKey=()=>'zm_lv_'+(ME?ME.id:'x');
 function loadLV(){try{LV=JSON.parse(localStorage.getItem(lvKey())||'{}');}catch(e){LV={};}}
 function saveLV(){LAYERS.forEach(l=>LV[l.id]={v:l.visible,s:l.showSites,c:l.showSec});localStorage.setItem(lvKey(),JSON.stringify(LV));}
 
-/* ---------- početni ekran: slojevi i pinovi (isto za admina i korisnike) ---------- */
-function renderLayers(){let h='';
-  if(isAdmin()&&S.items.some(i=>i.lat!=null)){h+='<div class="lr'+(cfg.zVis?'':' off')+'"><button class="eye'+(cfg.zVis?' on':'')+'" data-eye="z">'+(cfg.zVis?EYE:EYE_OFF)+'</button><span class="sw" style="background:#ff4d6d"></span><div class="ln"><b>Žalbe (lokalni Excel)</b><span class="sub">'+S.items.filter(i=>i.lat!=null).length+' pinova · vidiš samo ti</span></div><button class="ib" data-fit="z">⤢</button></div>';}
-  LAYERS.forEach(ly=>{const zl=ly.kind==='zalbe';
-    h+='<div class="lr'+(ly.visible?'':' off')+(ly.local?' loc':'')+'"><button class="eye'+(ly.visible?' on':'')+'" data-eye="'+ly.id+'">'+(ly.visible?EYE:EYE_OFF)+'</button>'+
-      '<span class="sw" style="background:'+(zl?'#ff4d6d':ly.color)+'"></span><div class="ln"><b>'+esc(ly.name)+'</b><span class="sub">'+(ly.local?'⚠ samo ovde ':'')+
-      (zl?n0(ly.data.items.length)+' žalbi':'<button class="mt'+(ly.showSites?' on':'')+'" data-ts="'+ly.id+'">BS '+n0(ly.data.sites.length)+'</button><button class="mt'+(ly.showSec?' on':'')+'" data-tc="'+ly.id+'">Sektori '+n0(ly.data.polys.length+ly.data.lines.length)+'</button>')+
-      '</span></div><button class="ib" data-fit="'+ly.id+'" title="Zumiraj na sloj">⤢</button></div>';});
-  if(!LAYERS.length)h+='<div class="lempty">'+(isAdmin()?'Nema slojeva. Dodaj ih u ⚙️ Podešavanja → 📡 KML BS.':'Administrator još nije objavio slojeve.')+'</div>';
+/* ---------- početni ekran ---------- */
+function renderLayers(){let h='';const kml=LAYERS.filter(l=>l.kind!=='zalbe'),zl=LAYERS.filter(l=>l.kind==='zalbe');
+  const row=ly=>{const z=ly.kind==='zalbe';
+    return '<div class="lr'+(ly.visible?'':' off')+'"><button class="eye'+(ly.visible?' on':'')+'" data-eye="'+ly.id+'">'+(ly.visible?EYE:EYE_OFF)+'</button>'+
+      '<span class="sw" style="background:'+ly.color+'"></span><div class="ln"><b>'+esc(ly.name)+'</b><span class="sub">'+
+      (z?n0(ly.data.items.length)+' na mapi'+(isAdmin()&&ly.items.length>ly.data.items.length?' · '+(ly.items.length-ly.data.items.length)+' bez lokacije':''):'<button class="mt'+(ly.showSites?' on':'')+'" data-ts="'+ly.id+'">BS '+n0(ly.data.sites.length)+'</button><button class="mt'+(ly.showSec?' on':'')+'" data-tc="'+ly.id+'">Sektori '+n0(ly.data.polys.length+ly.data.lines.length)+'</button>')+
+      '</span></div><button class="ib" data-fit="'+ly.id+'" title="Zumiraj na sloj">⤢</button></div>';};
+  if(kml.length&&zl.length)h+='<div class="lgh">📡 Bazne stanice</div>';h+=kml.map(row).join('');
+  if(zl.length)h+='<div class="lgh">📄 Žalbe</div>'+zl.map(row).join('');
+  if(!LAYERS.length)h+='<div class="lempty">'+(isAdmin()?'Nema slojeva. Dodaj ih u ⚙️ Podešavanja.':'Administrator još nije objavio slojeve.')+'</div>';
   $('#layers').innerHTML=h;h='';
   UL.forEach(l=>{const act=cfg.activeUL===l.id;
     h+='<div class="lr grp'+(l.visible?'':' off')+(act?' act':'')+'"><button class="tw" data-utw="'+l.id+'">'+(l.open?'▾':'▸')+'</button><button class="eye'+(l.visible?' on':'')+'" data-ueye="'+l.id+'">'+(l.visible?EYE:EYE_OFF)+'</button>'+
@@ -839,10 +800,10 @@ $('#grpNew').addEventListener('click',newGroupPrompt);
 function renameGroup(l){const n=prompt('Novi naziv grupe:',l.name);if(n===null||!n.trim())return;l.name=n.trim();saveUL();syncGroup(l);renderLayers();}
 let clickT=null;
 onLay('click',e=>{const b=e.target.closest('button,[data-pedit],[data-uact]');if(!b)return;const d=b.dataset;
-  if(d.eye){if(d.eye==='z'){cfg.zVis=!cfg.zVis;saveCfg();}else{const ly=findLy(d.eye);if(ly)ly.visible=!ly.visible;saveLV();}applyVis();renderLayers();return;}
+  if(d.eye){const ly=findLy(d.eye);if(ly)ly.visible=!ly.visible;saveLV();applyVis();renderLayers();return;}
   if(d.ts){const ly=findLy(d.ts);ly.showSites=!ly.showSites;if(ly.showSites)ly.visible=true;saveLV();applyVis();renderLayers();return;}
   if(d.tc){const ly=findLy(d.tc);ly.showSec=!ly.showSec;if(ly.showSec)ly.visible=true;saveLV();applyVis();renderLayers();return;}
-  if(d.fit){closeMenu();if(d.fit==='z'){fitAll();return;}const ly=findLy(d.fit);if(!ly.visible){ly.visible=true;saveLV();applyVis();renderLayers();}const bb=layerBounds(ly);if(bb)fitTo(bb);return;}
+  if(d.fit){closeMenu();const ly=findLy(d.fit);if(!ly.visible){ly.visible=true;saveLV();applyVis();renderLayers();}fitTo(layerBounds(ly));return;}
   if(d.uact){clearTimeout(clickT);const id=d.uact;clickT=setTimeout(()=>{cfg.activeUL=id;saveCfg();renderLayers();},230);return;}
   if(d.uren){renameGroup(findUL(d.uren));return;}
   if(d.utw){const l=findUL(d.utw);l.open=!l.open;saveUL();syncGroup(l);renderLayers();return;}
@@ -859,25 +820,27 @@ let colT=null;
 onLay('input',e=>{const d=e.target.dataset;
   if(d.ucol){const l=findUL(d.ucol);if(!l)return;l.color=e.target.value;clearTimeout(colT);colT=setTimeout(()=>{l.pins.forEach(p=>{if(p.mk)p.mk.setIcon(pinIcon(l,p));});saveUL();syncGroup(l);renderLayers();},200);}});
 
-/* ---------- Podešavanja → KML BS: tabela slojeva ---------- */
+/* ---------- Podešavanja → KML BS ---------- */
+function accLabel(ly){const m=accMode(ly);return m==='all'?'👥 Svi korisnici':m==='sel'?'✅ Izabrani ('+(ly.allowed||[]).length+')':'🔒 Samo admin';}
+function accPill(ly){const m=accMode(ly);return '<button class="pill '+(m==='all'?'on':m==='sel'?'y':'off')+'" data-goperm title="Promeni u Permissions">'+accLabel(ly)+'</button>';}
 function renderKmlTab(){const tb=$('#kmlBody');
-  const rows=LAYERS.map(ly=>{const zl=ly.kind==='zalbe';let hcnt='—';
-    if(!zl){const t=ly.data.sites.length;const k=ly.data.sites.filter(f=>bsInfo(f).h!=null).length;hcnt='<span class="pill '+(k===t?'on':k?'y':'off')+'">'+k+' / '+t+'</span>';}
-    return '<tr><td>'+(zl||ly.local?'<span class="sw" style="display:inline-block;background:'+(zl?'#ff4d6d':ly.color)+'"></span>':'<input type="color" class="swc" data-col="'+ly.id+'" value="'+ly.color+'">')+'</td>'+
-      '<td><b>'+esc(ly.name)+'</b>'+(zl?' <span class="badge">žalbe</span>':'')+(ly.local?' <span class="pill y">samo na ovom uređaju</span>':'')+'</td>'+
-      '<td>'+(zl?n0(ly.data.items.length):n0(ly.data.sites.length))+'</td><td>'+(zl?'—':n0(ly.data.polys.length+ly.data.lines.length))+'</td><td>'+hcnt+'</td>'+
-      '<td class="hm muted">'+(ly.size?Math.round(ly.size/1024)+' KB':'—')+'</td>'+
+  const rows=LAYERS.filter(l=>l.kind!=='zalbe').map(ly=>{const t=ly.data.sites.length;const k=ly.data.sites.filter(f=>bsInfo(f).h!=null).length;
+    return '<tr><td><input type="color" class="swc" data-col="'+ly.id+'" value="'+ly.color+'"></td><td><b>'+esc(ly.name)+'</b><div class="muted" style="font-size:11.5px">'+(ly.size?Math.round(ly.size/1024)+' KB':'')+'</div></td>'+
+      '<td>'+n0(t)+'</td><td>'+n0(ly.data.polys.length+ly.data.lines.length)+'</td><td><span class="pill '+(k===t?'on':k?'y':'off')+'">'+k+' / '+t+'</span></td><td>'+accPill(ly)+'</td>'+
       '<td><div class="ua"><button class="btn sm" data-kfit="'+ly.id+'">🗺️ Na mapi</button><button class="btn sm danger" data-kdel="'+ly.id+'">🗑 Obriši</button></div></td></tr>';}).join('');
-  tb.innerHTML=rows||'<tr><td colspan="7" class="muted">Nema slojeva na serveru.</td></tr>';}
+  tb.innerHTML=rows||'<tr><td colspan="7" class="muted">Nema KML slojeva na serveru.</td></tr>';}
 $('#kmlBody').addEventListener('input',e=>{const d=e.target.dataset;if(!d.col)return;const ly=findLy(d.col);if(!ly)return;ly.color=e.target.value;clearTimeout(colT);
   colT=setTimeout(()=>{drawLayer(ly);applyVis();renderLayers();colorLayer(ly);},300);});
 $('#kmlBody').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.kdel){deleteServerLayer(findLy(b.dataset.kdel));return;}
-  if(b.dataset.kfit){const ly=findLy(b.dataset.kfit);ly.visible=true;saveLV();applyVis();renderLayers();goMap();setTimeout(()=>{const bb=layerBounds(ly);if(bb)fitTo(bb);},120);}});
+  if(b.hasAttribute('data-goperm')){setTab('perms');return;}
+  if(b.dataset.kdel){deleteServerLayer(findLy(b.dataset.kdel)).then(renderKmlTab);return;}
+  if(b.dataset.kfit){const ly=findLy(b.dataset.kfit);ly.visible=true;saveLV();applyVis();renderLayers();goMap();setTimeout(()=>fitTo(layerBounds(ly)),150);}});
 function buildLayer(row,data){const st=LV[row.id]||{};
-  const ly={id:row.id,name:row.name,color:row.color||'#22d3ee',kind:row.kind||'kml',shared:!!row.visible_to_users,allowed:row.allowed_users||null,size:row.size||0,path:row.path,data,local:!!row.local,
-    visible:st.v!==undefined?st.v:true,showSites:st.s!==undefined?st.s:true,showSec:st.c!==undefined?st.c:true,g:{sites:L.featureGroup(),sec:L.featureGroup(),z:null}};
-  if(ly.kind!=='zalbe'){attachBSEvents(ly.g.sites,ly);attachBSEvents(ly.g.sec,ly);}drawLayer(ly);return ly;}
+  const ly={id:row.id,name:row.name,color:row.color||'#22d3ee',kind:row.kind||'kml',shared:!!row.visible_to_users,allowed:row.allowed_users||null,size:row.size||0,path:row.path,
+    visible:st.v!==undefined?st.v:true,showSites:st.s!==undefined?st.s:true,showSec:st.c!==undefined?st.c:true,g:{sites:L.featureGroup(),sec:L.featureGroup(),z:null},items:[],total:0};
+  if(ly.kind==='zalbe'){ly.ds=data;ly.data={sites:[],polys:[],lines:[],items:[]};if(data.cfg&&data.cfg.color)ly.color=data.cfg.color;computeItems(ly);}
+  else{ly.data=data;attachBSEvents(ly.g.sites,ly);attachBSEvents(ly.g.sec,ly);}
+  drawLayer(ly);return ly;}
 function nextColor(){const used=LAYERS.map(l=>l.color);return PAL.find(c=>!used.includes(c))||PAL[LAYERS.length%PAL.length];}
 async function readKmlFile(file){const buf=await file.arrayBuffer();const u8=new Uint8Array(buf);
   if((u8[0]===0x50&&u8[1]===0x4B)||/\.kmz$/i.test(file.name)){if(!await ensureLib('JSZip'))throw new Error('KMZ biblioteka nije učitana');
@@ -933,10 +896,10 @@ function exportUL(l){if(!l.pins.length)return;const x=s=>String(s??'').replace(/
   k+='</Document></kml>';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([k]));a.download=(l.name||'pinovi')+'.kml';a.click();}
 const QN={fast:'Brzo (1°)',normal:'Normalno (0,5°)',fine:'Fino (0,25°)'};
 function vsStatusTxt(p){if(p.busy!=null)return '⏳ '+p.busy+'%';if(!p.vs)return 'vidljivost nije izračunata';return 'vidljivo '+p.vs.pct.toFixed(0)+'%';}
-function zalbeAll(){const loc=S.items.filter(i=>i.lat!=null);if(loc.length)return loc;const a=[];LAYERS.forEach(l=>{if(l.kind==='zalbe'&&l.visible)a.push(...l.data.items);});return a;}
+function zalbeAll(){const a=[];LAYERS.forEach(l=>{if(l.kind==='zalbe'&&l.visible)a.push(...l.data.items);});return a;}
 function zalbeStats(p){let n=0,v=0;zalbeAll().forEach(it=>{const r=vsLookup(p,it.lat,it.lon);if(r<0)return;n++;if(r)v++;});return {n,v};}
 function vsBigHtml(p){if(p.busy!=null)return '⏳ Računam… <b>'+p.busy+'%</b>';if(!p.vs)return 'Optička vidljivost nije izračunata.';
-  const z=zalbeStats(p);return '<b>Vidljivo '+p.vs.pct.toFixed(1)+'%</b> kruga r = '+p.r+' km'+(z.n?'<br>Žalbe: '+z.n+' · vidljivo '+z.v:'');}
+  const z=zalbeStats(p);return '<b>Vidljivo '+p.vs.pct.toFixed(1)+'%</b> kruga r = '+p.r+' km'+(z.n?'<br>Žalbe u krugu: '+z.n+' · vidljivo '+z.v:'');}
 function updVsStatus(p){$$('[data-vsst="'+p.id+'"]').forEach(e=>e.textContent=vsStatusTxt(p));if(PED&&PED.p===p){const b=PED.el.querySelector('[data-vsbig]');if(b)b.innerHTML=vsBigHtml(p);}}
 function refreshEditor(p){if(PED&&PED.p===p)fillEditorButtons();}
 function fillEditorButtons(){if(!PED)return;const p=PED.p,el=PED.el;const vb=el.querySelector('[data-vsbig]');if(vb)vb.innerHTML=vsBigHtml(p);
@@ -1006,7 +969,7 @@ function parseCoord(s){s=s.trim();let m,lat,lon;if((m=s.match(/^(-?\d+(?:\.\d+)?
   if(lat>=18&&lat<=23.5&&lon>=41.5&&lon<=46.5){const t=lat;lat=lon;lon=t;}if(Math.abs(lat)>90||Math.abs(lon)>180)return null;return L.latLng(lat,lon);}
 function bsMatch(q){q=norm(q);const out=[];if(q.length<2)return out;
   for(const l of UL)for(const p of l.pins){if(p.name.toLowerCase().includes(q))out.push({ic:'📍',t:p.name,s:'Moj pin',ll:L.latLng(p.lat,p.lon),z:15,pin:p});}
-  for(const ly of LAYERS){for(const f of ly.data.sites){if(f.name&&f.name.toLowerCase().includes(q)){out.push({ic:'📡',t:f.name,s:'BS · '+ly.name,ll:L.latLng(f.ll),z:16,ly,f});if(out.length>=12)return out;}}}return out;}
+  for(const ly of LAYERS){if(ly.kind==='zalbe')continue;for(const f of ly.data.sites){if(f.name&&f.name.toLowerCase().includes(q)){out.push({ic:'📡',t:f.name,s:'BS · '+ly.name,ll:L.latLng(f.ll),z:16,ly,f});if(out.length>=12)return out;}}}return out;}
 async function geoSearch(q){const p=new URLSearchParams({format:'jsonv2',limit:'6',q,'accept-language':'sr-Latn,sr,en',countrycodes:cfg.cc||'rs'});
   const r=await fetch('https://nominatim.openstreetmap.org/search?'+p);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();
   return j.map(x=>({ic:'🏠',t:x.display_name.split(',').slice(0,2).join(','),s:x.display_name,ll:L.latLng(+x.lat,+x.lon),z:17}));}
@@ -1132,38 +1095,194 @@ $('#profCv').addEventListener('touchmove',e=>{if(e.touches[0]){e.preventDefault(
 $('#profCv').addEventListener('mouseleave',()=>{R.hi=-1;if(R.hov){map.removeLayer(R.hov);R.hov=null;}if(R.an)drawProfile();});
 window.addEventListener('resize',()=>{if(R.prof)drawProfile();updCompass();});
 
-/* ---------- ŽALBE BEZ PBS (Excel) ---------- */
-const fileInp=$('#file');const XL_RE=/\.(xlsx|xlsm|xlsb|xls|ods|csv|txt)$/i, KML_RE=/\.(kml|kmz|xml)$/i;
-$('#drop').addEventListener('click',()=>fileInp.click());
-fileInp.addEventListener('change',()=>{const f=fileInp.files[0];fileInp.value='';if(!f)return;if(KML_RE.test(f.name)){importKmlFiles([f]);return;}loadFile(f);});
+/* =====================================================================
+   ŽALBE – uvezeni Excel fajlovi (svaki fajl = sloj na serveru)
+   type 'pbs' = Žalbe bez PBS (jedan fajl), 'gen' = Žalbe (više fajlova)
+   ===================================================================== */
+const XL_RE=/\.(xlsx|xlsm|xlsb|xls|ods|csv|txt)$/i, KML_RE=/\.(kml|kmz|xml)$/i;
+const ZPAL=['#ff4d6d','#f59e0b','#a855f7','#10b981','#3b82f6','#ec4899','#14b8a6','#eab308'];
+const LABEL={ok:'Tačna adresa',street:'Samo ulica',city:'Samo opština',manual:'Ručno postavljeno',notfound:'Nije nađeno',pending:'Na čekanju',noaddr:'Nema adrese',error:'Greška'};
+const OPS={eq:'Jednako',neq:'Nije jednako',contains:'Sadrži',starts:'Počinje sa',empty:'Prazno',notempty:'Nije prazno'};
+function nextZColor(){const used=LAYERS.filter(l=>l.kind==='zalbe').map(l=>l.color);return ZPAL.find(c=>!used.includes(c))||ZPAL[LAYERS.length%ZPAL.length];}
+function dsDefaults(type,header){header=header||[];
+  const c={hasHeader:true,skip:0,colOps:'',colUl:'',colBr:'',title:'',extra:[],rules:[],match:'all',caseIns:true,color:type==='pbs'?'#ff4d6d':nextZColor()};
+  const find=re=>{const i=header.findIndex(h=>re.test(String(h||'').trim()));return i>=0?colLet(i):'';};
+  c.colOps=find(/op[sš]tin|grad|mesto|naselj/i);c.colUl=find(/ulic|adres/i);c.colBr=find(/^(k\.?\s*)?br(oj)?\.?$|ku[cć]ni|^broj/i);
+  if(type==='pbs'){if(!c.colOps)c.colOps='B';if(!c.colUl)c.colUl='C';if(!c.colBr)c.colBr='D';c.rules=[{col:'J',op:'eq',val:'n'}];}
+  return c;}
+function parseDataset(text){const j=JSON.parse(text);
+  if(j&&j.v===2&&Array.isArray(j.rows)){j.geo=j.geo||{};j.cfg=Object.assign(dsDefaults(j.type||'gen',[]),j.cfg||{});j.cfg.extra=j.cfg.extra||[];j.cfg.rules=j.cfg.rules||[];j.type=j.type||'gen';return j;}
+  const items=(j.items||[]).filter(i=>isFinite(i.lat)&&isFinite(i.lon)).map((it,i)=>Object.assign({},it,{id:'s'+i,title:'',extra:it.extra||[],key:'s'+i}));
+  return {v:1,legacy:true,type:'gen',file:'(ranije objavljene žalbe)',items,cfg:{color:'#ff4d6d',extra:[],rules:[]},geo:{}};}
+function dsSerialize(ds){return {v:2,type:ds.type,file:ds.file,sheet:ds.sheet,imported:ds.imported,rows:ds.rows,cfg:ds.cfg,geo:ds.geo};}
+function dsHeader(ds){return ds.cfg.hasHeader?(ds.rows[+ds.cfg.skip||0]||[]):[];}
+function dsStart(ds){return (+ds.cfg.skip||0)+(ds.cfg.hasHeader?1:0);}
+function dsNCols(ds){let n=0;for(let i=0;i<Math.min(ds.rows.length,60);i++)n=Math.max(n,ds.rows[i].length);return Math.min(n,80);}
+function rowPassesC(row,c){const rules=(c.rules||[]).filter(r=>colIdx(r.col)>=0);if(!rules.length)return true;
+  const test=r=>{let v=cell(row,r.col),q=String(r.val??'').trim();if(c.caseIns){v=v.toLowerCase();q=q.toLowerCase();}
+    switch(r.op){case 'eq':return v===q;case 'neq':return v!==q;case 'contains':return v.includes(q);case 'starts':return v.startsWith(q);case 'empty':return v==='';case 'notempty':return v!=='';}return false;};
+  return c.match==='any'?rules.some(test):rules.every(test);}
+function computeItems(ly){const ds=ly.ds;
+  if(ds.legacy){ly.items=ds.items.map(it=>Object.assign(it,{status:it.status||'ok'}));ly.total=ly.items.length;ly.data.items=ly.items;return;}
+  const c=ds.cfg,hdr=dsHeader(ds);const out=[];let total=0;
+  for(let i=dsStart(ds);i<ds.rows.length;i++){const row=ds.rows[i];if(!row||row.every(v=>String(v).trim()===''))continue;total++;if(!rowPassesC(row,c))continue;
+    const it={id:ly.id+':'+i,rowNum:i+1,ops:cell(row,c.colOps),ul:cell(row,c.colUl),br:cell(row,c.colBr),title:c.title?cell(row,c.title):'',
+      extra:(c.extra||[]).map(col=>({h:hdr[colIdx(col)]||('Kolona '+col),v:cell(row,col)})).filter(e=>e.v!==''),lat:null,lon:null,status:'pending'};
+    it.key=norm(it.ops)+'|'+norm(it.ul)+'|'+norm(it.br);
+    if(!it.ops&&!it.ul)it.status='noaddr';
+    else{const g=ds.geo[it.key]||(isAdmin()?cache[it.key]:null);if(g){if(g.nf)it.status='notfound';else{it.lat=g.lat;it.lon=g.lon;it.status=g.level||'ok';}}}
+    out.push(it);}
+  ly.items=out;ly.total=total;ly.data.items=out.filter(i=>i.lat!=null);}
+function itTitle(it){return it.title||((it.ul||'')+' '+(it.br||'')).trim()||it.ops||'(bez adrese)';}
+function itemPopup(ly,it){const ex=(it.extra||[]).map(e=>'<tr><td>'+esc(e.h)+'</td><td>'+esc(e.v)+'</td></tr>').join('');
+  const vs=[];UL.forEach(l=>l.pins.forEach(p=>{const r=vsLookup(p,it.lat,it.lon);if(r>=0)vs.push((r?'✓ ':'✕ ')+p.name);}));
+  const addr=[((it.ul||'')+' '+(it.br||'')).trim(),it.ops].filter(Boolean).join(', ');
+  return '<div class="pp"><div class="pp-h"><b>'+esc(itTitle(it))+'</b><span class="badge" style="color:'+ly.color+'">'+esc(ly.name)+'</span></div>'+
+    '<div class="pp-o">'+esc(addr||'—')+(isAdmin()&&it.rowNum?' · Excel red '+it.rowNum:'')+(it.status==='street'||it.status==='city'?' · <span style="color:var(--yellow)">'+LABEL[it.status]+' (približno)</span>':'')+'</div>'+
+    (ex?'<table>'+ex+'</table>':'')+(vs.length?'<div class="pp-o">Vidljivost sa mojih pinova: '+vs.map(esc).join(' · ')+'</div>':'')+llActs(it.lat,it.lon)+'</div>';}
+function refresh(){$('#emptyState').style.display=(LAYERS.length||UL.some(l=>l.pins.length))?'none':'grid';renderLayers();}
+
+/* ---------- uvoz ---------- */
+const xlInp=$('#xlFile');let XL_TYPE='gen';
+function pickExcel(type){XL_TYPE=type;xlInp.multiple=type==='gen';xlInp.click();}
+$$('[data-xdrop]').forEach(d=>d.addEventListener('click',()=>pickExcel(d.dataset.xdrop)));
+xlInp.addEventListener('change',async()=>{const fs=[...xlInp.files];xlInp.value='';const type=XL_TYPE;
+  for(const f of fs){if(KML_RE.test(f.name)){importKmlFiles([f]);continue;}await importExcel(f,type);if(type==='pbs')break;}});
 ['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();if(!isAdmin())return;const d=e.target.closest&&e.target.closest('.drop');$$('.drop').forEach(x=>x.classList.toggle('over',x===d));}));
 ['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();if(ev==='drop')$$('.drop').forEach(x=>x.classList.remove('over'));}));
-document.addEventListener('drop',e=>{if(!isAdmin())return;const fs=e.dataTransfer?[...e.dataTransfer.files]:[];
+document.addEventListener('drop',async e=>{if(!isAdmin())return;const fs=e.dataTransfer?[...e.dataTransfer.files]:[];if(!fs.length)return;
   const k=fs.filter(f=>KML_RE.test(f.name));if(k.length){showView('settings');setTab('kml');importKmlFiles(k);}
-  const x=fs.find(f=>XL_RE.test(f.name));if(x){showView('settings');setTab('zalbe');loadFile(x);}});
-async function loadFile(f){toast('Učitavam '+f.name+'…');if(!await ensureLib('XLSX')){toast('Biblioteka za Excel nije učitana','err');return;}
-  try{const buf=await f.arrayBuffer();let wb;
-    if(/\.(csv|txt)$/i.test(f.name)){let t=new TextDecoder('utf-8').decode(buf);if(t.includes('\uFFFD'))t=new TextDecoder('windows-1250').decode(buf);wb=XLSX.read(t.replace(/^\uFEFF/,''),{type:'string'});}
-    else wb=XLSX.read(new Uint8Array(buf),{type:'array'});
-    S.wb=wb;S.file=f.name;const sel=$('#sheetSel');sel.innerHTML=S.wb.SheetNames.map(n=>'<option>'+esc(n)+'</option>').join('');
-    if(!S.wb.SheetNames.includes(cfg.sheet))cfg.sheet=S.wb.SheetNames[0];sel.value=cfg.sheet;saveCfg();readSheet();$('#fileName').textContent=f.name;$('#fileDot').classList.add('on');
-    if(!S.items.length)toast('Nijedan red ne prolazi filter. Proveri karticu 📊 Excel → Filter.','err',9000);else toast('Učitano: '+S.items.length+' žalbi bez PBS – klikni „Postavi pinove“','ok',7000);
-  }catch(err){toast('Greška pri čitanju fajla: '+err.message,'err');}}
-$('#sheetSel').addEventListener('change',e=>{cfg.sheet=e.target.value;saveCfg();readSheet();});
-function readSheet(){const ws=S.wb&&S.wb.Sheets[cfg.sheet];S.data=[];if(ws&&ws['!ref']){const d=XLSX.utils.decode_range(ws['!ref']);S.data=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false,blankrows:true,range:XLSX.utils.encode_range({s:{r:0,c:0},e:d.e})});}
-  buildItems();renderPreview();updHints();}
-function headerRow(){return cfg.hasHeader?(S.data[+cfg.skip||0]||[]):[];}
-function dataStart(){return (+cfg.skip||0)+(cfg.hasHeader?1:0);}
-const OPS={eq:'Jednako',neq:'Nije jednako',contains:'Sadrži',starts:'Počinje sa',empty:'Prazno',notempty:'Nije prazno'};
-function rowPasses(row){const rules=(cfg.rules||[]).filter(r=>colIdx(r.col)>=0);if(!rules.length)return true;
-  const test=r=>{let v=cell(row,r.col),q=String(r.val??'').trim();if(cfg.caseIns){v=v.toLowerCase();q=q.toLowerCase();}
-    switch(r.op){case 'eq':return v===q;case 'neq':return v!==q;case 'contains':return v.includes(q);case 'starts':return v.startsWith(q);case 'empty':return v==='';case 'notempty':return v!=='';}return false;};
-  return cfg.match==='any'?rules.some(test):rules.every(test);}
-function buildItems(){stopRun();S.items=[];const hdr=headerRow();const ex=extraCols();
-  for(let i=dataStart();i<S.data.length;i++){const row=S.data[i];if(!row||row.every(c=>String(c).trim()===''))continue;if(!rowPasses(row))continue;
-    const it={id:i,rowNum:i+1,ops:cell(row,cfg.colOps),ul:cell(row,cfg.colUl),br:cell(row,cfg.colBr),extra:ex.map(c=>({h:(hdr[colIdx(c)]||('Kolona '+c)),v:cell(row,c)})).filter(e=>e.v!==''),lat:null,lon:null,status:'pending'};
-    it.key=norm(it.ops)+'|'+norm(it.ul)+'|'+norm(it.br);if(!it.ops&&!it.ul)it.status='noaddr';else if(cache[it.key]){const c=cache[it.key];it.lat=c.lat;it.lon=c.lon;it.status=c.level;}S.items.push(it);}
-  makeGroup();refresh();updMatchInfo();$('#runBtn').disabled=!S.items.length;}
+  const xs=fs.filter(f=>XL_RE.test(f.name));if(!xs.length)return;
+  const dz=e.target.closest&&e.target.closest('[data-xdrop]');const type=dz?dz.dataset.xdrop:(cfg.setTab==='pbs'?'pbs':'gen');
+  showView('settings');setTab(type==='pbs'?'pbs':'zal');for(const f of xs){await importExcel(f,type);if(type==='pbs')break;}});
+async function importExcel(file,type){if(!isAdmin())return;
+  if(!await ensureLib('XLSX')){toast('Biblioteka za Excel nije učitana – proveri internet','err');return;}
+  let wb;try{const buf=await file.arrayBuffer();
+    if(/\.(csv|txt)$/i.test(file.name)){let t=new TextDecoder('utf-8').decode(buf);if(t.includes('\uFFFD'))t=new TextDecoder('windows-1250').decode(buf);wb=XLSX.read(t.replace(/^\uFEFF/,''),{type:'string'});}
+    else wb=XLSX.read(new Uint8Array(buf),{type:'array'});}catch(e){toast(file.name+': ne mogu da pročitam fajl – '+e.message,'err');return;}
+  const names=wb.SheetNames;let sh=names[0];
+  if(names.length>1){const a=prompt('„'+file.name+'“ ima više listova:\n\n'+names.map((n,i)=>(i+1)+')  '+n).join('\n')+'\n\nUpiši broj lista koji uvoziš:','1');if(a===null)return;
+    sh=names[Math.max(0,Math.min(names.length-1,(parseInt(a)||1)-1))];}
+  const ws=wb.Sheets[sh];if(!ws||!ws['!ref']){toast('List „'+sh+'“ je prazan','err');return;}
+  const d=XLSX.utils.decode_range(ws['!ref']);
+  let rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false,blankrows:true,range:XLSX.utils.encode_range({s:{r:0,c:0},e:d.e})});
+  rows=rows.map(r=>(r||[]).map(v=>String(v??'')));while(rows.length&&rows[rows.length-1].every(v=>v.trim()===''))rows.pop();
+  if(rows.length<2){toast('Fajl nema podataka','err');return;}
+  if(type==='pbs'){const old=LAYERS.filter(l=>l.kind==='zalbe'&&l.ds.type==='pbs');
+    if(old.length&&!confirm('Već je uvezen „'+old[0].name+'“ ('+(old[0].ds.file||'')+').\n\nZameniti ga novim fajlom „'+file.name+'“?\nStari se briše sa servera.'))return;
+    for(const o of old)await deleteServerLayer(o,true);}
+  const def=type==='pbs'?'Žalbe bez PBS':file.name.replace(/\.[^.]+$/,'');
+  const name=prompt('Naziv sloja (vidi se na mapi i u Permissions):',def);if(name===null)return;
+  const ds={v:2,type,file:file.name,sheet:sh,imported:new Date().toISOString(),rows,cfg:dsDefaults(type,rows[0]),geo:{}};
+  toast('Šaljem na server: '+file.name+' ('+n0(rows.length)+' redova)…');
+  try{const row=await uploadLayer(name.trim()||def,'zalbe',JSON.stringify(ds),ds.cfg.color,false);
+    const ly=buildLayer(row,ds);ly._open=true;LAYERS.push(ly);applyVis();refresh();renderDsTabs();
+    toast('Uvezeno „'+ly.name+'“: '+ly.items.length+' od '+ly.total+' redova. Proveri kolone u ⚙️ Opcije pa klikni „Postavi pinove“. Ko vidi – 🔐 Permissions (sada: samo admin).','ok',11000);
+  }catch(e){toast('Uvoz nije uspeo: '+e.message,'err',10000);}}
+
+/* ---------- prikaz kartica ---------- */
+function renderDsTabs(){renderDsTab('pbs');renderDsTab('gen');}
+function renderDsTab(type){const box=$(type==='pbs'?'#pbsList':'#zalList');if(!box)return;
+  const lys=LAYERS.filter(l=>l.kind==='zalbe'&&(l.ds.type||'gen')===type);
+  box.innerHTML=lys.map(dsCardHtml).join('')||'<div class="card"><div class="empty-list">'+(type==='pbs'?'Nijedan izveštaj žalbi bez PBS nije uvezen.':'Nema uvezenih Excel fajlova. Klikni iznad da uvezeš prvi.')+'</div></div>';
+  lys.forEach(ly=>{updDsStats(ly);if(ly._list)renderDsList(ly);});saveCache();}
+function colOptsHtml(ds,val,none){const hdr=dsHeader(ds),n=dsNCols(ds);let h='<option value="">'+esc(none||'— nema —')+'</option>';
+  for(let i=0;i<n;i++){const L_=colLet(i);h+='<option value="'+L_+'"'+(L_===val?' selected':'')+'>'+L_+(hdr[i]?' · '+esc(String(hdr[i]).slice(0,32)):'')+'</option>';}return h;}
+function dsPreviewHtml(ds){const c=ds.cfg,n=dsNCols(ds),rows=ds.rows.slice(0,(+c.skip||0)+12);
+  const fc=new Set((c.rules||[]).map(r=>colIdx(r.col))),ac=new Set([c.colOps,c.colUl,c.colBr,c.title].map(colIdx)),xc=new Set((c.extra||[]).map(colIdx));
+  const cls=i=>fc.has(i)?'cf':ac.has(i)?'ca':xc.has(i)?'cx':'';const hi=c.hasHeader?(+c.skip||0):-1;
+  let h='<table class="prev"><thead><tr><th></th>';for(let i=0;i<n;i++)h+='<th class="'+cls(i)+'">'+colLet(i)+'</th>';h+='</tr></thead><tbody>';
+  rows.forEach((r,ri)=>{h+='<tr class="'+(ri===hi?'hdr':'')+'"><td>'+(ri+1)+'</td>';for(let i=0;i<n;i++)h+='<td class="'+cls(i)+'">'+esc(r[i]||'')+'</td>';h+='</tr>';});
+  return h+'</tbody></table>';}
+function dsOptHtml(ly){const ds=ly.ds,c=ds.cfg,hdr=dsHeader(ds),n=dsNCols(ds);
+  const f=(lbl,inner)=>'<div class="f"><label>'+lbl+'</label>'+inner+'</div>';
+  const sel=(k,none)=>'<select class="inp" data-o="'+k+'">'+colOptsHtml(ds,c[k],none)+'</select>';
+  let chips='';for(let i=0;i<n;i++){const L_=colLet(i);chips+='<label class="uchip"><input type="checkbox" data-ox="'+L_+'"'+((c.extra||[]).includes(L_)?' checked':'')+'>'+L_+(hdr[i]?' · '+esc(String(hdr[i]).slice(0,28)):'')+'</label>';}
+  const rules=(c.rules||[]).map((r,i)=>'<div class="rule" data-ri="'+i+'"><select class="inp" data-rc>'+colOptsHtml(ds,r.col,'— kolona —')+'</select>'+
+    '<select class="inp" data-ro>'+Object.entries(OPS).map(([k,v])=>'<option value="'+k+'"'+(r.op===k?' selected':'')+'>'+v+'</option>').join('')+'</select>'+
+    '<input class="inp" data-rv value="'+esc(r.val||'')+'" placeholder="vrednost"'+(['empty','notempty'].includes(r.op)?' disabled':'')+'><button class="x" data-rdel="'+i+'">×</button></div>').join('');
+  return '<div class="dsec">📍 Odakle se čita adresa</div><div class="cols3">'+f('Mesto / opština',sel('colOps'))+f('Ulica / adresa',sel('colUl'))+f('Kućni broj',sel('colBr'))+'</div>'+
+    '<div class="row" style="align-items:center;gap:18px"><label class="chk"><input type="checkbox" data-o="hasHeader"'+(c.hasHeader?' checked':'')+'> Prvi red je zaglavlje (nazivi kolona)</label>'+
+    '<label class="chk">Preskoči prvih <input class="inp" type="number" min="0" data-o="skip" value="'+(+c.skip||0)+'" style="width:70px"> redova</label></div>'+
+    '<div class="dsec">🏷️ Šta se prikazuje na pinu</div><div class="cols2">'+f('Naslov pina',sel('title','Ulica + broj (podrazumevano)'))+'</div>'+
+    f('Dodatni podaci na pinu (štikliraj kolone)','<div class="uchips">'+chips+'</div>')+
+    '<div class="dsec">🔎 Filter – koji redovi idu na mapu</div>'+(rules||'<div class="muted" style="font-size:12.5px;margin-bottom:8px">Nema pravila – na mapu idu svi redovi sa adresom.</div>')+
+    '<div class="row" style="align-items:center;gap:10px"><button class="btn sm" data-dsa="addrule" style="flex:none">+ Dodaj pravilo</button>'+
+    '<div class="seg"><button data-m="all"'+(c.match!=='any'?' class="active"':'')+'>Sva pravila (I)</button><button data-m="any"'+(c.match==='any'?' class="active"':'')+'>Bilo koje (ILI)</button></div>'+
+    '<label class="chk" style="margin:0"><input type="checkbox" data-o="caseIns"'+(c.caseIns?' checked':'')+'> Ne razlikuj velika/mala slova</label></div>'+
+    '<div class="match-info" data-mi></div>'+
+    '<details><summary>👁 Pregled fajla (prvih 12 redova) – <span style="color:var(--accent2)">■</span> adresa · <span style="color:var(--green)">■</span> dodatno · <span style="color:var(--yellow)">■</span> filter</summary><div class="prev-wrap">'+dsPreviewHtml(ds)+'</div></details>'+
+    '<div class="row" style="margin-top:14px"><button class="btn primary" data-dsa="save">💾 Sačuvaj opcije na server</button></div>';}
+function dsCardHtml(ly){const ds=ly.ds;const leg=!!ds.legacy;
+  return '<div class="card ds'+(ly._open?' open':'')+'" data-ds="'+ly.id+'" style="--dc:'+ly.color+'">'+
+    '<div class="dshead">'+(leg?'<span class="sw" style="background:'+ly.color+'"></span>':'<input type="color" class="swc" data-dsc value="'+ly.color+'" title="Boja pinova">')+
+      '<div class="ln"><b>'+esc(ly.name)+'</b><span class="sub">📄 '+esc(ds.file||'—')+(ds.sheet?' · list „'+esc(ds.sheet)+'“':'')+(ds.imported?' · uvezeno '+new Date(ds.imported).toLocaleString('sr'):'')+(ly.size?' · '+Math.round(ly.size/1024)+' KB na serveru':'')+'</span></div>'+
+      accPill(ly)+'<button class="btn sm" data-dsa="ren" style="flex:none">✎ Preimenuj</button><button class="btn sm danger" data-dsa="del" style="flex:none">🗑 Obriši</button></div>'+
+    '<div class="stats"><div class="stat"><b data-s="total">0</b><span>Redova</span></div><div class="stat s2"><b data-s="filt">0</b><span>Prolazi filter</span></div><div class="stat s3"><b data-s="map">0</b><span>Na mapi</span></div><div class="stat s4"><b data-s="nf">0</b><span>Nije nađeno</span></div></div>'+
+    '<div class="progress" data-dsprog><i></i></div><div class="ptext" data-dsptxt></div>'+
+    '<div class="row" style="margin-top:12px">'+(leg?'':'<button class="btn sm '+(GEO_RUN&&GEO_RUN.ly===ly?'stop':'primary')+'" data-dsa="geo">'+(GEO_RUN&&GEO_RUN.ly===ly?'⏹ Zaustavi':'📍 Postavi pinove')+'</button>')+
+      '<button class="btn sm" data-dsa="map">🗺️ Na mapi</button><button class="btn sm" data-dsa="xls">⬇ Excel sa koordinatama</button>'+
+      (leg?'':'<button class="btn sm'+(ly._open?' ok':'')+'" data-dsa="opt">⚙️ Opcije</button>')+'<button class="btn sm'+(ly._list?' ok':'')+'" data-dsa="list">📋 Lista</button></div>'+
+    (leg?'<div class="muted" style="font-size:12px;margin-top:10px">Sloj objavljen u staroj verziji programa – samo prikaz. Uvezi Excel ponovo ako želiš opcije.</div>':'<div class="dsopt">'+dsOptHtml(ly)+'</div>')+
+    (ly._list?'<div class="dslist"><div class="search" style="margin-bottom:8px"><input class="inp" data-lq placeholder="Pretraga: ulica, mesto, red…"><select class="inp" data-lf style="width:160px"><option value="all">Sve</option><option value="nf">Nije nađeno</option><option value="map">Na mapi</option><option value="pending">Na čekanju</option></select></div><div class="list" data-dsl></div></div>':'')+
+  '</div>';}
+function updDsStats(ly){const card=$('[data-ds="'+ly.id+'"]');if(!card)return;const q=s=>card.querySelector(s);
+  q('[data-s="total"]').textContent=n0(ly.total);q('[data-s="filt"]').textContent=n0(ly.items.length);
+  q('[data-s="map"]').textContent=n0(ly.data.items.length);q('[data-s="nf"]').textContent=n0(ly.items.filter(i=>['notfound','noaddr','error'].includes(i.status)).length);
+  const mi=q('[data-mi]');if(mi){mi.classList.toggle('dirty',!!ly._dirty);mi.textContent='✓ Filter uzima '+n0(ly.items.length)+' od '+n0(ly.total)+' redova · na mapi '+n0(ly.data.items.length)+(ly._dirty?' · ⚠ izmene još nisu sačuvane na serveru':'');}
+  const sv=q('[data-dsa="save"]');if(sv)sv.classList.toggle('warn',!!ly._dirty);}
+function rerenderCard(ly){const card=$('[data-ds="'+ly.id+'"]');if(!card)return;const tmp=document.createElement('div');tmp.innerHTML=dsCardHtml(ly);card.replaceWith(tmp.firstChild);updDsStats(ly);if(ly._list)renderDsList(ly);}
+function renderDsList(ly){const card=$('[data-ds="'+ly.id+'"]');if(!card)return;const box=card.querySelector('[data-dsl]');if(!box)return;
+  const q=norm(card.querySelector('[data-lq]').value),f=card.querySelector('[data-lf]').value;
+  const arr=ly.items.filter(it=>{if(f==='map'&&it.lat==null)return false;if(f==='nf'&&!['notfound','noaddr','error'].includes(it.status))return false;if(f==='pending'&&it.status!=='pending')return false;
+    if(q&&!norm([itTitle(it),it.ops,it.ul,it.br,it.rowNum].join(' ')).includes(q))return false;return true;});
+  box.innerHTML=(arr.slice(0,300).map(it=>'<div class="item" data-goit="'+esc(it.id)+'"><span class="d" style="background:'+(it.lat!=null?ly.color:'#5d6688')+'"></span><div class="t"><b>'+esc(itTitle(it))+'</b><span>'+esc(it.ops||'—')+(it.rowNum?' · red '+it.rowNum:'')+' · '+LABEL[it.status]+'</span></div>'+
+    (ly.ds.legacy?'':'<button class="btn sm" data-pick="'+esc(it.id)+'" style="flex:none">📍 '+(it.lat!=null?'Pomeri':'Ručno')+'</button>')+'</div>').join('')+(arr.length>300?'<div class="empty-list">+ još '+(arr.length-300)+' (suzi pretragu)</div>':''))||'<div class="empty-list">Nema rezultata.</div>';}
+
+/* ---------- događaji na karticama ---------- */
+$$('.dslists').forEach(box=>{
+  box.addEventListener('click',e=>{const card=e.target.closest('[data-ds]');if(!card)return;const ly=findLy(card.dataset.ds);if(!ly)return;
+    if(e.target.closest('[data-goperm]')){setTab('perms');return;}
+    const pk=e.target.closest('[data-pick]');if(pk){const it=ly.items.find(i=>i.id===pk.dataset.pick);if(it)startPick(ly,it);return;}
+    const sg=e.target.closest('.seg [data-m]');if(sg){ly.ds.cfg.match=sg.dataset.m;optChanged(ly,true);return;}
+    const rx=e.target.closest('[data-rdel]');if(rx){ly.ds.cfg.rules.splice(+rx.dataset.rdel,1);optChanged(ly,true);return;}
+    const b=e.target.closest('[data-dsa]');if(b){dsAction(ly,b.dataset.dsa);return;}
+    const gi=e.target.closest('[data-goit]');if(gi){const it=ly.items.find(i=>i.id===gi.dataset.goit);if(it)goItem(ly,it);}});
+  box.addEventListener('change',e=>dsInput(e));
+  box.addEventListener('input',e=>{if(e.target.matches('[data-lq]')){const c=e.target.closest('[data-ds]');renderDsList(findLy(c.dataset.ds));}else if(e.target.matches('[data-rv],[data-dsc]'))dsInput(e);});});
+let dscT=null;
+function dsInput(e){const t=e.target;const card=t.closest('[data-ds]');if(!card)return;const ly=findLy(card.dataset.ds);if(!ly)return;const c=ly.ds.cfg;
+  if(t.matches('[data-dsc]')){c.color=t.value;ly.color=t.value;card.style.setProperty('--dc',t.value);clearTimeout(dscT);dscT=setTimeout(()=>{drawLayer(ly);applyVis();renderLayers();scheduleSave(ly);colorLayer(ly);},250);return;}
+  if(t.matches('[data-lf]')){renderDsList(ly);return;}
+  if(t.matches('[data-o]')){const k=t.dataset.o;let v=t.type==='checkbox'?t.checked:t.value;if(k==='skip')v=Math.max(0,+v||0);c[k]=v;optChanged(ly,k==='hasHeader'||k==='skip');return;}
+  if(t.matches('[data-ox]')){const L_=t.dataset.ox;c.extra=(c.extra||[]).filter(x=>x!==L_);if(t.checked)c.extra.push(L_);optChanged(ly,false);return;}
+  const rr=t.closest('[data-ri]');if(rr){const r=c.rules[+rr.dataset.ri];if(!r)return;if(t.matches('[data-rc]'))r.col=t.value;if(t.matches('[data-ro]'))r.op=t.value;if(t.matches('[data-rv]'))r.val=t.value;optChanged(ly,t.matches('[data-ro]'));}}
+function optChanged(ly,rerender){ly._dirty=true;computeItems(ly);drawLayer(ly);applyVis();renderLayers();if(rerender)rerenderCard(ly);else updDsStats(ly);}
+async function dsAction(ly,a){
+  if(a==='opt'){ly._open=!ly._open;rerenderCard(ly);return;}
+  if(a==='list'){ly._list=!ly._list;rerenderCard(ly);return;}
+  if(a==='addrule'){ly.ds.cfg.rules.push({col:'',op:'eq',val:''});ly._dirty=true;rerenderCard(ly);return;}
+  if(a==='save'){try{await saveDataset(ly);}catch(e){toast('Čuvanje nije uspelo: '+e.message,'err');}return;}
+  if(a==='geo'){runGeo(ly);return;}
+  if(a==='map'){if(!ly.data.items.length){toast('Nema žalbi sa lokacijom – prvo klikni „Postavi pinove“');return;}ly.visible=true;saveLV();applyVis();renderLayers();goMap();setTimeout(()=>fitTo(layerBounds(ly)),150);return;}
+  if(a==='xls'){exportDs(ly);return;}
+  if(a==='ren'){const n=prompt('Novi naziv sloja:',ly.name);if(!n||!n.trim())return;ly.name=n.trim();const {error}=await sb.from('layers').update({name:ly.name}).eq('id',ly.id);
+    if(error){toast(errTxt(error),'err');return;}rerenderCard(ly);renderLayers();toast('Preimenovano','ok');return;}
+  if(a==='del'){if(GEO_RUN&&GEO_RUN.ly===ly)GEO_RUN.stop=true;await deleteServerLayer(ly);renderDsTabs();}}
+function goItem(ly,it){if(it.lat==null){toast('Ova žalba nema lokaciju – klikni „📍 Ručno“');return;}ly.visible=true;saveLV();applyVis();renderLayers();goMap();
+  setTimeout(()=>{map.flyTo([it.lat,it.lon],Math.max(map.getZoom(),17),{duration:.8});setTimeout(()=>openPop(L.latLng(it.lat,it.lon),itemPopup(ly,it),{title:'📄 '+ly.name,popup:{offset:[0,-28]}}),850);},150);}
+function doPick(ll){const {ly,it}=PICK;stopPick();it.lat=ll.lat;it.lon=ll.lng;it.status='manual';ly.ds.geo[it.key]={lat:ll.lat,lon:ll.lng,level:'manual'};
+  ly.data.items=ly.items.filter(i=>i.lat!=null);ly.visible=true;drawLayer(ly);applyVis();renderLayers();scheduleSave(ly);toast('Pin postavljen – čuva se na serveru','ok');}
+async function saveDataset(ly,quiet){if(!isAdmin()||ly.ds.legacy)return;clearTimeout(ly._st);
+  await saveLayerData(ly,JSON.stringify(dsSerialize(ly.ds)));ly._dirty=false;updDsStats(ly);if(!quiet)toast('„'+ly.name+'“ sačuvano na serveru','ok');}
+function scheduleSave(ly){clearTimeout(ly._st);ly._st=setTimeout(()=>saveDataset(ly,true).catch(e=>toast('Čuvanje: '+e.message,'err')),2500);}
+async function exportDs(ly){if(!ly.items.length){toast('Nema podataka');return;}if(!await ensureLib('XLSX'))return;
+  const rows=ly.items.map(it=>{const o={'Excel red':it.rowNum||'','Naslov':itTitle(it),'Mesto':it.ops,'Ulica':it.ul,'Broj':it.br};(it.extra||[]).forEach(e=>o[e.h]=e.v);
+    o.Lat=it.lat!=null?+it.lat.toFixed(6):'';o.Lon=it.lon!=null?+it.lon.toFixed(6):'';o.Lokacija=LABEL[it.status]||'';return o;});
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Zalbe');XLSX.writeFile(wb,(ly.name||'zalbe').replace(/[\\/:*?"<>|]/g,'_')+'_koordinate.xlsx');}
+
+/* ---------- geokodiranje ---------- */
+let GEO_RUN=null;
 async function query(q,structured){const k=(structured?'s:':'q:')+norm(q);if(k in missQ)return missQ[k];let list;
   if(cfg.geocoder==='photon')list=await photonList(q,1);else{try{list=await nomList(structured||{q},1);}catch(e){list=await photonList(q,1);}}
   const res=list[0]||null;missQ[k]=res;await sleep(Math.max(200,+cfg.delay||1100));return res;}
@@ -1172,73 +1291,48 @@ async function geocode(it){const c=cfg.country;const tries=[];
     if(cfg.geocoder==='nominatim'){const st={street:(it.br+' '+it.ul).trim()};if(it.ops)st.city=it.ops;if(c)st.country=c;tries.push({lvl,q,st});}
     tries.push({lvl,q});if(cfg.fallback&&it.br)tries.push({lvl:'street',q:[it.ul,it.ops,c].filter(Boolean).join(', ')});}
   if((cfg.fallback||!it.ul)&&it.ops)tries.push({lvl:'city',q:[it.ops,c].filter(Boolean).join(', ')});
-  for(const t of tries){if(S.stop)return null;const r=await query(t.q,t.st);if(r)return {lat:r.lat,lon:r.lon,level:t.lvl};}return null;}
-$('#runBtn').addEventListener('click',run);
-async function run(){if(S.running){S.stop=true;return;}const todo=S.items.filter(i=>i.status==='pending'||i.status==='error');if(!todo.length){toast('Sve adrese su već obrađene');return;}
-  S.running=true;S.stop=false;updRunBtn();$('#prog').style.display='block';$('#ptext').style.display='block';let n=0,ok=0;
-  for(const it of todo){if(S.stop)break;$('#ptext').textContent='Tražim: '+[it.ul,it.br,it.ops].filter(Boolean).join(' ')+' ('+(n+1)+'/'+todo.length+')';
-    try{const r=await geocode(it);if(r){it.lat=r.lat;it.lon=r.lon;it.status=r.level;cache[it.key]=r;saveCache();addMarker(it);ok++;}else it.status='notfound';}catch(e){it.status='error';await sleep(2000);}
-    n++;$('#prog i').style.width=(n/todo.length*100)+'%';refreshSoon();}
-  S.running=false;S.stop=false;updRunBtn();refresh();setTimeout(()=>{$('#prog').style.display='none';$('#ptext').style.display='none';},1200);toast('Postavljeno '+ok+' od '+n+' pinova.','ok');}
-function stopRun(){if(S.running)S.stop=true;}
-function updRunBtn(){const b=$('#runBtn');b.classList.toggle('primary',!S.running);b.classList.toggle('stop',S.running);b.querySelector('span').textContent=S.running?'⏹ Zaustavi':'📍 Postavi pinove (geokodiranje)';}
-let rq=false;function refreshSoon(){if(rq)return;rq=true;requestAnimationFrame(()=>{rq=false;refresh();});}
-function refresh(){$('#stTotal').textContent=Math.max(0,S.data.filter((r,i)=>i>=dataStart()&&r&&r.some(c=>String(c).trim()!=='')).length);$('#stFilt').textContent=S.items.length;
-  $('#stMap').textContent=S.items.filter(i=>i.lat!=null).length;$('#stNf').textContent=S.items.filter(i=>['notfound','noaddr','error'].includes(i.status)).length;
-  $('#emptyState').style.display=(S.items.length||LAYERS.length||UL.some(l=>l.pins.length))?'none':'grid';renderList();renderLayers();}
-$('#q').addEventListener('input',renderList);$('#qf').addEventListener('change',renderList);
-function renderList(){const q=norm($('#q').value),f=$('#qf').value;
-  let arr=S.items.filter(it=>{if(f==='map'&&it.lat==null)return false;if(f==='nf'&&!['notfound','noaddr','error'].includes(it.status))return false;if(f==='pending'&&it.status!=='pending')return false;
-    if(q&&!norm([it.ops,it.ul,it.br,it.rowNum].join(' ')).includes(q))return false;return true;});const L_=$('#list');
-  if(!S.items.length){L_.innerHTML='<div class="empty-list">Učitaj fajl da vidiš listu žalbi.</div>';return;}
-  L_.innerHTML=arr.slice(0,400).map(it=>{const nf=it.lat==null&&it.status!=='pending';
-    return '<div class="item'+(S.sel===it.id?' sel':'')+'" data-id="'+it.id+'"><span class="d" style="background:'+HEX[it.status]+'"></span><div class="t"><b>'+esc((it.ul+' '+it.br).trim()||'(bez ulice)')+'</b><span>'+esc(it.ops||'—')+' · red '+it.rowNum+'</span></div>'+
-    (nf?'<button class="btn sm" data-pick="'+it.id+'">📍 Ručno na mapi</button>':'<span class="badge">'+LABEL[it.status]+'</span>')+'</div>';}).join('')||'<div class="empty-list">Nema rezultata.</div>';}
-$('#list').addEventListener('click',e=>{const p=e.target.closest('[data-pick]');if(p){e.stopPropagation();startPick(+p.dataset.pick);return;}const el=e.target.closest('.item');if(el)select(+el.dataset.id);});
-function select(id){S.sel=id;const m=S.markers[id];if(!m){toast('Ova žalba još nije na mapi');return;}const it=S.items.find(i=>i.id===id);goMap();
-  if(!cfg.zVis){cfg.zVis=true;saveCfg();applyVis();}
-  const open=()=>{map.flyTo(m.getLatLng(),Math.max(map.getZoom(),17),{duration:.8});setTimeout(()=>openPop(m.getLatLng(),popupHtml(it),{title:'📄 Žalba'}),850);};
-  setTimeout(()=>{if(cfg.cluster&&group.zoomToShowLayer)group.zoomToShowLayer(m,open);else open();},120);}
-function fitAll(){const pts=S.items.filter(i=>i.lat!=null).map(i=>[i.lat,i.lon]);if(!pts.length){const b=allBsBounds();if(b)fitTo(b);return;}map.fitBounds(pts,{padding:[50,50],maxZoom:16});}
-$('#fitBtn').addEventListener('click',()=>{if(!S.items.some(i=>i.lat!=null)){toast('Nema postavljenih žalbi');return;}cfg.zVis=true;saveCfg();applyVis();goMap();setTimeout(fitAll,120);});
-$('#xlsBtn').addEventListener('click',async()=>{if(!S.items.length)return toast('Nema podataka');if(!await ensureLib('XLSX'))return;
-  const rows=S.items.map(it=>{const o={'Excel red':it.rowNum,'Opština':it.ops,'Ulica':it.ul,'Broj':it.br};it.extra.forEach(e=>o[e.h]=e.v);o.Lat=it.lat!=null?+it.lat.toFixed(6):'';o.Lon=it.lon!=null?+it.lon.toFixed(6):'';o.Preciznost=LABEL[it.status];return o;});
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Zalbe bez PBS');XLSX.writeFile(wb,'Zalbe_bez_PBS_koordinate.xlsx');});
-$('#kmlBtn').addEventListener('click',()=>{const pts=S.items.filter(i=>i.lat!=null);if(!pts.length)return toast('Nema pinova');const x=s=>String(s??'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-  let k='<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Žalbe bez PBS</name>';
-  pts.forEach(it=>{k+='<Placemark><name>'+x((it.ul+' '+it.br).trim()||it.ops)+'</name><description>'+x(it.ops+' | red '+it.rowNum)+'</description><Point><coordinates>'+it.lon+','+it.lat+',0</coordinates></Point></Placemark>';});
-  k+='</Document></kml>';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([k]));a.download='Zalbe_bez_PBS.kml';a.click();});
+  for(const t of tries){if(GEO_RUN&&GEO_RUN.stop)return null;const r=await query(t.q,t.st);if(r)return {lat:r.lat,lon:r.lon,level:t.lvl};}return null;}
+async function runGeo(ly){if(GEO_RUN){if(GEO_RUN.ly===ly){GEO_RUN.stop=true;}else toast('Već se postavljaju pinovi za „'+GEO_RUN.ly.name+'“');return;}
+  const todo=ly.items.filter(i=>i.status==='pending'||i.status==='error');
+  if(!todo.length){const nf=ly.items.filter(i=>i.status==='notfound');
+    if(nf.length&&confirm('Sve adrese su obrađene. Ponovo pokušati '+nf.length+' nenađenih?')){nf.forEach(i=>{i.status='pending';delete ly.ds.geo[i.key];});return runGeo(ly);}
+    toast('Sve adrese su već obrađene');return;}
+  if(ly._dirty)toast('Opcije nisu sačuvane – čuvam ih zajedno sa pinovima');
+  GEO_RUN={ly,stop:false};rerenderCard(ly);let n=0,ok=0,since=0;
+  const card=()=>$('[data-ds="'+ly.id+'"]');
+  const prog=(p,t)=>{const c=card();if(!c)return;const pr=c.querySelector('[data-dsprog]'),pt=c.querySelector('[data-dsptxt]');pr.style.display='block';pt.style.display='block';pr.firstChild.style.width=p+'%';pt.textContent=t;};
+  for(const it of todo){if(GEO_RUN.stop)break;prog(n/todo.length*100,'Tražim: '+[it.ul,it.br,it.ops].filter(Boolean).join(' ')+'  ('+(n+1)+'/'+todo.length+')');
+    try{const r=await geocode(it);if(GEO_RUN.stop&&!r)break;
+      if(r){it.lat=r.lat;it.lon=r.lon;it.status=r.level;ly.ds.geo[it.key]=r;cache[it.key]=r;ok++;since++;}else{it.status='notfound';ly.ds.geo[it.key]={nf:1};}}
+    catch(e){it.status='error';await sleep(2000);}
+    n++;updDsStats(ly);
+    if(since>=25){since=0;ly.data.items=ly.items.filter(i=>i.lat!=null);drawLayer(ly);applyVis();renderLayers();saveDataset(ly,true).catch(()=>{});}}
+  const stopped=GEO_RUN.stop;GEO_RUN=null;saveCache();ly.data.items=ly.items.filter(i=>i.lat!=null);drawLayer(ly);applyVis();renderLayers();
+  try{await saveDataset(ly,true);}catch(e){toast('Čuvanje: '+e.message,'err');}
+  rerenderCard(ly);toast((stopped?'Zaustavljeno. ':'Gotovo! ')+'Postavljeno '+ok+' od '+n+' adresa · sačuvano na serveru','ok',7000);}
+
+/* ---------- geokodiranje – podešavanja (ista u obe kartice) ---------- */
+const GEO_CARD='<h3>🌍 Geokodiranje (adresa → lokacija) i prikaz</h3><p class="desc">Važi za sve uvezene Excel fajlove. Pronađene lokacije se čuvaju na serveru uz svaki fajl.</p>'+
+  '<div class="cols4"><div class="f"><label>Servis</label><select class="inp" data-k="geocoder"><option value="nominatim">Nominatim (precizniji)</option><option value="photon">Photon (brži)</option></select></div>'+
+  '<div class="f"><label>Pauza između upita (ms)</label><input class="inp" type="number" min="200" step="100" data-k="delay"></div>'+
+  '<div class="f"><label>Država</label><input class="inp" data-k="country"></div><div class="f"><label>Kod države</label><input class="inp" data-k="cc" maxlength="2"></div></div>'+
+  '<label class="chk"><input type="checkbox" data-k="fallback"> Ako ne nađe tačnu adresu, postavi pin na ulicu / mesto</label>'+
+  '<label class="chk"><input type="checkbox" data-k="cluster"> Grupiši bliske pinove (klasteri)</label>'+
+  '<button class="btn sm danger" data-clearcache style="margin-top:8px">Obriši lokalno zapamćene koordinate (<span class="cacheN">0</span>)</button>';
+$$('.geo-card').forEach(c=>c.innerHTML=GEO_CARD);
+$$('[data-clearcache]').forEach(b=>b.addEventListener('click',()=>{if(!confirm('Obrisati lokalno zapamćene koordinate? (Lokacije sačuvane na serveru ostaju.)'))return;cache={};saveCache();}));
 
 /* ---------- podešavanja (data-k polja) ---------- */
-const BS_KEYS=['siteR','secOp','kmlColors2','cluster'];
 function updLegend(){$('#lgVis').style.background=cfg.vsCol;$('#lgSh').style.background=cfg.vsShCol;$('#vbV').style.background=cfg.vsCol;$('#vbS').style.background=cfg.vsShCol;}
 function bindCfg(){$$('[data-k]').forEach(el=>{const k=el.dataset.k;if(el.type==='checkbox')el.checked=!!cfg[k];else el.value=cfg[k]??'';
-    el.oninput=el.onchange=()=>{let v=el.type==='checkbox'?el.checked:el.value;if(el.classList.contains('col-inp')){v=v.toUpperCase().replace(/[^A-Z]/g,'');el.value=v;}
-      if(k==='extra')v=v.toUpperCase();if(el.type==='number'||el.type==='range'||k==='freq')v=+v||0;cfg[k]=v;saveCfg();
-      if(k==='base')setBase(v);if(k==='cluster')makeGroup();if(k==='osmSrc')rebuildOsm();if(BS_KEYS.includes(k)){LAYERS.forEach(drawLayer);visSig='';applyVis();}
+    el.oninput=el.onchange=()=>{let v=el.type==='checkbox'?el.checked:el.value;if(el.type==='number'||el.type==='range'||k==='freq')v=+v||0;cfg[k]=v;saveCfg();
+      $$('[data-k="'+k+'"]').forEach(o=>{if(o!==el){if(o.type==='checkbox')o.checked=!!v;else o.value=v;}});
+      if(k==='base')setBase(v);if(k==='osmSrc')rebuildOsm();
+      if(['siteR','secOp','kmlColors2','cluster'].includes(k)){LAYERS.forEach(drawLayer);visSig='';applyVis();}
       if(k==='secMinZoom')applyVis();if(k==='lblZoom')updLabels();if(k==='secOp')$('#secOpV').textContent=Math.round(v*100)+'%';
       if(k==='vsOp')$('#vsOpV').textContent=Math.round(v*100)+'%';if(['vsCol','vsShCol','vsShadow','vsOp'].includes(k)){rebuildOverlays();updLegend();}
-      if(k==='freq'&&R.prof)drawProfile();if(['hasHeader','skip','caseIns','colOps','colUl','colBr'].includes(k)){updMatchInfo();updHints();renderPreview();}};});
-  $('#secOpV').textContent=Math.round((+cfg.secOp)*100)+'%';$('#vsOpV').textContent=Math.round((+cfg.vsOp)*100)+'%';updLegend();
-  $$('#matchSeg button').forEach(b=>{b.classList.toggle('active',b.dataset.m===cfg.match);b.onclick=()=>{cfg.match=b.dataset.m;saveCfg();$$('#matchSeg button').forEach(x=>x.classList.toggle('active',x===b));updMatchInfo();};});
-  renderRules();updHints();saveCache();updOsmInfo();}
-function renderRules(){$('#rules').innerHTML=(cfg.rules||[]).map((r,i)=>'<div class="rule" data-i="'+i+'"><input class="inp col-inp" data-r="col" maxlength="3" value="'+esc(r.col)+'"><select class="inp" data-r="op">'+
-    Object.entries(OPS).map(([k,v])=>'<option value="'+k+'"'+(r.op===k?' selected':'')+'>'+v+'</option>').join('')+'</select><input class="inp" data-r="val" value="'+esc(r.val)+'"><button class="x" data-del="'+i+'">×</button></div>').join('')||'<div class="muted" style="margin-bottom:10px">Nema pravila – uzimaju se svi redovi.</div>';}
-function onRuleEdit(el){const row=el.closest('.rule');if(!row||!el.dataset.r)return;let v=el.value;if(el.dataset.r==='col'){v=v.toUpperCase().replace(/[^A-Z]/g,'');el.value=v;}cfg.rules[+row.dataset.i][el.dataset.r]=v;saveCfg();updMatchInfo();renderPreview();}
-$('#rules').addEventListener('input',e=>onRuleEdit(e.target));$('#rules').addEventListener('change',e=>onRuleEdit(e.target));
-$('#rules').addEventListener('click',e=>{const d=e.target.closest('[data-del]');if(!d)return;cfg.rules.splice(+d.dataset.del,1);saveCfg();renderRules();updMatchInfo();});
-$('#addRule').addEventListener('click',()=>{cfg.rules.push({col:'',op:'eq',val:''});saveCfg();renderRules();});
-function updHints(){const h=headerRow();['colOps','colUl','colBr'].forEach(k=>{const i=colIdx(cfg[k]);$('[data-h="'+k+'"]').textContent=i>=0&&h[i]?'→ „'+h[i]+'“':'';});}
-function updMatchInfo(){const el=$('#matchInfo');if(!S.data.length){el.textContent='Učitaj fajl u kartici „Žalbe bez PBS“ da vidiš koliko redova prolazi filter.';return;}
-  let n=0,t=0;for(let i=dataStart();i<S.data.length;i++){const r=S.data[i];if(!r||r.every(c=>String(c).trim()===''))continue;t++;if(rowPasses(r))n++;}el.textContent='✓ Filter uzima '+n+' od '+t+' redova. Klikni „Primeni“ da osvežiš listu.';}
-function renderPreview(){const box=$('#prev');if(!S.data.length){box.innerHTML='<div class="empty-list">Nema učitanog fajla.</div>';return;}
-  const rows=S.data.slice(0,15+(+cfg.skip||0));const nc=Math.min(40,Math.max(...rows.map(r=>r.length),1));
-  const fc_=new Set((cfg.rules||[]).map(r=>colIdx(r.col))),ac=new Set([cfg.colOps,cfg.colUl,cfg.colBr].map(colIdx));const cls=c=>fc_.has(c)?'cf':ac.has(c)?'ca':'';const hi=cfg.hasHeader?(+cfg.skip||0):-1;
-  let h='<table class="prev"><thead><tr><th></th>';for(let c=0;c<nc;c++)h+='<th class="'+cls(c)+'">'+colLet(c)+'</th>';h+='</tr></thead><tbody>';
-  rows.forEach((r,i)=>{h+='<tr class="'+(i===hi?'hdr':'')+'"><td>'+(i+1)+'</td>';for(let c=0;c<nc;c++)h+='<td class="'+cls(c)+'">'+esc(r[c])+'</td>';h+='</tr>';});box.innerHTML=h+'</tbody></table>';}
-$('#applyCfg').addEventListener('click',()=>{if(S.wb)readSheet();toast('Primenjeno','ok');});
-$('#resetCfg').addEventListener('click',()=>{if(!confirm('Vratiti podrazumevana podešavanja?'))return;const act=cfg.activeUL;cfg=JSON.parse(JSON.stringify(DEF));cfg.activeUL=act;cfg.setTab='excel';saveCfg();bindCfg();setBase(cfg.base);if(S.wb)readSheet();});
-$('#clearCache').addEventListener('click',()=>{if(!confirm('Obrisati zapamćene koordinate?'))return;cache={};saveCache();if(S.wb)buildItems();});
+      if(k==='freq'&&R.prof)drawProfile();};});
+  $('#secOpV').textContent=Math.round((+cfg.secOp)*100)+'%';$('#vsOpV').textContent=Math.round((+cfg.vsOp)*100)+'%';updLegend();saveCache();updOsmInfo();}
 
 /* ---------- SERVER ---------- */
 const toAscii=s=>String(s||'').toLowerCase().trim().replace(/č|ć/g,'c').replace(/š/g,'s').replace(/ž/g,'z').replace(/đ/g,'dj').replace(/\s+/g,'.');
@@ -1269,7 +1363,7 @@ async function afterLogin(user){let prof=null;
   $('#meName').textContent=prof.username;$('#meRole').textContent=prof.role==='admin'?'admin':'teren';$('#login').classList.add('hide');
   loadLV();loadOB();try{setUL(JSON.parse(localStorage.getItem(ulKey())||'[]'));}catch(e){}
   applyVis();refresh();showView('map');map.invalidateSize();await Promise.allSettled([loadServerLayers(),can('pins')?loadPins():null]);flush();
-  if(LAYERS.length&&!UL.some(l=>l.pins.length)){const b=allBsBounds();if(b)fitTo(b);}}
+  if(LAYERS.length&&!UL.some(l=>l.pins.length)){fitTo(allBsBounds());}}
 async function layerText(row){const key='L:'+row.id+':'+(row.size||0);try{const c=await idb.get(key);if(c&&typeof c==='string')return c;}catch(e){}
   let text=null;const r=await sb.from('layer_data').select('part,data').eq('layer_id',row.id).order('part');
   if(r.data&&r.data.length)text=await unpackText(r.data.map(x=>x.data).join(''));
@@ -1280,28 +1374,31 @@ async function loadServerLayers(manual){if(!sb||!ME||layLoading)return;layLoadin
   try{const r=await sb.from('layers').select('*').order('sort').order('created_at');if(r.error)throw r.error;rows=r.data;idb.set('layers_list_'+ME.id,rows).catch(()=>{});}
   catch(e){rows=await idb.get('layers_list_'+ME.id).catch(()=>null);if(!rows){toast('Slojevi: '+errTxt(e),'err');layLoading=false;return;}}
   if(!can('zalbe'))rows=rows.filter(r=>r.kind!=='zalbe');
-  LAYERS.forEach(ly=>{tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);});LAYERS=LAYERS.filter(l=>l.local);visSig='';
-  for(const row of rows){try{const text=await layerText(row);LAYERS.push(buildLayer(row,row.kind==='zalbe'?parseZalbe(text):parseKML(text)));applyVis();renderLayers();}catch(e){toast(row.name+': '+e.message,'err');}}
-  layLoading=false;refresh();if(manual)toast('Slojevi osveženi ('+LAYERS.length+')','ok');if($('[data-sp="perms"]').classList.contains('active'))renderAccess();}
-async function uploadLayer(name,kind,text,color){const id=newId();const packed=await packText(text);
-  const r=await sb.from('layers').insert({id,name,kind,color,visible_to_users:true,path:'db:'+id,size:packed.length,created_by:ME.id,sort:LAYERS.length}).select().single();if(r.error)throw new Error(errTxt(r.error));
+  LAYERS.forEach(ly=>{tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);});LAYERS=[];visSig='';
+  for(const row of rows){try{const text=await layerText(row);LAYERS.push(buildLayer(row,row.kind==='zalbe'?parseDataset(text):parseKML(text)));applyVis();renderLayers();}catch(e){toast(row.name+': '+e.message,'err');}}
+  layLoading=false;refresh();if(manual)toast('Slojevi osveženi ('+LAYERS.length+')','ok');
+  if($('[data-sp="perms"]').classList.contains('active'))renderAccess();
+  if($('[data-sp="pbs"]').classList.contains('active'))renderDsTab('pbs');if($('[data-sp="zal"]').classList.contains('active'))renderDsTab('gen');}
+async function uploadLayer(name,kind,text,color,vis){const id=newId();const packed=await packText(text);
+  const r=await sb.from('layers').insert({id,name,kind,color,visible_to_users:vis!==false,path:'db:'+id,size:packed.length,created_by:ME.id,sort:LAYERS.length}).select().single();if(r.error)throw new Error(errTxt(r.error));
   try{for(let i=0,part=0;i<packed.length;i+=CHUNK,part++){const c=await sb.from('layer_data').insert({layer_id:id,part,data:packed.slice(i,i+CHUNK)});if(c.error)throw new Error(errTxt(c.error));}}
   catch(e){await sb.from('layers').delete().eq('id',id);throw e;}idb.set('L:'+id+':'+packed.length,text).catch(()=>{});return r.data;}
+async function saveLayerData(ly,text){const packed=await packText(text);
+  const d=await sb.from('layer_data').delete().eq('layer_id',ly.id);if(d.error)throw new Error(errTxt(d.error));
+  for(let i=0,part=0;i<packed.length;i+=CHUNK,part++){const c=await sb.from('layer_data').insert({layer_id:ly.id,part,data:packed.slice(i,i+CHUNK)});if(c.error)throw new Error(errTxt(c.error));}
+  const u=await sb.from('layers').update({size:packed.length,color:ly.color,name:ly.name}).eq('id',ly.id);if(u.error)throw new Error(errTxt(u.error));
+  ly.size=packed.length;idb.set('L:'+ly.id+':'+packed.length,text).catch(()=>{});}
 async function importKmlFiles(files){if(!isAdmin())return;
   for(const file of files){let text,data;try{toast('Čitam '+file.name+'…');text=await readKmlFile(file);data=parseKML(text);if(!data.sites.length&&!data.polys.length){toast(file.name+': nema tačaka ni poligona','err');continue;}}catch(err){toast(file.name+': '+err.message,'err');continue;}
-    const name=file.name.replace(/\.(kml|kmz|xml)$/i,''),color=nextColor();let ly;
-    try{const row=await uploadLayer(name,'kml',text,color);ly=buildLayer(row,data);toast(name+': sačuvano na serveru ('+Math.round(row.size/1024)+' KB)','ok');}
-    catch(err){ly=buildLayer({id:'local-'+newId(),name,color,kind:'kml',local:true},data);toast(name+': samo na ovom uređaju – '+err.message,'err',12000);}
-    LAYERS.push(ly);applyVis();renderLayers();await nextFrame();showPerf(ly);}
+    const name=file.name.replace(/\.(kml|kmz|xml)$/i,''),color=nextColor();
+    try{const row=await uploadLayer(name,'kml',text,color,true);const ly=buildLayer(row,data);LAYERS.push(ly);applyVis();renderLayers();await nextFrame();showPerf(ly);
+      toast(name+': sačuvano na serveru ('+Math.round(row.size/1024)+' KB)','ok');}
+    catch(err){toast(name+': server odbio – '+err.message,'err',12000);}}
   refresh();renderKmlTab();}
-async function colorLayer(ly){if(!isAdmin()||ly.local)return;await sb.from('layers').update({color:ly.color}).eq('id',ly.id);}
-async function deleteServerLayer(ly){if(!ly||!confirm('Obrisati sloj „'+ly.name+'“'+(ly.local?'':' sa servera? Nestaće svim korisnicima')+'?'))return;
-  if(!ly.local){const r=await sb.from('layers').delete().eq('id',ly.id);if(r.error){toast(errTxt(r.error),'err');return;}}
-  tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);LAYERS=LAYERS.filter(l=>l!==ly);visSig='';applyVis();refresh();renderKmlTab();toast('Sloj obrisan','ok');}
-$('#pubBtn').addEventListener('click',async()=>{const pts=S.items.filter(i=>i.lat!=null);if(!pts.length){toast('Nema postavljenih žalbi','err');return;}
-  const name=prompt('Naziv sloja koji vide korisnici ('+pts.length+' žalbi):','Žalbe '+new Date().toLocaleDateString('sr'));if(name===null)return;
-  try{const json=JSON.stringify({v:1,items:pts.map(it=>({lat:it.lat,lon:it.lon,ops:it.ops,ul:it.ul,br:it.br,rowNum:it.rowNum,status:it.status,extra:it.extra}))});
-    const row=await uploadLayer(name,'zalbe',json,'#ff4d6d');LAYERS.push(buildLayer(row,parseZalbe(json)));applyVis();renderLayers();toast('Objavljeno: '+pts.length+' žalbi','ok');}catch(e){toast('Objava nije uspela: '+e.message,'err');}});
+async function colorLayer(ly){if(!isAdmin())return;await sb.from('layers').update({color:ly.color}).eq('id',ly.id);}
+async function deleteServerLayer(ly,silent){if(!ly)return;if(!silent&&!confirm('Obrisati „'+ly.name+'“ sa servera? Nestaće svim korisnicima.'))return;
+  const r=await sb.from('layers').delete().eq('id',ly.id);if(r.error){toast(errTxt(r.error),'err');return;}
+  tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);LAYERS=LAYERS.filter(l=>l!==ly);visSig='';applyVis();refresh();if(!silent)toast('„'+ly.name+'“ obrisan','ok');}
 
 /* ---------- pinovi i sinhronizacija ---------- */
 function rowToPin(r){return {id:r.id,name:r.name||'Pin',lat:+r.lat,lon:+r.lon,h:+r.h,r:+r.r,ht:+r.ht,q:r.q||'normal',note:r.note||'',visible:r.visible!==false,e0:r.e0==null?null:+r.e0};}
@@ -1334,7 +1431,7 @@ function updSync(){const c=$('#syncChip'),n=Object.keys(OB).length;c.classList.r
 $('#syncChip').addEventListener('click',()=>{flush();if(SYNC_ERR)toast(SYNC_ERR,'err');});
 window.addEventListener('online',()=>{flush();setTimeout(loadPins,1500);});window.addEventListener('offline',updSync);setInterval(()=>{if(ME)flush();},30000);
 
-/* ---------- 1) USER / PASS ---------- */
+/* ---------- USER / PASS ---------- */
 async function fetchUsers(){const {data,error}=await sb.from('profiles').select('*').order('username');if(error)throw error;USERS=data;return data;}
 async function loadUsers(){if(!isAdmin())return;const tb=$('#usrBody');
   try{await fetchUsers();}catch(e){tb.innerHTML='<tr><td colspan="5" style="color:var(--red)">'+esc(errTxt(e))+'</td></tr>';return;}
@@ -1354,37 +1451,41 @@ $('#nuBtn').addEventListener('click',async()=>{const name=toAscii($('#nuName').v
   const {error}=await sb.rpc('admin_create_user',{p_username:name,p_password:pass,p_role:$('#nuRole').value,p_domain:EMAIL_DOMAIN});
   toast(error?error.message:'Kreiran „'+name+'“ – prijava: '+name+' / '+pass,error?'err':'ok',8000);if(!error){$('#nuName').value='';$('#nuPass').value='';loadUsers();}});
 
-/* ---------- 6) PERMISSIONS ---------- */
-const PERM_LBL={pins:'📍 Pinovi',ruler:'📏 Lenjir',vs:'👁 Vidljivost',zalbe:'📄 Žalbe'};
+/* ---------- PERMISSIONS ---------- */
+const PERM_LBL={pins:'📍 Pinovi',ruler:'📏 Lenjir',vs:'👁 Vidljivost',zalbe:'📄 Žalbe na mapi'};
+const GRP_T={kml:'📡 KML BS',pbs:'📄 Žalbe bez PBS',gen:'📋 Žalbe'};
+function lyGroup(ly){return ly.kind!=='zalbe'?'kml':(ly.ds.type==='pbs'?'pbs':'gen');}
+function accMode(ly){return !ly.shared?'admin':(ly.allowed&&ly.allowed.length?'sel':'all');}
 async function loadPerms(){if(!isAdmin())return;const note=$('#permNote');note.style.display='none';
   try{await fetchUsers();}catch(e){$('#permBody').innerHTML='<tr><td colspan="5">'+esc(errTxt(e))+'</td></tr>';return;}
-  if(USERS.length&&!('perms' in USERS[0])){note.style.display='block';note.innerHTML='⚠ Na serveru još nema kolone za dozvole. U Supabase → SQL Editor pokreni fajl <b>supabase_v16.sql</b>, pa klikni ↻ Osveži.';}
-  const tb=$('#permBody');const users=USERS.filter(u=>u.role!=='admin');
-  tb.innerHTML=users.map(u=>{const p=u.perms||{};return '<tr data-uid="'+u.id+'"><td><b>'+esc(u.username)+'</b>'+(u.active?'':' <span class="pill off">blokiran</span>')+'</td>'+
+  if(USERS.length&&!('perms' in USERS[0])){note.style.display='block';note.innerHTML='⚠ Na serveru još nema kolone za dozvole. U Supabase → SQL Editor pokreni <b>supabase_v16.sql</b>, pa klikni ↻ Osveži.';}
+  const users=USERS.filter(u=>u.role!=='admin');
+  $('#permBody').innerHTML=users.map(u=>{const p=u.perms||{};return '<tr data-uid="'+u.id+'"><td><b>'+esc(u.username)+'</b>'+(u.active?'':' <span class="pill off">blokiran</span>')+'</td>'+
     PERM_KEYS.map(k=>'<td class="c"><input type="checkbox" data-perm-k="'+k+'"'+(p[k]!==false?' checked':'')+'></td>').join('')+'</tr>';}).join('')||'<tr><td colspan="5" class="muted">Nema korisnika (osim administratora).</td></tr>';
   renderAccess();}
 $('#permBody').addEventListener('change',async e=>{const c=e.target.closest('[data-perm-k]');if(!c)return;const id=c.closest('tr').dataset.uid;const u=USERS.find(x=>x.id===id);if(!u)return;
   const p=Object.assign({},u.perms||{});p[c.dataset.permK]=c.checked;const {error}=await sb.from('profiles').update({perms:p}).eq('id',id);
   if(error){toast(errTxt(error),'err');c.checked=!c.checked;return;}u.perms=p;toast(u.username+': '+PERM_LBL[c.dataset.permK]+' '+(c.checked?'dozvoljeno':'zabranjeno'),'ok');});
-function accMode(ly){return !ly.shared?'admin':(ly.allowed&&ly.allowed.length?'sel':'all');}
-function renderAccess(){const box=$('#accBody');const users=USERS.filter(u=>u.role!=='admin');const lys=LAYERS.filter(l=>!l.local);
-  if(!lys.length){box.innerHTML='<div class="muted">Nema slojeva na serveru.</div>';return;}
-  box.innerHTML=lys.map(ly=>{const m=accMode(ly);const al=ly.allowed||[];
-    return '<div class="lr" style="flex-wrap:wrap;margin-bottom:8px;padding:10px" data-acc="'+ly.id+'"><span class="sw" style="background:'+(ly.kind==='zalbe'?'#ff4d6d':ly.color)+'"></span>'+
-      '<div class="ln"><b>'+esc(ly.name)+'</b><span class="sub">'+(ly.kind==='zalbe'?'objavljene žalbe':n0(ly.data.sites.length)+' BS')+'</span></div>'+
-      '<select class="inp" data-accm style="width:auto"><option value="all"'+(m==='all'?' selected':'')+'>👥 Svi korisnici</option><option value="sel"'+(m==='sel'?' selected':'')+'>✅ Izabrani korisnici</option><option value="admin"'+(m==='admin'?' selected':'')+'>🔒 Samo admin</option></select>'+
-      (m==='sel'?'<div class="uchips" style="flex-basis:100%">'+users.map(u=>'<label class="uchip"><input type="checkbox" data-accu="'+u.id+'"'+(al.includes(u.id)?' checked':'')+'>'+esc(u.username)+'</label>').join('')+'</div>':'')+'</div>';}).join('');}
+function renderAccess(){const box=$('#accBody');const users=USERS.filter(u=>u.role!=='admin');
+  if(!LAYERS.length){box.innerHTML='<div class="muted">Nema slojeva na serveru.</div>';return;}
+  box.innerHTML=['kml','pbs','gen'].map(g=>{const lys=LAYERS.filter(l=>lyGroup(l)===g);if(!lys.length)return '';
+    return '<h4 class="grph">'+GRP_T[g]+'</h4>'+lys.map(ly=>{const m=ly._selOpen?'sel':accMode(ly);const al=ly.allowed||[];
+      const sub=ly.kind==='zalbe'?(n0(ly.data.items.length)+' na mapi · '+esc(ly.ds.file||'')):n0(ly.data.sites.length)+' BS';
+      return '<div class="lr" style="flex-wrap:wrap;margin-bottom:8px;padding:10px" data-acc="'+ly.id+'"><span class="sw" style="background:'+ly.color+'"></span>'+
+        '<div class="ln"><b>'+esc(ly.name)+'</b><span class="sub">'+sub+'</span></div>'+
+        '<select class="inp" data-accm style="width:auto"><option value="all"'+(m==='all'?' selected':'')+'>👥 Svi korisnici</option><option value="sel"'+(m==='sel'?' selected':'')+'>✅ Izabrani korisnici</option><option value="admin"'+(m==='admin'?' selected':'')+'>🔒 Samo admin</option></select>'+
+        (m==='sel'?'<div class="uchips" style="flex-basis:100%">'+(users.map(u=>'<label class="uchip"><input type="checkbox" data-accu="'+u.id+'"'+(al.includes(u.id)?' checked':'')+'>'+esc(u.username)+'</label>').join('')||'<span class="muted">Nema korisnika.</span>')+'</div>':'')+'</div>';}).join('');}).join('');}
 async function saveAccess(ly,mode,allowed){const upd={visible_to_users:mode!=='admin',allowed_users:mode==='sel'?allowed:null};
   const {error}=await sb.from('layers').update(upd).eq('id',ly.id);if(error){toast(errTxt(error),'err');renderAccess();return;}
-  ly.shared=upd.visible_to_users;ly.allowed=upd.allowed_users;renderAccess();toast('„'+ly.name+'“: '+(mode==='all'?'vide svi korisnici':mode==='admin'?'vidi samo admin':'vide izabrani ('+allowed.length+')'),'ok');}
+  ly.shared=upd.visible_to_users;ly.allowed=upd.allowed_users;ly._selOpen=false;renderAccess();
+  toast('„'+ly.name+'“: '+(mode==='all'?'vide svi korisnici':mode==='admin'?'vidi samo admin':'vide izabrani ('+allowed.length+')'),'ok');}
 $('#accBody').addEventListener('change',e=>{const row=e.target.closest('[data-acc]');if(!row)return;const ly=findLy(row.dataset.acc);if(!ly)return;
-  if(e.target.matches('[data-accm]')){const m=e.target.value;if(m==='sel'){ly.shared=true;ly.allowed=ly.allowed&&ly.allowed.length?ly.allowed:[];renderAccessSel(ly);return;}saveAccess(ly,m,null);return;}
+  if(e.target.matches('[data-accm]')){const m=e.target.value;if(m==='sel'){ly._selOpen=true;renderAccess();toast('Štikliraj korisnike koji vide „'+ly.name+'“');return;}ly._selOpen=false;saveAccess(ly,m,null);return;}
   if(e.target.matches('[data-accu]')){const al=[...row.querySelectorAll('[data-accu]:checked')].map(x=>x.dataset.accu);
     if(!al.length){toast('Izaberi bar jednog korisnika (ili stavi „Samo admin“)');return;}saveAccess(ly,'sel',al);}});
-function renderAccessSel(ly){ly._tmpSel=true;const keep=ly.allowed;ly.allowed=keep&&keep.length?keep:['__x'];renderAccess();ly.allowed=keep;toast('Štikliraj korisnike koji vide „'+ly.name+'“');}
 $('#permReload').addEventListener('click',()=>{loadServerLayers();loadPerms();});
 
-/* ---------- 2) PROVERA SERVERA ---------- */
+/* ---------- PROVERA SERVERA ---------- */
 $('#diagBtn').addEventListener('click',async()=>{const out=$('#diagOut');out.innerHTML='';
   const line=(ok,t)=>{out.innerHTML+='<span class="'+(ok===true?'g':ok===false?'r':'y')+'">'+(ok===true?'✓':ok===false?'✕':'•')+'</span> '+esc(t)+'\n';};
   line(null,'Verzija programa: '+APP_VER);line(null,'Adresa: '+location.href);line(navigator.onLine,'Internet: '+(navigator.onLine?'ima':'NEMA'));
@@ -1397,12 +1498,13 @@ $('#diagBtn').addEventListener('click',async()=>{const out=$('#diagOut');out.inn
   try{const r=await sb.from('pins').select('id',{count:'exact',head:true});line(!r.error,'Tabela pinova: '+(r.error?r.error.message:'OK'));}catch(e){line(false,e.message);}
   try{const r=await sb.from('profiles').select('perms').limit(1);line(!r.error,'Kolona za dozvole korisnika: '+(r.error?'NEMA – pokreni supabase_v16.sql':'OK'));}catch(e){line(false,e.message);}
   try{const r=await sb.from('layers').select('allowed_users').limit(1);line(!r.error,'Kolona za pristup slojevima: '+(r.error?'NEMA – pokreni supabase_v16.sql':'OK'));}catch(e){line(false,e.message);}
-  try{const big='<kml>'+'x'.repeat(1500000)+'</kml>';const row=await uploadLayer('__proba','kml',big,'#000000');line(true,'Probni upis sloja od 1,5 MB: OK ('+Math.round(row.size/1024)+' KB)');
+  try{const big='<kml>'+'x'.repeat(1500000)+'</kml>';const row=await uploadLayer('__proba','kml',big,'#000000',false);line(true,'Probni upis sloja od 1,5 MB: OK ('+Math.round(row.size/1024)+' KB)');
     await sb.from('layers').delete().eq('id',row.id);}catch(e){line(false,'Probni upis sloja: '+e.message);}
-  LAYERS.forEach(ly=>{if(ly.kind==='zalbe')return;let wh=0;ly.data.sites.forEach(f=>{if(bsInfo(f).h!=null)wh++;});line(wh===ly.data.sites.length,ly.name+': visina antene pročitana za '+wh+'/'+ly.data.sites.length+' BS');});
+  LAYERS.forEach(ly=>{if(ly.kind==='zalbe'){line(null,GRP_T[lyGroup(ly)]+' · '+ly.name+': '+ly.items.length+' žalbi, na mapi '+ly.data.items.length);return;}
+    let wh=0;ly.data.sites.forEach(f=>{if(bsInfo(f).h!=null)wh++;});line(wh===ly.data.sites.length,'📡 '+ly.name+': visina antene pročitana za '+wh+'/'+ly.data.sites.length+' BS');});
   line(null,'Gotovo.');});
 
-bindCfg();makeGroup();renderLayers();updSync();
+bindCfg();renderLayers();updSync();
 (async()=>{if(!await ensureLib('supabase')){showLogin('Nema interneta.');return;}sb=makeClient();if(!sb){showLogin();return;}
   try{const {data:{session}}=await sb.auth.getSession();if(session&&session.user)await afterLogin(session.user);else showLogin();}catch(e){showLogin(e.message);}})();
 })();
