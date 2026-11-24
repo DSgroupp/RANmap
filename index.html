@@ -370,15 +370,11 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
   .chip{padding:6px 9px;max-width:118px;font-size:12px}
   .chip.me .role{display:none}
   .hbtn{width:34px;height:34px}
-
-  /* donja navigacija */
   .bnav{display:flex;flex:none;height:calc(var(--bnh) + var(--sab));padding-bottom:var(--sab);background:rgba(10,15,30,.97);border-top:1px solid var(--border);z-index:1600}
   .bnav button{flex:1;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer;position:relative}
   .bnav button .i{font-size:21px;line-height:1}
   .bnav button.active{color:#fff}
   .bnav button.active::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-
-  /* bočni panel postaje donji list */
   aside{position:fixed;left:0;right:0;bottom:calc(var(--bnh) + var(--sab));top:auto;width:auto;max-width:none;max-height:72vh;
     border-right:0;border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:0 14px 16px;gap:12px;
     transform:translateY(110%);transition:transform .25s ease;z-index:1500;background:rgba(14,20,40,.98);box-shadow:0 -20px 50px rgba(0,0,0,.5)}
@@ -405,8 +401,6 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
   .btn.sm{padding:9px 12px;font-size:13px}
   aside .list{min-height:0;max-height:none;overflow:visible}
   .inp{font-size:16px}
-
-  /* kontrole na mapi */
   .tr{top:8px;left:8px;right:8px;align-items:stretch}
   .layer-switch,.tools{display:none}
   .srch{width:auto;max-width:none;padding:3px 3px 3px 10px}
@@ -417,7 +411,6 @@ table.prev th.ca{color:var(--accent2)}table.prev th.cf{color:var(--yellow)}
   .compass{right:10px;bottom:auto;top:66px;width:46px;height:46px}
   .compass .deg{display:none}
   .leaflet-control-zoom{display:none}
-  .leaflet-bottom.leaflet-left{bottom:0}
   .legend,.test-overlay{display:none}
   .mapwrap.prof-open .fabs,.mapwrap.prof-open .compass{display:none}
   .prof{left:0;right:0;bottom:0;height:60%;border-radius:18px 18px 0 0;padding:10px 12px}
@@ -848,7 +841,6 @@ function newId(){if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
 const isMobile=()=>window.matchMedia('(max-width:760px)').matches;
 const pw=n=>isMobile()?Math.min(n,window.innerWidth-56):n;
 
-/* ---------- biblioteke sa rezervnim izvorom ---------- */
 function loadJs(s){return new Promise((r,j)=>{const e=document.createElement('script');e.src=s;e.onload=r;e.onerror=()=>j(new Error('ne mogu da učitam '+s));document.head.appendChild(e);});}
 const LIBS={
   XLSX:['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'],
@@ -856,7 +848,6 @@ const LIBS={
   supabase:['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js','https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js']};
 async function ensureLib(name){if(window[name])return true;for(const u of LIBS[name]){try{await loadJs(u);if(window[name])return true;}catch(e){console.warn(e);}}return !!window[name];}
 
-/* ---------- prikaz: računar (kartice) / telefon (donja navigacija + list) ---------- */
 const SEC_T={lay:'🗂️ Slojevi',pins:'📍 Moji pinovi',zal:'📄 Žalbe (Excel)'};
 function setNav(m){$$('#bnav button').forEach(b=>b.classList.toggle('active',b.dataset.m===m));}
 function openSheet(sec){document.body.dataset.msec=sec;$('#sheetTitle').textContent=SEC_T[sec]||'';document.body.classList.add('sheet-open');setNav(sec);
@@ -977,7 +968,6 @@ function doPick(ll){const it=S.items.find(x=>x.id===S.pick);stopPick();if(!it)re
   addMarker(it);select(it.id,true);refresh();toast('Pin ručno postavljen','ok');}
 map.on('click',e=>{if(R.on){rulerAdd(e.latlng);return;}if(S.pick!=null)doPick(e.latlng);});
 
-/* ---------- GPS ---------- */
 let meMk=null,meAcc=null,gpsPin=false;
 function locate(addPin){if(!navigator.geolocation){toast('Uređaj ne podržava GPS lokaciju','err');return;}
   if(!window.isSecureContext&&!IS_FILE){toast('GPS radi samo na https adresi','err');return;}
@@ -999,7 +989,6 @@ map.on('locationfound',e=>{$('#gpsBtn').classList.remove('active');$('#gpsFab').
 map.on('locationerror',e=>{$('#gpsBtn').classList.remove('active');$('#gpsFab').classList.remove('active');gpsPin=false;
   toast('GPS: '+(e.message||'lokacija nije dostupna')+' – uključi lokaciju i dozvoli pristup pregledaču','err');});
 
-/* ---------- ROTACIJA + KOMPAS ---------- */
 const comp=$('#compass');
 function northAngle(){
   const c=map.getCenter();const p1=map.latLngToContainerPoint(c);
@@ -1037,7 +1026,6 @@ if(CAN_ROTATE){
   updCompass();
 }else{comp.classList.add('off');}
 
-/* ---------- DESNI KLIK / DUGI PRITISAK ---------- */
 const CFMT={dd:'Decimalni (lat, lon)',lonlat:'Decimalni (lon, lat)',dms:'Stepeni ° \' " (DMS)',ddm:'Stepeni ° dec. \' (DDM)',utm:'UTM (WGS84)',gm:'Google Maps link'};
 function dms(v,pos,neg){const h=v>=0?pos:neg;v=Math.abs(v);let d=Math.floor(v),m=Math.floor((v-d)*60),s=((v-d)*60-m)*60;
   if(s>=59.995){s=0;m++;}if(m>=60){m=0;d++;}return d+'°'+String(m).padStart(2,'0')+'\''+s.toFixed(2).padStart(5,'0')+'"'+h;}
@@ -1147,7 +1135,6 @@ function parseKML(text){
   text=String(text||'').replace(/^\uFEFF/,'');
   let doc=new DOMParser().parseFromString(text,'application/xml');
   if(doc.getElementsByTagName('parsererror').length){
-    /* često: neispravni & znakovi ili nedeklarisani prefiksi – pokušaj popravku */
     const fixed=text.replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);)/gi,'&amp;');
     doc=new DOMParser().parseFromString(fixed,'application/xml');
     if(doc.getElementsByTagName('parsererror').length){
@@ -1256,7 +1243,6 @@ const lvKey=()=>'zm_lv_'+(ME?ME.id:'x');
 function loadLV(){try{LV=JSON.parse(localStorage.getItem(lvKey())||'{}');}catch(e){LV={};}}
 function saveLV(){LAYERS.forEach(l=>LV[l.id]={v:l.visible,s:l.showSites,c:l.showSec});localStorage.setItem(lvKey(),JSON.stringify(LV));}
 
-/* ---------- LISTE ---------- */
 function renderLayers(){
   let h='';
   if(isAdmin()&&S.items.length){const zOn=S.items.filter(i=>i.lat!=null).length;
@@ -1372,13 +1358,13 @@ async function readKmlFile(file){
 function showPerf(ly,p){p.total=(p.read||0)+p.parse+p.render;
   const n=ly.data.sites.length+ly.data.polys.length+ly.data.lines.length;
   const pe=$('#bsPerf');pe.style.display='block';
-  pe.innerHTML='Poslednji: <b>'+esc(ly.name)+'</b> · '+n0(n)+' objekata · '+fmtMs(p.total)+'<span id="fpsRes"></span>';}
+  pe.innerHTML='Poslednji: <b>'+esc(ly.name)+'</b> · '+n0(n)+' objekata<span id="fpsRes"></span>';}
 async function speedTest(){
   if(S.testing)return;
   S.testing=true;$('#bsTest').disabled=true;$('#testOv').style.display='block';closeMenu();
   const c=map.getCenter(),z=map.getZoom();
-  let frames=0,worst=0,last=0,run=true;const times=[];
-  const loop=t=>{if(last){const d=t-last;times.push(d);if(d>worst)worst=d;}last=t;frames++;if(run)requestAnimationFrame(loop);};
+  let frames=0,last=0,run=true;
+  const loop=t=>{last=t;frames++;if(run)requestAnimationFrame(loop);};
   requestAnimationFrame(loop);
   const t0=performance.now();
   const steps=[[350,0],[0,250],[-350,0],[0,-250]];
@@ -1700,7 +1686,7 @@ $('#mapQClr').addEventListener('click',()=>{sIn.value='';hideRes();$('#mapQClr')
 sRes.addEventListener('click',e=>{const r=e.target.closest('.sr');if(!r)return;const x=sHits[+r.dataset.i];if(x){hideRes();goTo(x);}});
 document.addEventListener('click',e=>{if(!e.target.closest('.srch'))hideRes();});
 
-/* ---------- LENJIR + AZIMUT + PROFIL ---------- */
+/* ---------- LENJIR + PROFIL ---------- */
 const R={on:false,pts:[],mk:[],line:null,tmp:null,prof:null,an:null,hov:null,hi:-1,req:0};
 function setRulerBtn(on){$('#rulerBtn').classList.toggle('active',on);$('#rulerFab').classList.toggle('active',on);}
 function bearing(a,b){const toR=Math.PI/180,f1=a.lat*toR,f2=b.lat*toR,dl=(b.lng-a.lng)*toR;
@@ -2092,12 +2078,25 @@ $('#clearCache').addEventListener('click',()=>{if(!confirm('Obrisati sve zapamć
 const toAscii=s=>String(s||'').toLowerCase().trim().replace(/č|ć/g,'c').replace(/š/g,'s').replace(/ž/g,'z').replace(/đ/g,'dj').replace(/\s+/g,'.');
 const userEmail=u=>{u=String(u||'').trim();return u.includes('@')?u.toLowerCase():toAscii(u)+'@'+EMAIL_DOMAIN;};
 function sbConf(){const u=(SUPABASE_URL||localStorage.getItem('zm_sb_url')||'').trim().replace(/\/rest\/v1\/?$/,'').replace(/\/+$/,''),k=(SUPABASE_ANON_KEY||localStorage.getItem('zm_sb_key')||'').trim();return {u,k};}
-const errTxt=e=>{const m=(e&&(e.message||e.error_description||e.error))||String(e);
-  if(/row-level security|violates row-level|Unauthorized|403/i.test(m))return m+' → server ne dozvoljava (proveri da si admin i da je pokrenut supabase_setup.sql)';
-  if(/Bucket not found/i.test(m))return 'Na serveru ne postoji skladište „layers“ → pokreni ponovo supabase_setup.sql';
-  if(/Failed to fetch|NetworkError|Load failed/i.test(m))return 'Nema veze sa serverom (internet?)';
-  if(/Payload too large|exceeded the maximum|413/i.test(m))return 'Fajl je prevelik za server (max 50 MB)';
+const errTxt=e=>{const m=(e&&(e.message||e.error_description||e.error||e.details))||String(e);
+  if(/row-level security|violates row-level|permission denied/i.test(m))return 'server ne dozvoljava ('+m+') – proveri da si admin i da je pokrenut supabase_setup.sql';
+  if(/relation .*layer_data.* does not exist|Could not find the table/i.test(m))return 'na serveru nema tabele layer_data – pokreni ponovo supabase_setup.sql';
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m))return 'nema veze sa serverom (internet?)';
   return m;};
+
+/* sažimanje teksta (gzip) – KML od 2 MB postaje ~200 KB */
+function u8ToB64(u8){let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s);}
+function b64ToU8(b){const s=atob(b);const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
+async function packText(t){
+  if(window.CompressionStream){try{const st=new Blob([t]).stream().pipeThrough(new CompressionStream('gzip'));
+    return 'gz:'+u8ToB64(new Uint8Array(await new Response(st).arrayBuffer()));}catch(e){console.warn(e);}}
+  return 'tx:'+t;}
+async function unpackText(p){
+  if(p.startsWith('tx:'))return p.slice(3);
+  if(p.startsWith('gz:')){if(!window.DecompressionStream)throw new Error('pregledač je prestar za sažete slojeve – ažuriraj Chrome/Safari');
+    const st=new Blob([b64ToU8(p.slice(3))]).stream().pipeThrough(new DecompressionStream('gzip'));return await new Response(st).text();}
+  return p;}
+const CHUNK=400000;
 
 /* ---------- prijava ---------- */
 function showLogin(msg){$('#login').classList.remove('hide');$('#lgMsg').textContent=msg||'';
@@ -2137,17 +2136,23 @@ async function afterLogin(user){
   $('#meName').textContent=prof.username;$('#meRole').textContent=prof.role==='admin'?'admin':'teren';
   $('#login').classList.add('hide');
   loadLV();loadOB();
-  try{const c=JSON.parse(localStorage.getItem(ulKey())||'[]');setUL(c.map(l=>Object.assign({},l,{pins:(l.pins||[]).map(p=>Object.assign({},p))})),true);}catch(e){}
+  try{const c=JSON.parse(localStorage.getItem(ulKey())||'[]');setUL(c.map(l=>Object.assign({},l,{pins:(l.pins||[]).map(p=>Object.assign({},p))})));}catch(e){}
   applyVis();refresh();showView('map');map.invalidateSize();
   await Promise.allSettled([loadServerLayers(),loadPins()]);
   await migrateOld();flush();
   if(LAYERS.length&&!UL.some(l=>l.pins.length)&&!S.items.length){const b=allBsBounds();if(b)fitTo(b);}}
 
-/* ---------- slojevi ---------- */
-async function layerText(row){const key='L:'+row.id;
+/* ---------- slojevi (čuvaju se u bazi, sažeti, u delovima) ---------- */
+async function layerText(row){const key='L:'+row.id+':'+(row.size||0);
   try{const c=await idb.get(key);if(c&&typeof c==='string')return c;}catch(e){}
-  const {data,error}=await sb.storage.from('layers').download(row.path);if(error)throw new Error(errTxt(error));
-  const t=await data.text();idb.set(key,t).catch(()=>{});return t;}
+  let text=null;
+  const r=await sb.from('layer_data').select('part,data').eq('layer_id',row.id).order('part');
+  if(r.error&&!/does not exist|Could not find/i.test(r.error.message))throw new Error(errTxt(r.error));
+  if(r.data&&r.data.length)text=await unpackText(r.data.map(x=>x.data).join(''));
+  else if(row.path&&!String(row.path).startsWith('db:')){
+    const {data,error}=await sb.storage.from('layers').download(row.path);if(error)throw new Error(errTxt(error));text=await data.text();}
+  if(text==null)throw new Error('sloj na serveru je prazan – obriši ga i ubaci ponovo');
+  idb.set(key,text).catch(()=>{});return text;}
 let layLoading=false;
 async function loadServerLayers(manual){
   if(!sb||!ME||layLoading)return;layLoading=true;
@@ -2163,24 +2168,27 @@ async function loadServerLayers(manual){
     try{const text=await layerText(row);
       const data=row.kind==='zalbe'?parseZalbe(text):parseKML(text);
       LAYERS.push(buildLayer(row,data));applyVis();renderLayers();}
-    catch(e){console.warn(e);toast(row.name+': '+e.message,'err');}}
+    catch(e){console.warn(e);toast(row.name+': '+e.message,'err',9000);}}
   layLoading=false;refresh();if(manual)toast('Slojevi osveženi ('+LAYERS.length+')','ok');}
 async function uploadLayer(name,kind,text,color){
-  const id=newId(),path=id+(kind==='zalbe'?'.json':'.kml');
-  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
-  const up=await sb.storage.from('layers').upload(path,blob,{upsert:false,contentType:'text/plain;charset=utf-8'});
-  if(up.error)throw new Error('skladište: '+errTxt(up.error));
-  const row={id,name,kind,color,visible_to_users:true,path,size:text.length,created_by:ME.id,sort:LAYERS.length};
+  const id=newId();
+  const packed=await packText(text);
+  const row={id,name,kind,color,visible_to_users:true,path:'db:'+id,size:packed.length,created_by:ME.id,sort:LAYERS.length};
   const r=await sb.from('layers').insert(row).select().single();
-  if(r.error){await sb.storage.from('layers').remove([path]);throw new Error('baza: '+errTxt(r.error));}
-  idb.set('L:'+id,text).catch(()=>{});return r.data;}
+  if(r.error)throw new Error('baza (sloj): '+errTxt(r.error));
+  try{
+    for(let i=0,part=0;i<packed.length;i+=CHUNK,part++){
+      const c=await sb.from('layer_data').insert({layer_id:id,part,data:packed.slice(i,i+CHUNK)});
+      if(c.error)throw new Error('baza (podaci): '+errTxt(c.error));}
+  }catch(e){await sb.from('layers').delete().eq('id',id);throw e;}
+  idb.set('L:'+id+':'+packed.length,text).catch(()=>{});return r.data;}
 async function importKmlFiles(files){
   if(!isAdmin())return;
   const hadAny=LAYERS.length>0;
   for(const file of files){
     let text,data;
     try{
-      toast('Čitam '+file.name+'…');
+      toast('Čitam '+file.name+' ('+(file.size/1048576).toFixed(1)+' MB)…');
       text=await readKmlFile(file);
       data=parseKML(text);
       if(!data.sites.length&&!data.polys.length&&!data.lines.length){toast(file.name+': u fajlu nema tačaka ni poligona (Placemark)','err');continue;}
@@ -2188,12 +2196,13 @@ async function importKmlFiles(files){
     const name=file.name.replace(/\.(kml|kmz|xml)$/i,''),color=nextColor();
     let ly;
     try{
+      toast('Šaljem na server: '+name+'…');
       const row=await uploadLayer(name,'kml',text,color);
       ly=buildLayer(row,data);
-      toast(name+': '+data.sites.length+' lokacija, '+data.polys.length+' sektora – objavljeno na serveru','ok');
+      toast(name+': '+data.sites.length+' lokacija, '+data.polys.length+' sektora – sačuvano na serveru ('+Math.round(row.size/1024)+' KB)','ok',7000);
     }catch(err){console.error(err);
       ly=buildLayer({id:'local-'+newId(),name,color,kind:'kml',visible_to_users:false,local:true},data);
-      toast(name+': prikazan samo na ovom uređaju – server odbio: '+err.message+'. Pokreni ⚙️ Podešavanja → 🩺 Provera servera.','err',12000);}
+      toast(name+': prikazan samo na ovom uređaju – server: '+err.message,'err',14000);}
     LAYERS.push(ly);applyVis();renderLayers();await nextFrame();
     showPerf(ly,{parse:0,render:0});}
   refresh();if(!hadAny){const b=allBsBounds();if(b)fitTo(b);}}
@@ -2205,7 +2214,7 @@ async function colorLayer(ly){if(!isAdmin()||ly.local)return;const {error}=await
 async function deleteServerLayer(ly){if(!ly||!isAdmin())return;
   if(!confirm('Obrisati sloj „'+ly.name+'“'+(ly.local?'':' sa servera? Nestaće i svim korisnicima')+'?'))return;
   if(!ly.local){const r=await sb.from('layers').delete().eq('id',ly.id);if(r.error){toast('Greška: '+errTxt(r.error),'err');return;}
-    await sb.storage.from('layers').remove([ly.path]);idb.del('L:'+ly.id).catch(()=>{});}
+    if(ly.path&&!String(ly.path).startsWith('db:'))await sb.storage.from('layers').remove([ly.path]).catch(()=>{});}
   tog(ly.g.sec,false);tog(ly.g.sites,false);if(ly.g.z)tog(ly.g.z,false);LAYERS=LAYERS.filter(l=>l!==ly);visSig='';
   applyVis();refresh();toast('Sloj obrisan','ok');}
 $('#pubBtn').addEventListener('click',async()=>{
@@ -2362,21 +2371,23 @@ $('#diagBtn').addEventListener('click',async()=>{
   line(!!window.L,'Biblioteka mapa (Leaflet)');
   line(await ensureLib('XLSX'),'Biblioteka Excel (XLSX)');
   line(await ensureLib('JSZip'),'Biblioteka KMZ (JSZip)');
+  line(!!window.CompressionStream&&!!window.DecompressionStream,'Sažimanje slojeva (gzip) u pregledaču');
   line(await ensureLib('supabase'),'Biblioteka servera (Supabase)');
-  line(null,'Server: '+sbConf().u);
   if(!sb){line(false,'Nisi povezan sa serverom');return;}
   try{const {data:{user}}=await sb.auth.getUser();line(!!user,'Prijavljen: '+(user?user.email:'NE'));
     const r=await sb.from('profiles').select('*').eq('id',user.id).single();
     if(r.error)line(false,'Profil: '+r.error.message);else line(r.data.role==='admin'&&r.data.active,'Profil: '+r.data.username+' · uloga '+r.data.role+' · '+(r.data.active?'aktivan':'BLOKIRAN'));
   }catch(e){line(false,'Profil: '+(e.message||e));}
-  try{const r=await sb.from('layers').select('id',{count:'exact',head:true});line(!r.error,'Tabela slojeva: '+(r.error?r.error.message:r.count+' slojeva'));}catch(e){line(false,'Tabela slojeva: '+e.message);}
-  try{const r=await sb.from('pins').select('id',{count:'exact',head:true});line(!r.error,'Tabela pinova: '+(r.error?r.error.message:'OK ('+r.count+' tvojih)'));}catch(e){line(false,'Tabela pinova: '+e.message);}
-  const tp='proba-'+newId()+'.kml';
-  try{const up=await sb.storage.from('layers').upload(tp,new Blob(['<kml/>'],{type:'text/plain'}),{upsert:false,contentType:'text/plain'});
-    if(up.error)line(false,'Upis u skladište: '+errTxt(up.error));
-    else{line(true,'Upis u skladište');const rm=await sb.storage.from('layers').remove([tp]);line(!rm.error,'Brisanje iz skladišta'+(rm.error?': '+rm.error.message:''));}}
-  catch(e){line(false,'Skladište: '+e.message);}
   try{const r=await sb.rpc('is_admin');line(r.data===true,'Server te vidi kao admina: '+(r.error?r.error.message:r.data));}catch(e){line(false,'is_admin: '+e.message);}
+  try{const r=await sb.from('layers').select('id',{count:'exact',head:true});line(!r.error,'Tabela slojeva: '+(r.error?r.error.message:r.count+' slojeva'));}catch(e){line(false,'Tabela slojeva: '+e.message);}
+  try{const r=await sb.from('layer_data').select('layer_id',{count:'exact',head:true});line(!r.error,'Tabela podataka slojeva: '+(r.error?errTxt(r.error):'OK'));}catch(e){line(false,'layer_data: '+e.message);}
+  try{const r=await sb.from('pins').select('id',{count:'exact',head:true});line(!r.error,'Tabela pinova: '+(r.error?r.error.message:'OK'));}catch(e){line(false,'Tabela pinova: '+e.message);}
+  try{const big='<kml>'+'x'.repeat(1500000)+'</kml>';const t0=performance.now();
+    const row=await uploadLayer('__proba','kml',big,'#000000');
+    line(true,'Probni upis sloja od 1.5 MB: OK ('+Math.round(row.size/1024)+' KB posle sažimanja, '+fmtMs(performance.now()-t0)+')');
+    const back=await layerText(Object.assign({},row,{size:-1}));line(back===big,'Probno čitanje nazad: '+(back===big?'OK':'NE POKLAPA SE'));
+    await sb.from('layers').delete().eq('id',row.id);idb.del('L:'+row.id+':-1').catch(()=>{});
+  }catch(e){line(false,'Probni upis sloja: '+e.message);}
   line(null,'Gotovo. Ako neka stavka ima ✕, pošalji sliku ovog prozora.');});
 
 /* ---------- start ---------- */
